@@ -1,4 +1,4 @@
 library(testthat)
-library(emdi)
+library(povmap)
 
-test_check("emdi")
+test_check("povmap")

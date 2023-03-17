@@ -48,7 +48,7 @@ ebp_check1 <- function(fixed, pop_data, pop_domains, smp_data, smp_domains, L) {
 
 ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                        custom_indicator, cpus, seed, na.rm, weights,
-                       pop_weights) {
+                       pop_weights, type_weights) {
   if (!is.null(threshold) && !(is.numeric(threshold) &&
     length(threshold) == 1) && !inherits(threshold, "function")) {
     stop(strwrap(prefix = " ", initial = "",
@@ -160,7 +160,7 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   if (is.character(weights) && length(weights) != 1 || !is.character(weights) &&
     !is.null(weights)) {
     stop(strwrap(prefix = " ", initial = "",
-                 "Weights must be a vector of lenght 1 and of class character
+                 "Weights must be a vector of length 1 and of class character
                  specifying the variable name of a numeric variable indicating
                  weights in the sample data. See also help(ebp)."))
   }
@@ -174,6 +174,18 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
     stop(strwrap(prefix = " ", initial = "",
                  "The weighted version of ebp is only available with the
                  ''parametric'' bootstrap."))
+  }
+  if (is.null(weights) && type_weights == "nlme") {
+    stop(strwrap(prefix = " ", initial = "",
+                  paste0("If you want to use the survey weights with weighting
+                         type ", type_weights, " please provide the name of a
+                         numeric variable indicating weights in the sample data
+                         to the argument weights.")))
+  }
+  if (!(type_weights == "nlme" || type_weights == "Guadarrama")) {
+    stop(strwrap(prefix = " ", initial = "",
+                 "The two options for types of survey weights are ''nlme'',
+                 ''Guadarrama''."))
   }
   if (is.character(pop_weights) && length(pop_weights) != 1 ||
       !is.character(pop_weights) && !is.null(pop_weights)) {

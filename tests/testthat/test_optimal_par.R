@@ -25,7 +25,8 @@ test_that("Does function optimal_parameter() return the benchmark lambda?", {
                         custom_indicator = NULL,
                         na.rm = TRUE,
                         pop_weights = NULL,
-                        weights = NULL)
+                        weights = NULL,
+                        type_weights = "Guadarrama")
 
   optimal_lambda <- optimal_parameter(generic_opt    = generic_opt,
                                       fixed          = income~educ1,

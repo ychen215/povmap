@@ -1,14 +1,15 @@
 Package: povmap
 Title: Extensions to the package emdi supported by the worldbank group
 Version: 1.0.0
-Date: 2022-08-19
-Authors@R: c(person("Nora", "Würz", role="aut", email = "nora.wuerz@uni-bamberg.de"))
-Description: An extions of the package emdi that supports estimating, assessing and mapping regional disaggregated indicators. For a detailed information on the additional features, please take a look to the vignette.
+
+Date: 2022-11-30
+Authors@R: c(person("Nora", "Würz", role=c("aut", "cre"), email = "nora.wuerz@uni-bamberg.de"))
+Description: An extions of emdi that supports estimating, assessing and mapping regional disaggregated indicators. For a detailed information on the additional features, please take a look to the vignette.
 
 Depends:
     R (>= 4.2.0)
 License: GPL-2
-URL: https://github.com/SoerenPannier/emdi
+URL: https://github.com/NoraWuerz/povmap
 LazyData: true
 Encoding: UTF-8
 Copyright: inst/COPYRIGHTS
