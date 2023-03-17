@@ -48,7 +48,8 @@ ebp_check1 <- function(fixed, pop_data, pop_domains, smp_data, smp_domains, L) {
 
 ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                        custom_indicator, cpus, seed, na.rm, weights,
-                       pop_weights, type_weights) {
+                       pop_weights, weights_type, benchmark, benchmark_type) {
+
   if (!is.null(threshold) && !(is.numeric(threshold) &&
     length(threshold) == 1) && !inherits(threshold, "function")) {
     stop(strwrap(prefix = " ", initial = "",
@@ -164,25 +165,26 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  specifying the variable name of a numeric variable indicating
                  weights in the sample data. See also help(ebp)."))
   }
-  if (!is.null(weights) && !(transformation == "log" ||
-    transformation == "no")) {
+  if (!is.null(weights) && weights_type == "Guadarrama" &&
+      !(transformation == "log" || transformation == "no")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "Weighted ebp can only be used without transformation or the
-                 log-transformation"))
+                 "Weighted ebp with weights_type == 'Guadarrama' can only be
+                 used without transformation or the log-transformation."))
   }
   if (!is.null(weights) && isTRUE(MSE) && boot_type == "wild") {
     stop(strwrap(prefix = " ", initial = "",
                  "The weighted version of ebp is only available with the
                  ''parametric'' bootstrap."))
   }
-  if (is.null(weights) && type_weights == "nlme") {
+  
+  if (is.null(weights) && weights_type == "nlme") {
     stop(strwrap(prefix = " ", initial = "",
                   paste0("If you want to use the survey weights with weighting
-                         type ", type_weights, " please provide the name of a
+                         type ", weights_type, " please provide the name of a
                          numeric variable indicating weights in the sample data
                          to the argument weights.")))
   }
-  if (!(type_weights == "nlme" || type_weights == "Guadarrama")) {
+  if (!(weights_type == "nlme" || weights_type == "Guadarrama")) {
     stop(strwrap(prefix = " ", initial = "",
                  "The two options for types of survey weights are ''nlme'',
                  ''Guadarrama''."))
@@ -194,6 +196,56 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  character specifying the variable name of a numeric variable
                  indicating weights in the population data. See also
                  help(ebp)."))
+  }
+  if (!is.null(benchmark)) {
+    if (!is.numeric(benchmark)){
+      stop(strwrap(prefix = " ", initial = "",
+                   "Benchmark must be a named vector containing the numeric
+                   benchmark value(s) and is of class numeric. The names of the
+                   vector matchs to the chosen indicators."))
+    }
+    if (!length(benchmark) %in% 1:2) {
+      stop(strwrap(prefix = " ", initial = "",
+                   "Benchmark must be a named vector containing the numeric
+                   benchmark value(s) and is of class numeric. Benchmarking is
+                   supplied for the Mean and the Head_Count ratio. Therefore,
+                   the length of benchmark must be 1 or 2. The names of this
+                   vector indicates whether the Mean, the Head_Count, or
+                   both in which order are supplied."))
+    }
+    if (is.null(names(benchmark))) {
+      stop(strwrap(prefix = " ", initial = "",
+                   "Benchmark must be a named vector containing the numeric
+                   benchmark value(s) and is of class numeric. Please provide
+                   names."))
+    }
+    if (!length(benchmark) == length(names(benchmark))) {
+      stop(strwrap(prefix = " ", initial = "",
+                   "Benchmark must be a named vector containing the numeric
+                   benchmark value(s) and is of class numeric. Each numeric must
+                   be labeled. Therefore, benchmark and names(benchmark) have
+                   the same length."))
+    }
+    if (!all(names(benchmark) %in% c("Mean", "Head_Count"))) {
+      stop(strwrap(prefix = " ", initial = "",
+                   "Benchmark must be a named vector containing the numeric
+                   benchmark value(s) and is of class numeric. Benchmarking is
+                   supplied for the Mean and the Head_Count ratio. Therefore,
+                   the names must match with 'Mean' and 'Head_Count'."))
+    }
+  }
+  if (benchmark_type != "raking") {
+    if (benchmark_type != "ratio") {
+      stop(strwrap(prefix = " ", initial = "",
+                   "The benchmark version of ebp is only available with
+                   'raking' and 'ratio'."))
+    }
+    if (is.null(benchmark)) {
+      stop(strwrap(prefix = " ", initial = "",
+                   "A benchmark type is provided, but no benchmark value.
+                   Please provide the argument 'benchmark' within the
+                   function."))
+    }
   }
 }
 

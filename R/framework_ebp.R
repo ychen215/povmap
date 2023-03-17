@@ -9,7 +9,7 @@
 framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
                           threshold, custom_indicator = NULL, na.rm,
                           aggregate_to = NULL, weights, pop_weights,
-                          type_weights) {
+                          weights_type) {
 
   # Reduction of number of variables
   mod_vars <- all.vars(fixed)
@@ -201,6 +201,6 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
     threshold = threshold,
     weights = weights,
     pop_weights = pop_weights,
-    type_weights = type_weights
+    weights_type = weights_type
   ))
 }

@@ -25,7 +25,9 @@ ebp(
   weights = NULL,
   pop_weights = NULL,
   aggregate_to = NULL,
-  type_weights = "Guadarrama"
+  weights_type = "Guadarrama",
+  benchmark = NULL,
+  benchmark_type = "raking"
 )
 }
 \arguments{
@@ -136,11 +138,19 @@ population data that indicates the target domain level for which the
 results are to be displayed. The variable can be numeric or a factor.
 Defaults to \code{NULL}.}
 
-\item{type_weights}{a character string. Two different methods for survey
+\item{weights_type}{a character string. Two different methods for survey
 weights are available (i) EBP under informative sampling from
 \cite{Guadarrama et al. (2018)} ("Guadarrama"); (ii) considering survey
 weights by using the weighting options of \code{\link{nlme}} from
 \cite{Pinheiro and Bates (2023)} ("nlme"). Defaults to \code{"Guadarrama"}.}
+
+\item{benchmark}{a named vector containing the numeric benchmark value(s).
+The names of the vector matchs to the chosen indicators. Benchmarking is
+available for \code{"Mean"} and \code{"Head_Count"}.}
+
+\item{benchmark_type}{a character indicating the type of benchmarking. Types
+that can be chosen (i) Raking ("\code{raking}") and (ii) Ratio adjustment
+("\code{ratio}"). Defaults to "\code{raking}"}
 }
 \value{
 An object of class "ebp", "emdi" that provides estimators for

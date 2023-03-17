@@ -15,7 +15,9 @@ parametric_bootstrap <- function(framework,
                                  B,
                                  boot_type,
                                  parallel_mode,
-                                 cpus) {
+                                 cpus,
+                                 benchmark,
+                                 benchmark_type) {
   message("\r", "Bootstrap started                                            ")
   if (boot_type == "wild") {
     res_s <- residuals(point_estim$model)
@@ -36,6 +38,7 @@ parametric_bootstrap <- function(framework,
     if (parallel_mode == "socket") {
       parallel::clusterSetRNGStream()
     }
+
     parallelMap::parallelLibrary("nlme")
     mses <- simplify2array(parallelMap::parallelLapply(
       xs              = seq_len(B),
@@ -53,10 +56,13 @@ parametric_bootstrap <- function(framework,
       res_s           = res_s,
       fitted_s        = fitted_s,
       start_time      = start_time,
-      boot_type       = boot_type
+      boot_type       = boot_type,
+      benchmark       = benchmark,
+      benchmark_type  = benchmark_type
     ))
     parallelMap::parallelStop()
   } else {
+
     mses <- simplify2array(lapply(
       X = seq_len(B),
       FUN = mse_estim_wrapper,
@@ -73,7 +79,9 @@ parametric_bootstrap <- function(framework,
       res_s = res_s,
       fitted_s = fitted_s,
       start_time = start_time,
-      boot_type = boot_type
+      boot_type = boot_type,
+      benchmark = benchmark,
+      benchmark_type = benchmark_type
     ))
   }
 
@@ -112,7 +120,9 @@ mse_estim <- function(framework,
                       transformation,
                       interval,
                       L,
-                      boot_type) {
+                      boot_type,
+                      benchmark,
+                      benchmark_type) {
 
 
 
@@ -181,6 +191,13 @@ mse_estim <- function(framework,
 
   colnames(true_indicators) <- framework$indicator_names
 
+  if (!is.null(benchmark)) {
+    add_bench <- true_indicators[, colnames(true_indicators)
+                                 %in% names(benchmark)]
+    colnames(add_bench) <- c(paste0(names(benchmark),"_bench"))
+    true_indicators <- cbind(true_indicators, add_bench)
+  }
+
   # The function bootstrap_par returns a sample that can be given into the
   # point estimation to get predictors of the indicators that can be compared
   # to the "truth".
@@ -220,6 +237,15 @@ mse_estim <- function(framework,
     L = L,
     framework = framework
   )[[1]][, -1])
+
+  # benchmark
+  if (!is.null(benchmark)) {
+    bootstrap_point_estim <- benchmark_ebp(
+      point_estim = bootstrap_point_estim,
+      framework = framework,
+      benchmark = benchmark,
+      benchmark_type = benchmark_type)
+  }
 
   return((bootstrap_point_estim - true_indicators)^2)
 } # End mse_estim
@@ -389,7 +415,9 @@ mse_estim_wrapper <- function(i,
                               fitted_s,
                               start_time,
                               boot_type,
-                              seedvec) {
+                              seedvec,
+                              benchmark,
+                              benchmark_type) {
   tmp <- mse_estim(
     framework = framework,
     lambda = lambda,
@@ -402,7 +430,9 @@ mse_estim_wrapper <- function(i,
     transformation = transformation,
     interval = interval,
     L = L,
-    boot_type = boot_type
+    boot_type = boot_type,
+    benchmark = benchmark,
+    benchmark_type = benchmark_type
   )
 
   if (i %% 10 == 0) {
