@@ -158,7 +158,7 @@ mse_estim <- function(framework,
       framework$threshold(y = pop_income_vector)
   }
 
-  if(is.null(framework$aggregate_to_vec) != TRUE){
+  if(!is.null(framework$aggregate_to_vec)){
     N_dom_pop_tmp <- framework$N_dom_pop_agg
     pop_domains_vec_tmp <- framework$aggregate_to_vec
     pop_weights_vec <- framework$pop_data[[framework$pop_weights]]
@@ -178,7 +178,7 @@ mse_estim <- function(framework,
           data =
             unlist(mapply(
               y = split(pop_income_vector, pop_domains_vec_tmp),
-              pop_weight = split(pop_weights_vec, pop_domains_vec_tmp),
+              pop_weights = split(pop_weights_vec, pop_domains_vec_tmp),
               f,
               threshold = framework$threshold
             )),
