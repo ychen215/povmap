@@ -334,11 +334,11 @@ fw_check1 <- function(pop_data, mod_vars, pop_domains, smp_data, fixed,
     }
   }
   if (is.character(pop_weights)) {
-    if (!all(pop_data[[pop_weights]] >= 1)) {
+    if (!all(pop_data[[pop_weights]] > 0)) {
       stop(strwrap(prefix = " ", initial = "",
                    paste0("Negative or zero weights are included in ",
                           pop_weights, " Please remove obersvations with weight
-                          values smaller than 1.")))
+                          values less than or equal to zero.")))
     }
   }
 
