@@ -360,7 +360,7 @@ monte_carlo <- function(transformation,
       gen_model = gen_model,
       errors_gen = errors,
       framework = framework,
-      fixed = fixed,
+      fixed = fixed
     )
 
     if(!is.null(framework$pop_weights)){
