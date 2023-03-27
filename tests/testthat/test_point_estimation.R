@@ -21,7 +21,9 @@ test_that("Does monte_carlo function give benchmark results?", {
                         na.rm = TRUE,
                         pop_weights = NULL,
                         weights = NULL,
-                        weights_type = "Guadarrama")
+                        weights_type = "Guadarrama",
+                        benchmark_level = NULL)
+
 
   # Fixed optimal parameter and shift (benchmark values)
   ebp_optpar_bc <- read.csv2("EBP/ebp_optpar_bc.csv", sep = ",",
@@ -116,7 +118,8 @@ test_that("Does monte_carlo function give benchmark results? Using weights
                              aggregate_to = "domain",
                              weights = "weight",
                              pop_weights = "pop_weights",
-                             weights_type = "Guadarrama")
+                             weights_type = "Guadarrama",
+                             benchmark_level = NULL)
 
   # Conduct transformation using the optimal parameter
   transformation_par <- data_transformation(fixed          = income ~ educ1,

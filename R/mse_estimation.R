@@ -17,7 +17,9 @@ parametric_bootstrap <- function(framework,
                                  parallel_mode,
                                  cpus,
                                  benchmark,
-                                 benchmark_type) {
+                                 benchmark_type,
+                                 benchmark_level) {
+
   message("\r", "Bootstrap started                                            ")
   if (boot_type == "wild") {
     res_s <- residuals(point_estim$model)
@@ -58,7 +60,8 @@ parametric_bootstrap <- function(framework,
       start_time      = start_time,
       boot_type       = boot_type,
       benchmark       = benchmark,
-      benchmark_type  = benchmark_type
+      benchmark_type  = benchmark_type,
+      benchmark_level = benchmark_level
     ))
     parallelMap::parallelStop()
   } else {
@@ -81,7 +84,8 @@ parametric_bootstrap <- function(framework,
       start_time = start_time,
       boot_type = boot_type,
       benchmark = benchmark,
-      benchmark_type = benchmark_type
+      benchmark_type = benchmark_type,
+      benchmark_level = benchmark_level
     ))
   }
 
@@ -122,7 +126,9 @@ mse_estim <- function(framework,
                       L,
                       boot_type,
                       benchmark,
-                      benchmark_type) {
+                      benchmark_type,
+                      benchmark_level) {
+
 
 
 
@@ -192,9 +198,30 @@ mse_estim <- function(framework,
   colnames(true_indicators) <- framework$indicator_names
 
   if (!is.null(benchmark)) {
-    add_bench <- true_indicators[, colnames(true_indicators)
-                                 %in% names(benchmark)]
-    colnames(add_bench) <- c(paste0(names(benchmark),"_bench"))
+    if (is.character(benchmark)) {
+      add_bench <- true_indicators[, benchmark]
+      if (!is.null(dim(add_bench))) {
+        colnames(add_bench) <- c(paste0(benchmark,"_bench"))
+      } else {
+        names(add_bench) <- c(paste0(benchmark,"_bench"))
+      }
+    } else {
+      if (is.numeric(benchmark)) {
+        add_bench <- true_indicators[, names(benchmark)]
+        if (!is.null(dim(add_bench))) {
+          colnames(add_bench) <- c(paste0(names(benchmark),"_bench"))
+        } else {
+          names(add_bench) <- c(paste0(names(benchmark),"_bench"))
+        }
+      } else {
+        add_bench <- true_indicators[, names(benchmark)[-1]]
+        if (!is.null(dim(add_bench))) {
+          colnames(add_bench) <- c(paste0(names(benchmark)[-1],"_bench"))
+        } else {
+          names(add_bench) <- c(paste0(names(benchmark)[-1],"_bench"))
+        }
+      }
+    }
     true_indicators <- cbind(true_indicators, add_bench)
   }
 
@@ -240,11 +267,22 @@ mse_estim <- function(framework,
 
   # benchmark
   if (!is.null(benchmark)) {
-    bootstrap_point_estim <- benchmark_ebp(
-      point_estim = bootstrap_point_estim,
-      framework = framework,
-      benchmark = benchmark,
-      benchmark_type = benchmark_type)
+    if (is.null(benchmark_level)) {
+      bootstrap_point_estim <- benchmark_ebp_national(
+        point_estim = bootstrap_point_estim,
+        framework = framework,
+        fixed = fixed,
+        benchmark = benchmark,
+        benchmark_type = benchmark_type)
+    } else {
+      bootstrap_point_estim <- benchmark_ebp_level(
+        point_estim = bootstrap_point_estim,
+        framework = framework,
+        fixed = fixed,
+        benchmark = benchmark,
+        benchmark_type = benchmark_type,
+        benchmark_level = benchmark_level)
+    }
   }
 
   return((bootstrap_point_estim - true_indicators)^2)
@@ -417,7 +455,9 @@ mse_estim_wrapper <- function(i,
                               boot_type,
                               seedvec,
                               benchmark,
-                              benchmark_type) {
+                              benchmark_type,
+                              benchmark_level) {
+
   tmp <- mse_estim(
     framework = framework,
     lambda = lambda,
@@ -432,7 +472,8 @@ mse_estim_wrapper <- function(i,
     L = L,
     boot_type = boot_type,
     benchmark = benchmark,
-    benchmark_type = benchmark_type
+    benchmark_type = benchmark_type,
+    benchmark_level = benchmark_level
   )
 
   if (i %% 10 == 0) {
