@@ -57,6 +57,8 @@
 #'   self_empl + unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent +
 #'   fam_allow + house_allow + cap_inv + tax_adj, eusilcA_smp, "box.cox", 0.7)
 #' @export
+#' @importFrom bestNormalize orderNorm
+#' @importFrom stats approx fitted predict.glm pnorm
 
 
 data_transformation <- function(fixed,
@@ -76,6 +78,8 @@ data_transformation <- function(fixed,
     dual(y = y_vector, lambda = lambda, shift = 0)
   } else if (transformation == "log.shift") {
     log_shift_opt(y = y_vector, lambda = lambda, shift = NULL)
+  } else if (transformation == "ordernorm") {
+    ordernorm(y = y_vector, shift = NULL)
   }
 
   smp_data[paste(fixed[2])] <- transformed$y
@@ -89,10 +93,9 @@ data_transformation <- function(fixed,
 # Function std_data_transformation only returns a data frame with transformed
 # dependent variable.
 
-std_data_transformation <- function(fixed = fixed,
-                                    smp_data,
-                                    transformation,
+std_data_transformation <- function(fixed = fixed, smp_data, transformation,
                                     lambda) {
+
   y_vector <- as.matrix(smp_data[paste(fixed[2])])
 
   std_transformed <- if (transformation == "box.cox") {
@@ -105,6 +108,8 @@ std_data_transformation <- function(fixed = fixed,
     smp_data[paste(fixed[2])]
   } else if (transformation == "no") {
     smp_data[paste(fixed[2])]
+  } else if (transformation == "ordernorm") {
+    smp_data[paste(fixed[2])]
   }
 
   smp_data[paste(fixed[2])] <- std_transformed
@@ -114,7 +119,10 @@ std_data_transformation <- function(fixed = fixed,
 
 # Back transformation function -------------------------------------------------
 
-back_transformation <- function(y, transformation, lambda, shift) {
+back_transformation <- function(y, transformation, lambda, shift,
+                                framework, fixed) {
+
+
   back_transformed <- if (transformation == "no") {
     no_transform_back(y = y)
   } else if (transformation == "log") {
@@ -125,6 +133,8 @@ back_transformation <- function(y, transformation, lambda, shift) {
     dual_back(y = y, lambda = lambda, shift = shift)
   } else if (transformation == "log.shift") {
     log_shift_opt_back(y = y, lambda = lambda)
+  } else if (transformation == "ordernorm") {
+    ordernorm_back(y = y, shift = shift, framework = framework, fixed = fixed)
   }
 
   return(y = back_transformed)
@@ -327,8 +337,6 @@ log_shift_opt <- function(y, lambda = lambda, shift = NULL) {
   return(list(y = yt, shift = NULL))
 } # End log_shift
 
-
-
 # Standardized transformation: Log_shift_opt
 
 geometric.mean <- function(x) { # for RMLE in the parameter estimation
@@ -367,3 +375,64 @@ log_shift_opt_back <- function(y, lambda) {
   y <- log_shift_opt_back(y = y, lambda = lambda)
   return(y = y)
 } #  End log_shift_opt
+
+# The rank-order transformation ------------------------------------------------
+
+# Transformation: ordernorm
+
+ordernorm <- function(y, shift = NULL) {
+  y <- orderNorm(unlist(y))$x.t
+  return(list(y = y, shift = shift))
+}
+
+# Back transformation: ordernorm_back
+
+ordernorm_back <- function(y, shift = NULL, framework, fixed){
+
+  orderNorm_obj <- orderNorm(x = framework$smp_data[,paste(fixed[2])])
+
+  y <- inv_orderNorm_trans(orderNorm_obj = orderNorm_obj, new_points_x_t = y,
+                           warn = TRUE)
+  return(y = y)
+}
+
+inv_orderNorm_trans <- function(orderNorm_obj, new_points_x_t, warn) {
+
+  browser()
+  x_t <- orderNorm_obj$x.t
+  old_points <- orderNorm_obj$x
+  vals <- suppressWarnings(approx(x_t, old_points, xout = new_points_x_t,
+                                  rule = 1))
+
+  # If predictions have been made outside observed domain
+  if (any(is.na(vals$y))) {
+    if (warn) {
+      warning(strwrap(prefix = " ", initial = "",
+      paste0('The ordernom transformation within a Monte Carlo replication
+             requested ', sum(is.na(vals$y)), ' values outside the observed
+             domain. Therefore, the logit approx. on ranks is applied.')))
+    }
+
+    fit <- orderNorm_obj$fit
+    p <- qnorm(fitted(fit, type = "response"))
+    l_idx <- vals$x < min(x_t, na.rm = T)
+    h_idx <- vals$x > max(x_t, na.rm = T)
+
+    # Check
+    if (any(l_idx)) {
+      # Solve algebraically from original transformation
+      logits <- log(pnorm(vals$x[l_idx] + min(p, na.rm = T) - min(x_t, na.rm = T)) /
+                      (1 - pnorm(vals$x[l_idx] + min(p, na.rm = T) - min(x_t, na.rm = T))))
+      vals$y[l_idx] <-
+        unname((logits - fit$coef[1]) / fit$coef[2])
+    }
+    if (any(h_idx)) {
+      logits <- log(pnorm(vals$x[h_idx] + max(p, na.rm = T) - max(x_t, na.rm = T)) /
+                      (1 - pnorm(vals$x[h_idx] + max(p, na.rm = T) - max(x_t, na.rm = T))))
+      vals$y[h_idx] <-
+        unname((logits - fit$coef[1]) / fit$coef[2])
+    }
+  }
+
+  vals$y
+}

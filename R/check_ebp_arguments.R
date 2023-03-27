@@ -68,13 +68,12 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  selected as threshold. See also help(ebp)."))
   }
   if (is.null(transformation) || !(transformation == "box.cox" ||
-    transformation == "log" ||
-    transformation == "dual" ||
-    transformation == "log.shift" ||
-    transformation == "no")) {
+    transformation == "log" || transformation == "dual" ||
+    transformation == "log.shift" || transformation == "no" ||
+    transformation == "ordernorm")) {
     stop(strwrap(prefix = " ", initial = "",
                  "The five options for transformation are ''no'', ''log'',
-                 ''box.cox'', ''dual'' or ''log.shift''."))
+                 ''box.cox'', ''dual'', ''log.shift'', ''ordernorm''."))
   }
   if (any(interval != "default") & (!is.vector(interval, mode = "numeric") ||
     length(interval) != 2 || !(interval[1] < interval[2]))) {
@@ -167,7 +166,8 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  weights in the sample data. See also help(ebp)."))
   }
   if (!is.null(weights) && weights_type == "Guadarrama" &&
-      !(transformation == "log" || transformation == "no")) {
+      !(transformation == "log" || transformation == "no" ||
+        transformation == "ordernorm")) {
     stop(strwrap(prefix = " ", initial = "",
                  "Weighted ebp with weights_type == 'Guadarrama' can only be
                  used without transformation or the log-transformation."))
@@ -178,17 +178,28 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  ''parametric'' bootstrap."))
   }
 
-  if (is.null(weights) && weights_type == "nlme") {
+  if (is.null(weights) &&
+      (weights_type == "nlme" || weights_type == "nlme_lambda")) {
+
     stop(strwrap(prefix = " ", initial = "",
                   paste0("If you want to use the survey weights with weighting
                          type ", weights_type, " please provide the name of a
                          numeric variable indicating weights in the sample data
                          to the argument weights.")))
   }
-  if (!(weights_type == "nlme" || weights_type == "Guadarrama")) {
+  if (!weights_type %in% c("nlme", "Guadarrama", "nlme_lambda")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "The two options for types of survey weights are ''nlme'',
-                 ''Guadarrama''."))
+                 "The three options for types of survey weights are
+                 ''Guadarrama'', ''nlme'', ''nlme_lambda''."))
+  }
+  if (transformation %in% c("no", "log", "ordernorm") &&
+      weights_type == "nlme_lambda") {
+    stop(strwrap(prefix = " ", initial = "",
+                 paste0("If you want to use the survey weights with weighting
+                        type ", weights_type, " please choose a data-driven
+                        transformation ('box.cox', 'dual', 'log.shift') in
+                        agrument transformation or use weights_type = 'nlme'
+                        to use nlme weights for the estimation.")))
   }
   if (is.character(pop_weights) && length(pop_weights) != 1 ||
       !is.character(pop_weights) && !is.null(pop_weights)) {

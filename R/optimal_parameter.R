@@ -3,9 +3,10 @@ optimal_parameter <- function(generic_opt,
                               smp_data,
                               smp_domains,
                               transformation,
-                              interval) {
-  if (transformation != "no" &&
-    transformation != "log") {
+                              interval,
+                              framework) {
+  if (transformation != "no" && transformation != "log" &&
+      transformation != "ordernorm") {
     # no lambda -> no estimation -> no optmimization
 
     if (transformation == "box.cox" && any(interval == "default")) {
@@ -34,6 +35,7 @@ optimal_parameter <- function(generic_opt,
       smp_domains    = smp_domains,
       transformation = transformation,
       interval       = interval,
+      framework      = framework,
       maximum        = FALSE
     )$minimum
   } else {
@@ -55,8 +57,8 @@ generic_opt <- function(lambda,
                         fixed,
                         smp_data,
                         smp_domains,
-                        transformation) {
-
+                        transformation,
+                        framework) {
 
   # Definition of optimization function for finding the optimal lambda
   # Preperation to easily implement further methods here
@@ -66,7 +68,8 @@ generic_opt <- function(lambda,
       smp_data = smp_data,
       smp_domains = smp_domains,
       transformation = transformation,
-      lambda = lambda
+      lambda = lambda,
+      framework = framework
     )
   }
   return(optimization)
@@ -80,7 +83,9 @@ reml <- function(fixed = fixed,
                  smp_data = smp_data,
                  smp_domains = smp_domains,
                  transformation = transformation,
-                 lambda = lambda) {
+                 lambda = lambda,
+                 framework = framework) {
+
   sd_transformed_data <- std_data_transformation(
     fixed = fixed,
     smp_data = smp_data,
@@ -89,19 +94,35 @@ reml <- function(fixed = fixed,
     lambda = lambda
   )
 
-
   model_REML <- NULL
-  try(model_REML <- lme(
-    fixed = fixed,
-    data = sd_transformed_data,
-    random =
-      as.formula(paste0(
-        "~ 1 | as.factor(",
-        smp_domains, ")"
-      )),
-    method = "REML",
-    keep.data = FALSE
-  ), silent = TRUE)
+  try(
+    if(!is.null(framework$weights) && framework$weights_type == "nlme_lambda") {
+
+      sd_transformed_data$weights_scaled <- smp_data[,framework$weights] /
+        mean(smp_data[,framework$weights], na.rm = TRUE)
+
+      model_REML <- lme(
+        fixed = fixed,
+        data = sd_transformed_data,
+        random = as.formula(paste0("~ 1 | as.factor(", smp_domains, ")")),
+        method = "REML",
+        keep.data = FALSE,
+        weights =
+          varComb(varIdent(as.formula(
+                      paste0("~ 1 | as.factor(", framework$smp_domains, ")"),)),
+                  varFixed(as.formula(paste0("~1/", "weights_scaled")))
+        )
+      )
+    } else {
+      model_REML <- lme(
+        fixed = fixed,
+        data = sd_transformed_data,
+        random = as.formula(paste0("~ 1 | as.factor(", smp_domains, ")")),
+        method = "REML",
+        keep.data = FALSE
+      )
+    }, silent = TRUE)
+
   if (is.null(model_REML)) {
     stop(strwrap(prefix = " ", initial = "",
                  "The likelihood does not converge. One reason could be that

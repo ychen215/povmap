@@ -75,7 +75,8 @@ be chosen.}
 types for the dependent variable can be chosen (i) no transformation ("no");
 (ii) log transformation ("log"); (iii) Box-Cox transformation ("box.cox");
 (iv) Dual transformation ("dual"); (v) Log-Shift transformation
-("log.shift"). Defaults to \code{"box.cox"}.}
+("log.shift"); (Vi) rank-order transformation ("ordernorm"). Defaults to
+\code{"box.cox"}.}
 
 \item{interval}{a string equal to 'default' or a numeric vector containing a
 lower and upper limit determining an interval for the estimation of the
@@ -143,7 +144,10 @@ Defaults to \code{NULL}.}
 weights are available (i) EBP under informative sampling from
 \cite{Guadarrama et al. (2018)} ("Guadarrama"); (ii) considering survey
 weights by using the weighting options of \code{\link{nlme}} from
-\cite{Pinheiro and Bates (2023)} ("nlme"). Defaults to \code{"Guadarrama"}.}
+\cite{Pinheiro and Bates (2023)} ("nlme"); (iii) considering survey
+weights by using the weighting options of \code{\link{nlme}} and use these
+weights also to determine the optimal transformation parameter lambda
+("nlme_lambda"). Defaults to \code{"Guadarrama"}.}
 
 \item{benchmark}{The input depends on the type of benchmarking to be
 performed.
