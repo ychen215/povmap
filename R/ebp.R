@@ -46,7 +46,8 @@
 #' types for the dependent variable can be chosen (i) no transformation ("no");
 #' (ii) log transformation ("log"); (iii) Box-Cox transformation ("box.cox");
 #' (iv) Dual transformation ("dual"); (v) Log-Shift transformation
-#' ("log.shift"). Defaults to \code{"box.cox"}.
+#' ("log.shift"); (Vi) rank-order transformation ("ordernorm"). Defaults to
+#' \code{"box.cox"}.
 #' @param interval a string equal to 'default' or a numeric vector containing a
 #' lower and upper limit determining an interval for the estimation of the
 #' optimal parameter. The interval is passed to function
@@ -105,7 +106,10 @@
 #' weights are available (i) EBP under informative sampling from
 #' \cite{Guadarrama et al. (2018)} ("Guadarrama"); (ii) considering survey
 #' weights by using the weighting options of \code{\link{nlme}} from
-#' \cite{Pinheiro and Bates (2023)} ("nlme"). Defaults to \code{"Guadarrama"}.
+#' \cite{Pinheiro and Bates (2023)} ("nlme"); (iii) considering survey
+#' weights by using the weighting options of \code{\link{nlme}} and use these
+#' weights also to determine the optimal transformation parameter lambda
+#' ("nlme_lambda"). Defaults to \code{"Guadarrama"}.
 #' @param benchmark The input depends on the type of benchmarking to be
 #' performed.
 #' (i) Benchmarking with a fixed value:
@@ -253,9 +257,8 @@
 #' @importFrom parallelMap parallelStop parallelLapply parallelLibrary
 #' @importFrom parallel detectCores clusterSetRNGStream
 #' @importFrom stats as.formula dnorm lm median model.matrix na.omit optimize
-#' qnorm quantile residuals rnorm sd
+#' qnorm quantile residuals rnorm sd fitted
 #' @importFrom utils flush.console
-#' @importFrom stats fitted
 
 ebp <- function(fixed,
                 pop_data,

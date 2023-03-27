@@ -30,7 +30,8 @@ Imports:
     readODS,
     formula.tools,
     saeRobust,
-    spdep
+    spdep, 
+    bestNormalize
 Suggests:
     testthat,
     R.rsp,

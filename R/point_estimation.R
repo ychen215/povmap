@@ -29,7 +29,8 @@ point_estim <- function(framework,
     smp_data = framework$smp_data,
     smp_domains = framework$smp_domains,
     transformation = transformation,
-    interval = interval
+    interval = interval,
+    framework = framework
   )
 
   # Data_transformation function returns transformed data and shift parameter.
@@ -48,7 +49,8 @@ point_estim <- function(framework,
   # See Molina and Rao (2010) p. 374
   # lme function is included in the nlme package which is imported.
 
-  if(!is.null(framework$weights) && framework$weights_type == "nlme") {
+  if(!is.null(framework$weights) &&
+     any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
 
     transformation_par$transformed_data$weights_scaled <-
       framework$smp_data[,framework$weights] /
@@ -118,7 +120,8 @@ point_estim <- function(framework,
     lambda = optimal_lambda,
     shift = shift_par,
     model_par = est_par,
-    gen_model = gen_par
+    gen_model = gen_par,
+    fixed = fixed
   )
 
   mixed_model$coefficients_weighted <- if (!is.null(framework$weights)) {
@@ -154,8 +157,9 @@ model_par <- function(framework,
                       mixed_model,
                       fixed,
                       transformation_par) {
-                      
-  if (is.null(framework$weights) || framework$weights_type == "nlme") {
+
+  if (is.null(framework$weights) ||
+      any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
 
     # fixed parametersn
     betas <- nlme::fixed.effects(mixed_model)
@@ -267,7 +271,8 @@ gen_model <- function(fixed,
                       framework,
                       model_par) {
 
-  if (is.null(framework$weights) || framework$weights_type == "nlme") {
+  if (is.null(framework$weights) ||
+      any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
 
     # Parameter for calculating variance of new random effect
     gamma <- model_par$sigmau2est / (model_par$sigmau2est +
@@ -317,7 +322,8 @@ monte_carlo <- function(transformation,
                         lambda,
                         shift,
                         model_par,
-                        gen_model) {
+                        gen_model,
+                        fixed) {
 
   # Preparing matrices for indicators for the Monte-Carlo simulation
 
@@ -353,7 +359,8 @@ monte_carlo <- function(transformation,
       shift = shift,
       gen_model = gen_model,
       errors_gen = errors,
-      framework = framework
+      framework = framework,
+      fixed = fixed,
     )
 
     if(!is.null(framework$pop_weights)){
@@ -435,7 +442,8 @@ prediction_y <- function(transformation,
                          shift,
                          gen_model,
                          errors_gen,
-                         framework) {
+                         framework,
+                         fixed) {
 
   # predicted population income vector
   y_pred <- gen_model$mu + errors_gen$epsilon + errors_gen$vu
@@ -445,7 +453,9 @@ prediction_y <- function(transformation,
     y = y_pred,
     transformation = transformation,
     lambda = lambda,
-    shift = shift
+    shift = shift,
+    framework = framework,
+    fixed = fixed
   )
   y_pred[!is.finite(y_pred)] <- 0
 
