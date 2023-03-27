@@ -106,7 +106,10 @@
 #' weights are available (i) EBP under informative sampling from
 #' \cite{Guadarrama et al. (2018)} ("Guadarrama"); (ii) considering survey
 #' weights by using the weighting options of \code{\link{nlme}} from
-#' \cite{Pinheiro and Bates (2023)} ("nlme"). Defaults to \code{"Guadarrama"}.
+#' \cite{Pinheiro and Bates (2023)} ("nlme"); (iii) considering survey
+#' weights by using the weighting options of \code{\link{nlme}} and use these
+#' weights also to determine the optimal transformation parameter lambda
+#' ("nlme_lambda"). Defaults to \code{"Guadarrama"}.
 #' @param benchmark The input depends on the type of benchmarking to be
 #' performed.
 #' (i) Benchmarking with a fixed value:

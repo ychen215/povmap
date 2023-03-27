@@ -180,7 +180,6 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
 
   if (is.null(weights) &&
       (weights_type == "nlme" || weights_type == "nlme_lambda")) {
-
     stop(strwrap(prefix = " ", initial = "",
                   paste0("If you want to use the survey weights with weighting
                          type ", weights_type, " please provide the name of a
@@ -195,6 +194,7 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   if (transformation %in% c("no", "log", "ordernorm") &&
       weights_type == "nlme_lambda") {
     stop(strwrap(prefix = " ", initial = "",
+
                  paste0("If you want to use the survey weights with weighting
                         type ", weights_type, " please choose a data-driven
                         transformation ('box.cox', 'dual', 'log.shift') in
