@@ -206,7 +206,7 @@ mse_estim <- function(framework,
 
   if (!is.null(benchmark)) {
     if (is.character(benchmark)) {
-      add_bench <- true_indicators[, benchmark]
+      add_bench <- data.frame(true_indicators[, benchmark])
       if (!is.null(dim(add_bench))) {
         colnames(add_bench) <- c(paste0(benchmark,"_bench"))
       } else {
@@ -229,7 +229,7 @@ mse_estim <- function(framework,
         }
       }
     }
-    true_indicators <- cbind(true_indicators, add_bench)
+    true_indicators <- as.matrix(cbind(true_indicators, add_bench))
   }
 
   # The function bootstrap_par returns a sample that can be given into the
@@ -291,7 +291,6 @@ mse_estim <- function(framework,
         benchmark_level = benchmark_level)
     }
   }
-
   return((bootstrap_point_estim - true_indicators)^2)
 } # End mse_estim
 

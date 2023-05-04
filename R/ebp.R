@@ -128,7 +128,7 @@
 #' Benchmarking is available for \code{"Mean"} and \code{"Head_Count"}.
 #' @param benchmark_type a character indicating the type of benchmarking. Types
 #' that can be chosen (i) Raking ("\code{raking}") and (ii) Ratio adjustment
-#' ("\code{ratio}"). Defaults to "\code{raking}"
+#' ("\code{ratio}"). Defaults to "\code{ratio}"
 #' @param benchmark_level a character indicating the level at which the
 #' benchmarking is performed. This name must be represented in the sample and
 #' population data as variable name.
@@ -284,7 +284,7 @@ ebp <- function(fixed,
                 aggregate_to = NULL,
                 weights_type = "Guadarrama",
                 benchmark = NULL,
-                benchmark_type = "raking",
+                benchmark_type = "ratio",
                 benchmark_level = NULL
                 ) {
   ebp_check1(

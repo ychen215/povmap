@@ -381,7 +381,7 @@ log_shift_opt_back <- function(y, lambda) {
 # Transformation: ordernorm
 
 ordernorm <- function(y, shift = NULL) {
-  y <- orderNorm(unlist(y))$x.t
+  y <- orderNorm(unlist(y), warn = FALSE)$x.t
   return(list(y = y, shift = shift))
 }
 
@@ -389,7 +389,8 @@ ordernorm <- function(y, shift = NULL) {
 
 ordernorm_back <- function(y, shift = NULL, framework, fixed){
 
-  orderNorm_obj <- orderNorm(x = framework$smp_data[,paste(fixed[2])])
+  orderNorm_obj <- orderNorm(x = framework$smp_data[,paste(fixed[2])],
+                             warn = FALSE)
 
   y <- inv_orderNorm_trans(orderNorm_obj = orderNorm_obj, new_points_x_t = y,
                            warn = TRUE)
@@ -398,7 +399,6 @@ ordernorm_back <- function(y, shift = NULL, framework, fixed){
 
 inv_orderNorm_trans <- function(orderNorm_obj, new_points_x_t, warn) {
 
-  browser()
   x_t <- orderNorm_obj$x.t
   old_points <- orderNorm_obj$x
   vals <- suppressWarnings(approx(x_t, old_points, xout = new_points_x_t,

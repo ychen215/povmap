@@ -343,8 +343,8 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
       }
     }
   }
-  if (benchmark_type != "raking") {
-    if (benchmark_type != "ratio") {
+  if (benchmark_type != "ratio") {
+    if (benchmark_type != "raking") {
       stop(strwrap(prefix = " ", initial = "",
                    "The benchmark version of ebp is only available with
                    'raking' and 'ratio'."))

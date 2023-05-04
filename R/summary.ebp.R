@@ -52,6 +52,11 @@ summary.ebp <- function(object, ...) {
         round(object$transform_param$shift_par, 3),
       row.names = ""
     )
+  } else if (object$transformation == "ordernorm") {
+    transform_method <- data.frame(Transformation  = object$transformation,
+                                   Shift_parameter = 0,
+                                   row.names       = ""
+    )
   } else if (object$transformation == "no") {
     transform_method <- NULL
   }
