@@ -30,7 +30,6 @@ benchmark_ebp_national <- function (point_estim, framework, fixed, benchmark,
       }
 
     } else {# for mse_estimation.R
-
       estim <- as.list(as.data.frame(point_estim)[benchmark])
       for (i in benchmark) {# MSE - no weights in bootstrap sample
         if (i == "Mean") {
@@ -57,7 +56,12 @@ benchmark_ebp_national <- function (point_estim, framework, fixed, benchmark,
   ))
   names(EBP_bench) <- names(benchmark)
 
-  share <- framework$n_pop / framework$N_pop
+  if (is.null(framework$aggregate_to)) {
+    share <- framework$n_pop / framework$N_pop
+  } else {
+    share <- as.numeric(table(framework$aggregate_to_vec)) / framework$N_pop
+  }
+
 
   for(i in names(benchmark)) {
 
@@ -165,13 +169,20 @@ benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
   EBP_bench <- as.list(as.data.frame(
     matrix(NA, nrow = length(estim[[1]]), ncol = length(benchmark) - 1)
   ))
+
   names(EBP_bench) <- names(benchmark)[-1]
 
   for (j in benchmark[[benchmark_level]]) {
 
     pop_tmp <- framework$pop_data[framework$pop_data[[benchmark_level]] == j,]
-    share <- table(as.character(pop_tmp[[framework$smp_domains]])) / nrow(pop_tmp)
-    estim_levels_num <- pmatch(names(share), unique(framework$pop_domains_vec))
+    if (is.null(framework$aggregate_to)) {
+      share <- table(as.character(pop_tmp[[framework$smp_domains]])) / nrow(pop_tmp)
+      estim_levels_num <- pmatch(names(share), unique(framework$pop_domains_vec))
+    } else {
+      share <- table(as.character(pop_tmp[[framework$aggregate_to]])) / nrow(pop_tmp)
+      estim_levels_num <- pmatch(names(share), unique(framework$aggregate_to_vec))
+    }
+
 
     for(i in names(benchmark)[-1]) {
       if (benchmark_type == "raking") {
@@ -191,7 +202,6 @@ benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
   }
 
   names(EBP_bench) <- c(paste0(names(benchmark)[-1],"_bench"))
-
 
   if (is.list(point_estim)) {
     point_estim_bench <- data.frame(point_estim$ind, EBP_bench)

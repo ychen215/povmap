@@ -398,7 +398,6 @@ ordernorm_back <- function(y, shift = NULL, framework, fixed){
 
 inv_orderNorm_trans <- function(orderNorm_obj, new_points_x_t, warn) {
 
-  browser()
   x_t <- orderNorm_obj$x.t
   old_points <- orderNorm_obj$x
   vals <- suppressWarnings(approx(x_t, old_points, xout = new_points_x_t,
