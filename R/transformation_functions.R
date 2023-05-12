@@ -78,6 +78,8 @@ data_transformation <- function(fixed,
     dual(y = y_vector, lambda = lambda, shift = 0)
   } else if (transformation == "log.shift") {
     log_shift_opt(y = y_vector, lambda = lambda, shift = NULL)
+  } else if (transformation == "arcsin") {
+    arcsin_transform(y = y_vector, shift = NULL)
   } else if (transformation == "ordernorm") {
     ordernorm(y = y_vector, shift = NULL)
   }
@@ -108,6 +110,8 @@ std_data_transformation <- function(fixed = fixed, smp_data, transformation,
     smp_data[paste(fixed[2])]
   } else if (transformation == "no") {
     smp_data[paste(fixed[2])]
+  } else if (transformation == "arcsin") {
+      smp_data[paste(fixed[2])]
   } else if (transformation == "ordernorm") {
     smp_data[paste(fixed[2])]
   }
@@ -133,6 +137,8 @@ back_transformation <- function(y, transformation, lambda, shift,
     dual_back(y = y, lambda = lambda, shift = shift)
   } else if (transformation == "log.shift") {
     log_shift_opt_back(y = y, lambda = lambda)
+  } else if (transformation == "arcsin") {
+    arcsin_transform_back(y = y, shift = shift)
   } else if (transformation == "ordernorm") {
     ordernorm_back(y = y, shift = shift, framework = framework, fixed = fixed)
   }
@@ -435,4 +441,16 @@ inv_orderNorm_trans <- function(orderNorm_obj, new_points_x_t, warn) {
   }
 
   vals$y
+}
+
+# The Arcsin transformation ----------------------------------------------------
+
+arcsin_transform <- function(y, shift = NULL) {
+  y <- asin(sqrt(y))
+  return(list(y = y, shift=shift))
+}
+
+arcsin_transform_back <- function(y, shift = NULL) {
+  y <- sin(y)^2
+  return(y = y)
 }

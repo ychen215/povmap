@@ -70,10 +70,11 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   if (is.null(transformation) || !(transformation == "box.cox" ||
     transformation == "log" || transformation == "dual" ||
     transformation == "log.shift" || transformation == "no" ||
-    transformation == "ordernorm")) {
+    transformation == "ordernorm" || transformation == "arcsin")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "The five options for transformation are ''no'', ''log'',
-                 ''box.cox'', ''dual'', ''log.shift'', ''ordernorm''."))
+                 "The seven options for transformation are ''no'', ''log'',
+                 ''box.cox'', ''dual'', ''log.shift'', ''ordernorm'',
+                 ''arcsin''."))
   }
   if (any(interval != "default") & (!is.vector(interval, mode = "numeric") ||
     length(interval) != 2 || !(interval[1] < interval[2]))) {
