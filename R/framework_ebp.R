@@ -9,7 +9,8 @@
 framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
                           threshold, custom_indicator = NULL, na.rm,
                           aggregate_to = NULL, weights, pop_weights,
-                          weights_type, benchmark_level) {
+                          weights_type, benchmark_level, nlme_maxiter,
+                          nlme_tolerance, rescale_weights) {
 
   # Reduction of number of variables
   mod_vars <- all.vars(fixed)
@@ -25,7 +26,8 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
     pop_data = pop_data, mod_vars = mod_vars, pop_domains = pop_domains,
     smp_data = smp_data, aggregate_to = aggregate_to, fixed = fixed,
     smp_domains = smp_domains, threshold = threshold, weights = weights,
-    pop_weights = pop_weights, benchmark_level = benchmark_level
+    pop_weights = pop_weights, benchmark_level = benchmark_level,
+    weights_type = weights_type, rescale_weights = rescale_weights
   )
 
 
@@ -42,6 +44,9 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
                  function ebp."))
   }
 
+  if (isTRUE(rescale_weights)) {
+    smp_data[,weights] <- scaler(smp_data[,weights])
+  }
 
   # Order of domains
   pop_data <- pop_data[order(pop_data[[pop_domains]]), ]
@@ -203,6 +208,15 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
     threshold = threshold,
     weights = weights,
     pop_weights = pop_weights,
-    weights_type = weights_type
+    weights_type = weights_type,
+    nlme_maxiter = nlme_maxiter,
+    nlme_tolerance = nlme_tolerance
   ))
+}
+
+# A simple scaling function for weights
+scaler <- function(x){
+  average_x <- mean(x, na.rm = TRUE)
+  y <- x / average_x
+  return(y)
 }
