@@ -55,12 +55,15 @@ point_estim <- function(framework,
     transformation_par$transformed_data$weights_scaled <-
       framework$smp_data[,framework$weights] /
         mean(framework$smp_data[,framework$weights], na.rm = TRUE)
+
     mixed_model <- nlme::lme(
       fixed = fixed,
       data = transformation_par$transformed_data,
       random =
         as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
       method = "REML",
+      control = nlme::lmeControl(maxiter = framework$nlme_maxiter,
+                                 tolerance = framework$nlme_tolerance),
       keep.data = keep_data,
       weights =
         varComb(
@@ -77,6 +80,8 @@ point_estim <- function(framework,
       random =
         as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
       method = "REML",
+      control = nlme::lmeControl(maxiter = framework$nlme_maxiter,
+                                 tolerance = framework$nlme_tolerance),
       keep.data = keep_data
     )
   }
