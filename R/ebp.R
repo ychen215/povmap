@@ -298,6 +298,7 @@ ebp <- function(fixed,
                 nlme_tolerance = 1e-6,
                 rescale_weights = TRUE
                 ) {
+
   ebp_check1(
     fixed = fixed, pop_data = pop_data, pop_domains = pop_domains,
     smp_data = smp_data, smp_domains = smp_domains, L = L

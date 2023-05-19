@@ -12,6 +12,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
                           weights_type, benchmark_level, nlme_maxiter,
                           nlme_tolerance, rescale_weights) {
 
+
   # Reduction of number of variables
   mod_vars <- all.vars(fixed)
   mod_vars <- mod_vars[mod_vars != as.character(fixed[2])]
@@ -44,7 +45,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
                  function ebp."))
   }
 
-  if (isTRUE(rescale_weights)) {
+  if (isTRUE(rescale_weights) && !is.null(weights)) {
     smp_data[,weights] <- scaler(smp_data[,weights])
   }
 

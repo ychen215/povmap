@@ -57,6 +57,11 @@ summary.ebp <- function(object, ...) {
                                    Shift_parameter = 0,
                                    row.names       = ""
     )
+  } else if (object$transformation == "arcsin") {
+    transform_method <- data.frame(Transformation  = object$transformation,
+                                   Shift_parameter = 0,
+                                   row.names       = ""
+    )
   } else if (object$transformation == "no") {
     transform_method <- NULL
   }
