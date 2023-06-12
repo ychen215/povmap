@@ -28,6 +28,7 @@
 #' \item{state}{factor; state (nine levels).}
 #' \item{district}{factor; districts (94 levels).}
 #' \item{weight}{numeric; constant weight.}
+#' \item{hhsize}{numeric; persons in household.}
 #' }
 #' @docType data
 "eusilcA_smp"

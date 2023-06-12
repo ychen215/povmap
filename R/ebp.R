@@ -256,7 +256,7 @@
 #'     list(HCR_singleHH = function(y, pop_weights, threshold) {
 #'                               mean(y[pop_weights == 1] < threshold)
 #'                         }
-#'     ), na.rm = TRUE, pop_weights = "eqsize"
+#'     ), na.rm = TRUE, pop_weights = "hhsize"
 #' )
 #' }
 #' @export

@@ -28,6 +28,7 @@
 #' \item{tax_adj}{numeric; repayments/receipts for tax adjustment (net).}
 #' \item{state}{factor; state (nine levels).}
 #' \item{district}{factor; districts (94 levels).}
+#' \item{hhsize}{numeric; persons in household.}
 #' }
 #' @docType data
 "eusilcA_pop"
