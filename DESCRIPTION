@@ -6,9 +6,9 @@ Authors@R: c(person("Ifeanyi", "Edochie", role="aut", email = "iedochie@worldban
   person("David", "Newhouse", role="aut", email = "dnewhouse@worldbank.org"), 
   person("Nora", "Würz", role=c("aut", "cre"), email = "nora.wuerz@uni-bamberg.de"), 
   person("Timo", "Schmid", role="aut", email = "timo.schmid@fu-berlin.de"))
-Description: The R package \pkg{povmap} is designed to facilitate the production 
+Description: The R package povmap is designed to facilitate the production 
   of small area estimates of means and poverty headcount rates. It adds several 
-  new features to the \pkg{emdi} package. These include new options for 
+  new features to the emdi package. These include new options for 
   incorporating survey weights, ex-post benchmarking of estimates, two additional 
   transformations, and several new convenient functions to assist with reporting 
   results.
