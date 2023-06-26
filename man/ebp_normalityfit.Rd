@@ -7,7 +7,17 @@
 ebp_normalityfit(model)
 }
 \arguments{
-\item{model}{an object returned by the ebp function of type "emdi ebp"
+\item{model}{an object returned by the ebp function of type "emdi ebp"}
+}
+\description{
+The function uses the results of the \code{ebp} function to produce output a
+table showing marginal R-square, conditional R-squared as well as the
+skewness and kurtosis of the random and idiosyncratic error terms
+}
+\examples{
+
+data("eusilcA_pop")
+data("eusilcA_smp")
 
 ebp_model <- ebp(
  fixed = eqIncome ~ gender + eqsize + cash + self_empl +
@@ -17,10 +27,6 @@ ebp_model <- ebp(
  na.rm = TRUE
  )
 
- ebp_normalityfit(model = ebp_model)}
-}
-\description{
-The function uses the results of the \code{ebp} function to produce output a
-table showing marginal R-square, conditional R-squared as well as the
-skewness and kurtosis of the random and idiosyncratic error terms
+ ebp_normalityfit(model = ebp_model)
+
 }

@@ -1,7 +1,7 @@
 ################################################################################
-# All packages should be up to date for the generation of the numbers in the 
-# paper. Thus, we update the packages that are imported or suggested by emdi 
-# and we use the last R Version at the 14.03.2018. 
+# All packages should be up to date for the generation of the numbers in the
+# paper. Thus, we update the packages that are imported or suggested by emdi
+# and we use the last R Version at the 14.03.2018.
 ################################################################################
 
 # See if old packages are installed
@@ -10,9 +10,8 @@ old.packages()
 # Update all packages
 update.packages()
 
-# Add a new libPath that only contains dependencies of emdi and their 
+# Add a new libPath that only contains dependencies of emdi and their
 # dependencies
-# packrat::snapshot()
 
 install.packages("emdi", lib = .libPaths()[1])
 install.packages("readODS", lib = .libPaths()[1])

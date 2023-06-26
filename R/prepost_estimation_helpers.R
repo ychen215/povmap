@@ -659,6 +659,11 @@ ebp_compute_cv <- function(model,
 #'
 #' @param model an object returned by the ebp function of type "emdi ebp"
 #'
+#' @examples
+#'
+#' data("eusilcA_pop")
+#' data("eusilcA_smp")
+#'
 #' ebp_model <- ebp(
 #'  fixed = eqIncome ~ gender + eqsize + cash + self_empl +
 #'    unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +

@@ -20,12 +20,12 @@ benchmark_ebp_national <- function (point_estim, framework, fixed, benchmark,
       for (i in benchmark) {# weighted national level
         if (i == "Mean") {
           benchmark_[i] <- weighted.mean(framework$smp_data[[paste0(fixed[2])]],
-                    framework$smp_data[[framework$weights]])
+                    framework$smp_data[[framework$benchmark_weights]])
         } else if (i == "Head_Count") {
           benchmark_[i] <-
             weighted.mean(framework$smp_data[[paste0(fixed[2])]] <
                             framework$threshold,
-                          framework$smp_data[[framework$weights]])
+                          framework$smp_data[[framework$benchmark_weights]])
         }
       }
 
@@ -56,10 +56,24 @@ benchmark_ebp_national <- function (point_estim, framework, fixed, benchmark,
   ))
   names(EBP_bench) <- names(benchmark)
 
-  if (is.null(framework$aggregate_to)) {
-    share <- framework$n_pop / framework$N_pop
-  } else {
-    share <- as.numeric(table(framework$aggregate_to_vec)) / framework$N_pop
+  if (is.null(framework$pop_weights)) {
+    if (is.null(framework$aggregate_to)) {
+      share <- framework$n_pop / framework$N_pop
+    } else {
+      share <- as.numeric(table(framework$aggregate_to_vec)) / framework$N_pop
+    }
+  } else { browser() # weiter
+    if (is.null(framework$aggregate_to)) {
+      share <- tapply(X = framework$pop_data[[framework$pop_weights]],
+                      INDEX = framework$pop_data[[framework$smp_domains]],
+                      FUN = sum) /
+        sum(framework$pop_data[[framework$pop_weights]])
+    } else {
+      share <- tapply(X = framework$pop_data[[framework$pop_weights]],
+                      INDEX = framework$aggregate_to_vec,
+                      FUN = sum) /
+        sum(framework$pop_data[[framework$pop_weights]])
+    }
   }
 
 
@@ -93,7 +107,6 @@ benchmark_ebp_national <- function (point_estim, framework, fixed, benchmark,
 benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
                                  benchmark_type, benchmark_level) {
 
-
   if (!(is.numeric(benchmark) || is.data.frame(benchmark))) {
 
     benchmark_ <- data.frame(unique(framework$pop_data[[benchmark_level]]),
@@ -113,7 +126,8 @@ benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
                   framework$smp_data[benchmark_level] == j, paste0(fixed[2])
                 ],
                 framework$smp_data[
-                  framework$smp_data[benchmark_level] == j, framework$weights
+                  framework$smp_data[benchmark_level] == j,
+                  framework$benchmark_weights
                 ])
           } else if (i == "Head_Count") {
             benchmark_[which(benchmark_[benchmark_level] == j), i] <-
@@ -122,7 +136,8 @@ benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
                   framework$smp_data[benchmark_level] == j, paste0(fixed[2])
                 ] < framework$threshold,
                 framework$smp_data[
-                  framework$smp_data[benchmark_level] == j, framework$weights
+                  framework$smp_data[benchmark_level] == j,
+                  framework$benchmark_weights
                 ])
           }
         }
@@ -135,14 +150,24 @@ benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
         for (j in benchmark_[[benchmark_level]]) {
           if (i == "Mean") {
             benchmark_[which(benchmark_[benchmark_level] == j), i] <-
-              mean(framework$smp_data[
-                framework$smp_data[benchmark_level] == j, paste0(fixed[2])
-              ])
+              weighted.mean(
+                framework$smp_data[
+                  framework$smp_data[benchmark_level] == j, paste0(fixed[2])
+                ],
+                framework$smp_data[
+                  framework$smp_data[benchmark_level] == j,
+                  framework$benchmark_weights
+                ])
           } else if (i == "Head_Count") {
             benchmark_[which(benchmark_[benchmark_level] == j), i] <-
-              mean(framework$smp_data[
-                framework$smp_data[benchmark_level] == j, paste0(fixed[2])
-              ] < framework$threshold)
+              weighted.mean(
+                framework$smp_data[
+                  framework$smp_data[benchmark_level] == j, paste0(fixed[2])
+                ] < framework$threshold,
+                framework$smp_data[
+                  framework$smp_data[benchmark_level] == j,
+                  framework$benchmark_weights
+                ])
           }
         }
       }
@@ -175,12 +200,28 @@ benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
   for (j in benchmark[[benchmark_level]]) {
 
     pop_tmp <- framework$pop_data[framework$pop_data[[benchmark_level]] == j,]
-    if (is.null(framework$aggregate_to)) {
-      share <- table(as.character(pop_tmp[[framework$smp_domains]])) / nrow(pop_tmp)
-      estim_levels_num <- pmatch(names(share), unique(framework$pop_domains_vec))
-    } else {
-      share <- table(as.character(pop_tmp[[framework$aggregate_to]])) / nrow(pop_tmp)
-      estim_levels_num <- pmatch(names(share), unique(framework$aggregate_to_vec))
+    if (is.null(framework$pop_weights)) {
+      if (is.null(framework$aggregate_to)) {
+        share <- table(as.character(pop_tmp[[framework$smp_domains]])) / nrow(pop_tmp)
+        estim_levels_num <- pmatch(names(share), unique(framework$pop_domains_vec))
+      } else {
+        share <- table(as.character(pop_tmp[[framework$aggregate_to]])) / nrow(pop_tmp)
+        estim_levels_num <- pmatch(names(share), unique(framework$aggregate_to_vec))
+      }
+    } else { browser()
+      if (is.null(framework$aggregate_to)) {
+        share <- tapply(X = pop_tmp[[framework$pop_weights]],
+                        INDEX = pop_tmp[[framework$smp_domains]],
+                        FUN = sum) / sum(pop_tmp[[framework$pop_weights]])
+        share <- share[!is.na(share)]
+        estim_levels_num <- pmatch(names(share), unique(framework$pop_domains_vec))
+      } else {
+        share <- tapply(X = pop_tmp[[framework$pop_weights]],
+                        INDEX = pop_tmp[[framework$aggregate_to]],
+                        FUN = sum) / sum(pop_tmp[[framework$pop_weights]])
+        share <- share[!is.na(share)]
+        estim_levels_num <- pmatch(names(share), unique(framework$aggregate_to_vec))
+      }
     }
 
 

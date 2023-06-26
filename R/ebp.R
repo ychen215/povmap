@@ -132,14 +132,19 @@
 #' @param benchmark_level a character indicating the level at which the
 #' benchmarking is performed. This name must be represented in the sample and
 #' population data as variable name.
+#' @param benchmark_weights the name of variable containing benchmark weights.
+#' This is only possible for internal benchmarking and enable users to benchmark
+#' with weights differing from the survey weights (Default for weighting for
+#' internal benchmarking).
 #' @param nlme_maxiter an integer indicating the maximum number of iterations
 #' the \code{lme} function from package \code{\link{nlme}} will run for
 #' parameter convergence.
 #' @param nlme_tolerance an integer indicating the tolerance criterium for the
 #' the \code{lme} function from package \code{\link{nlme}}.
 #' @param rescale_weights a logical indicating if the sample weights are scaled.
-#' If \code{FALSE}, the sample weights do not change. When \code{TRUE}
-#' (default), the sample weights are rescaled such that the average weight is 1.
+#' If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
+#' , the sample weights are rescaled such that the average weight is 1
+#' within each domain.
 #' @return An object of class "ebp", "emdi" that provides estimators for
 #' regional disaggregated indicators and optionally corresponding MSE estimates.
 #' Several generic functions have methods for the returned object. For a full
@@ -294,9 +299,10 @@ ebp <- function(fixed,
                 benchmark = NULL,
                 benchmark_type = "ratio",
                 benchmark_level = NULL,
+                benchmark_weights = NULL,
                 nlme_maxiter = 1000,
                 nlme_tolerance = 1e-6,
-                rescale_weights = TRUE
+                rescale_weights = FALSE
                 ) {
 
   ebp_check1(
@@ -310,7 +316,8 @@ ebp <- function(fixed,
     custom_indicator = custom_indicator, cpus = cpus, seed = seed,
     na.rm = na.rm, weights = weights, pop_weights = pop_weights,
     weights_type = weights_type, benchmark = benchmark,
-    benchmark_type = benchmark_type, benchmark_level = benchmark_level
+    benchmark_type = benchmark_type, benchmark_level = benchmark_level,
+    benchmark_weights = benchmark_weights
   )
 
   # Save function call ---------------------------------------------------------
@@ -329,6 +336,10 @@ ebp <- function(fixed,
     }
   }
 
+  if (is.null(benchmark_weights)) {
+    benchmark_weights <- weights
+  }
+
   # The function framework_ebp can be found in script framework_ebp.R
   framework <- framework_ebp(
     pop_data = pop_data,
@@ -344,6 +355,7 @@ ebp <- function(fixed,
     pop_weights = pop_weights,
     weights_type = weights_type,
     benchmark_level = benchmark_level,
+    benchmark_weights = benchmark_weights,
     nlme_maxiter = nlme_maxiter,
     nlme_tolerance = nlme_tolerance,
     rescale_weights = rescale_weights

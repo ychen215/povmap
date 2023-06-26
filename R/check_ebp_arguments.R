@@ -49,7 +49,7 @@ ebp_check1 <- function(fixed, pop_data, pop_domains, smp_data, smp_domains, L) {
 ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                        custom_indicator, cpus, seed, na.rm, weights,
                        pop_weights, weights_type, benchmark, benchmark_type,
-                       benchmark_level) {
+                       benchmark_level, benchmark_weights) {
 
 
   if (!is.null(threshold) && !(is.numeric(threshold) &&
@@ -251,6 +251,11 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                      supplied for the Mean and the Head_Count ratio. Therefore,
                      the names must match with 'Mean' and 'Head_Count'."))
       }
+      if (!is.null(benchmark_weights)) {
+        stop(strwrap(prefix = " ", initial = "",
+                     "For external benchmarking no benchmark weights can be
+                     used."))
+      }
     }
     if (is.character(benchmark)) {
       if(!length(benchmark) %in% 1:2) {
@@ -342,6 +347,11 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                      the domains of the benchmark_level does not match to the
                      argument benchmark_level."))
       }
+      if (!is.null(benchmark_weights)) {
+        stop(strwrap(prefix = " ", initial = "",
+                     "For external benchmarking no benchmark weights can be
+                     used."))
+      }
     }
   }
   if (benchmark_type != "ratio") {
@@ -363,8 +373,9 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
 # Functions called in notation
 fw_check1 <- function(pop_data, mod_vars, pop_domains, smp_data, fixed,
                       smp_domains, aggregate_to, threshold, weights,
-                      pop_weights, benchmark_level, weights_type,
-                      rescale_weights) {
+                      pop_weights, benchmark_level, benchmark_weights,
+                      weights_type, rescale_weights) {
+
   if (!all(mod_vars %in% colnames(pop_data))) {
     stop(strwrap(prefix = " ", initial = "",
                  paste0("Variable ",
@@ -453,11 +464,19 @@ fw_check1 <- function(pop_data, mod_vars, pop_domains, smp_data, fixed,
     }
   }
 
+  if (is.character(benchmark_weights)) {
+    if (!is.numeric(smp_data[[benchmark_weights]])) {
+      stop(strwrap(prefix = " ", initial = "",
+                   paste0("The variable ", benchmark_weights, " must be the name
+                   of a variable that is a numeric vector.")))
+    }
+  }
+
   if (is.character(pop_weights)) {
     if (!is.numeric(pop_data[[pop_weights]])) {
       stop(strwrap(prefix = " ", initial = "",
-                   paste0("The variable ", pop_weights, " must be the name of a
-                          variable that is a numeric vector.")))
+                   paste0("The variable ", pop_weights, " cannot be used at the
+                   same time as external benchmarking.")))
     }
   }
   if (is.character(pop_weights)) {
@@ -475,13 +494,6 @@ fw_check1 <- function(pop_data, mod_vars, pop_domains, smp_data, fixed,
                  "The population data set cannot have less observations than
                  the sample data set."))
     }
-  }
-
-  if (!isTRUE(rescale_weights) & weights_type != "Guadarrama") {
-    stop(strwrap(prefix = " ", initial = "",
-                 "The weights are used within the lme function from nlme
-                 where a rescaling is performed by default. The option
-                 rescale_weights = FALSE is in this case not possible."))
   }
 
   if (inherits(threshold, "function") &&

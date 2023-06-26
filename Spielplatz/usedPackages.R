@@ -15,8 +15,6 @@ save(pkgTab, file = "Spielplatz/UsedPkgs.RData")
 
 load(file = "Spielplatz/UsedPkgs.RData")
 
-packrat::extlib("xtable")
 library(xtable)
 print(xtable(pkgTab), booktabs = TRUE, include.rownames = FALSE, file = "inst_pkg.tex")
 
-packrat::snapshot()

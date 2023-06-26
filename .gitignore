@@ -22,6 +22,5 @@ ods_output_all_sumObs.ods
 ods_output_all_sumTrafo.ods
 Spielplatz/RepLib
 ~$excel_output.xlsx
-packrat/lib*/
 fh_std_output.xlsx
 
