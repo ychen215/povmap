@@ -180,8 +180,8 @@ population data as variable name.}
 
 \item{benchmark_weights}{the name of variable containing benchmark weights.
 This is only possible for internal benchmarking and enable users to benchmark
-with weights differing from the survey weights (Default for internal
-benchmarking).}
+with weights differing from the survey weights (Default for weighting for
+internal benchmarking).}
 
 \item{nlme_maxiter}{an integer indicating the maximum number of iterations
 the \code{lme} function from package \code{\link{nlme}} will run for
@@ -191,8 +191,8 @@ parameter convergence.}
 the \code{lme} function from package \code{\link{nlme}}.}
 
 \item{rescale_weights}{a logical indicating if the sample weights are scaled.
-If \code{FALSE}, the sample weights do not change. When \code{TRUE}
-(default), the sample weights are rescaled such that the average weight is 1
+If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
+, the sample weights are rescaled such that the average weight is 1
 within each domain.}
 }
 \value{

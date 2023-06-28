@@ -39,7 +39,8 @@ Imports:
     formula.tools,
     saeRobust,
     spdep, 
-    bestNormalize
+    bestNormalize,
+    survey
 Suggests:
     testthat,
     R.rsp,

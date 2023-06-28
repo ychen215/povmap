@@ -22,7 +22,11 @@ test_that("Does monte_carlo function give benchmark results?", {
                         pop_weights = NULL,
                         weights = NULL,
                         weights_type = "Guadarrama",
-                        benchmark_level = NULL)
+                        benchmark_level = NULL,
+                        benchmark_weights = NULL,
+                        rescale_weights = NULL,
+                        nlme_maxiter = NULL,
+                        nlme_tolerance = NULL)
 
 
   # Fixed optimal parameter and shift (benchmark values)
@@ -119,7 +123,11 @@ test_that("Does monte_carlo function give benchmark results? Using weights
                              weights = "weight",
                              pop_weights = "pop_weights",
                              weights_type = "Guadarrama",
-                             benchmark_level = NULL)
+                             benchmark_level = NULL,
+                             benchmark_weights = "weight",
+                             rescale_weights = NULL,
+                             nlme_maxiter = NULL,
+                             nlme_tolerance = NULL)
 
   # Conduct transformation using the optimal parameter
   transformation_par <- data_transformation(fixed          = income ~ educ1,

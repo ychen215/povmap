@@ -27,7 +27,11 @@ test_that("Does function optimal_parameter() return the benchmark lambda?", {
                         pop_weights = NULL,
                         weights = NULL,
                         weights_type = "Guadarrama",
-                        benchmark_level = NULL)
+                        benchmark_level = NULL,
+                        benchmark_weights = NULL,
+                        rescale_weights = FALSE,
+                        nlme_maxiter = NULL,
+                        nlme_tolerance = NULL)
 
 
 
