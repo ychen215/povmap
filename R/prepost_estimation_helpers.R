@@ -50,7 +50,7 @@
 #'                      smp_domains = "district", weights = "weight",
 #'                      var = TRUE, B = 2)
 #'
-#' # model estimation
+#' # descritives
 #' ebp_reportdescriptives(model = ebp_model, direct = direct_est,
 #'                        smp_data = eusilcA_smp, weights = "weight",
 #'                        pop_weights = "hhsize", CV_level = "state",
@@ -78,6 +78,9 @@ ebp_reportdescriptives <- function(model,
   }
 
   hh_varlist <- colnames(model$framework$smp_data)
+  if ("benchmark_weights" %in% hh_varlist) {
+    hh_varlist <- hh_varlist[- which(hh_varlist == "benchmark_weights")]
+  }
   pop_varlist <- hh_varlist[!(hh_varlist %in% c(paste(model$fixed[2]),
                                                 weights))]
 

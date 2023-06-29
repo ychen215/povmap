@@ -336,8 +336,9 @@ ebp <- function(fixed,
     }
   }
 
-  if (is.null(benchmark_weights)) {
-    benchmark_weights <- weights
+  if (is.null(benchmark_weights) & !is.null(weights)) {
+    benchmark_weights <- "benchmark_weights"
+    smp_data$benchmark_weights <- smp_data[[weights]]
   }
 
   # The function framework_ebp can be found in script framework_ebp.R

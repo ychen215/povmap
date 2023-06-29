@@ -76,7 +76,7 @@ direct_est <- direct(y = "eqIncome", smp_data = eusilcA_smp,
                      smp_domains = "district", weights = "weight",
                      var = TRUE, B = 2)
 
-# model estimation
+# descritives
 ebp_reportdescriptives(model = ebp_model, direct = direct_est,
                        smp_data = eusilcA_smp, weights = "weight",
                        pop_weights = "hhsize", CV_level = "state",

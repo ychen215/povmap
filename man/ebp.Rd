@@ -31,7 +31,7 @@ ebp(
   benchmark_level = NULL,
   benchmark_weights = NULL,
   nlme_maxiter = 1000,
-  nlme_tolerance = 1e-06,
+  nlme_tolerance = 0.000001,
   rescale_weights = FALSE
 )
 }
