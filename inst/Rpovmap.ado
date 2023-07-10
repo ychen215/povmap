@@ -5,9 +5,7 @@
 
 cap program drop Rpovmap
 program define Rpovmap 
-syntax namelist, smp_data(string) pop_data(string) smp_domains(string) pop_domains(string)   [weights(string) weights_type(string) pop_weights(string) threshold(string)  l(int 50) b(int 100) mse(string) transformation(string) ///
-interval(string) na_rm(string) cpus(int 1) seed(int 123) savexls(string) saveobject(string) interval(string) benchmark(string) aggregate_to(string) weights_type(string) benchmark_level(string) benchmark_type(string) benchmark_weights(string) /// 
-rescale_weights(string) nlme_maxiter(int 1000) nlme_tolerance(real 1e-06) boot_type(string)] 
+syntax namelist, smp_data(string) pop_data(string) smp_domains(string) pop_domains(string) [weights(string) WEIGHTS_Type(string) pop_weights(string) threshold(string)  l(int 50) b(int 100) mse(string) transformation(string) interval(string) na_rm(string) cpus(int 1) seed(int 123) savexls(string) saveobject(string) interval(string) benchmark(string) aggregate_to(string) weights_type(string) benchmark_level(string) benchmark_type(string) benchmark_weights(string) rescale_weights(string) nlme_maxiter(int 1000) nlme_tolerance(real 1e-06) boot_type(string)] 
 
 * checks 
 if real("`threshold'")==. & "`threshold'"~="" {
@@ -30,7 +28,11 @@ if "`benchmark'"~="" & "`bnechmark_level'"=="" {
 if "`weights'"=="" {
 local weights="NULL"
 }
-if "`weights_type'"== "" {
+else {
+	local weights `""`weights'""'
+}
+
+if "`weights_type'"=="" {
 	local weights_type = "Guadarrama"
 }
 if "`pop_weights'"=="" {
@@ -43,6 +45,7 @@ else {
 if "`threshold'"=="" {
 local threshold="NULL"
 }
+
 
 if "`MSE'"=="" {
 local MSE="FALSE"
@@ -66,7 +69,7 @@ if "`scale_bootvar'"=="" {
 local scale_bootvar "NULL"
 }
 if "`benchmark'"=="" {
-	local benchmark `"c("Head_Count")"'
+	local benchmark "NULL"
 }
 else {
 	local benchmark `"c("`benchmark'")"'
@@ -78,7 +81,7 @@ else {
 	local benchmark_level `""`benchmark_level'""'
 }
 if "`benchmark_type'"=="" {
-	local benchmark_type  `""raking""'  
+	local benchmark_type  `""ratio""'  
 }
 else {
 	local benchmark_type `""`benchmark_type'""'
@@ -152,15 +155,15 @@ file write Rscript "model <- as.formula(as.character(model[1,1]));" _n
 file write Rscript "ebp_results <- ebp(fixed = model,pop_data = pop," _n 
 file write Rscript `"pop_domains = "`pop_domains'", smp_data = smp, smp_domains = "`smp_domains'","' _n 
 file write Rscript `"threshold = `threshold', L = `l', B = `b', MSE = `MSE', transformation = "`transformation'", interval = "`interval'","' _n 
-file write Rscript `"boot_type="`boot_type'",na.rm = `na_rm', cpus = `cpus', seed=`seed', weights = "`weights'", weights_type = "`weights_type'", pop_weights = `pop_weights', aggregate_to = `aggregate_to',benchmark = `benchmark',"' _n          
-file write Rscript `" benchmark_type = `benchmark_type', benchmark_level = `benchmark_level', benchmark_weights = `benchmark_weights', rescale_weights = `rescale_weight', nlme_maxiter = `nlme_maxiter',nlme_tolerance = `nlme_tolerance')"' _n          
+file write Rscript `"boot_type="`boot_type'",na.rm = `na_rm', cpus = `cpus', seed=`seed', weights = `weights', weights_type = "`weights_type'", pop_weights = `pop_weights', aggregate_to = `aggregate_to',benchmark = `benchmark',"' _n          
+file write Rscript `" benchmark_type = `benchmark_type', benchmark_level = `benchmark_level', benchmark_weights = `benchmark_weights', rescale_weights = `rescale_weights', nlme_maxiter = `nlme_maxiter',nlme_tolerance = `nlme_tolerance')"' _n          
 file write Rscript `"write.excel(ebp_results, file = "`savexls'", indicator = "all", MSE = `MSE', CV = `MSE', split = FALSE)"' _n          
 if "`saveobject'"~="" {
 file write Rscript `"save(ebp_results,file="`saveobject'")"' _n  	
 }
 file close Rscript 
 
-rscript using povmap.R
+rscript using povmap.R, require(povmap haven)
 
 end 
  
