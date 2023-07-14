@@ -15,7 +15,8 @@ direct_check <- function(y,
                          X_calib = NULL,
                          totals = NULL,
                          na.rm,
-                         custom_indicator) {
+                         custom_indicator,
+                         HT=FALSE) {
   if (is.null(y) || !(inherits(y, "character") && length(y) == 1)) {
     stop(strwrap(prefix = " ", initial = "",
                  "y must be a vector of length 1 and of class character
@@ -23,6 +24,14 @@ direct_check <- function(y,
                  indicators. The variable needs to be contained in smp_data.
                  See also help(direct)."))
   }
+
+  if (HT==TRUE & min(weights)<=1 {
+    stop(strwrap(prefix = " ", initial = "",
+                 "Weights must all be greater than one when using the Horvitz-Thompson approximation"
+    )
+  }
+  
+  
   if (!(y %in% colnames(smp_data))) {
     stop(strwrap(prefix = " ", initial = "",
                  paste0(y, " is not contained in smp_data. Please provide valid

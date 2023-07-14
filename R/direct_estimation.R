@@ -82,7 +82,7 @@
 #' # Example 2: With function as threshold
 #' emdi_direct <- direct(y = "eqIncome", smp_data = eusilcA_smp,
 #' smp_domains = "district", weights = "weight", threshold =
-#' function(y, weights){0.6 * laeken::weightedMedian(y, weights)}, na.rm = TRUE)
+#' function(y, weights){0.6 * wtd.quantile(y, weights, 0.5)}, na.rm = TRUE)
 #'
 #' # Example 3: With custom indicators
 #' emdi_direct <- direct(y = "eqIncome", smp_data = eusilcA_smp,
@@ -120,7 +120,7 @@ direct <- function(y,
                weights = weights, design = design, threshold = threshold,
                var = var, boot_type = boot_type,
                B = B, seed = seed, X_calib = X_calib, totals = totals,
-               na.rm = na.rm, custom_indicator = custom_indicator)
+               na.rm = na.rm, custom_indicator = custom_indicator,HT=HT)
 
   # Save call ------------------------------------------------------------------
   call <- match.call()
