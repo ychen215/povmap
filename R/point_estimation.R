@@ -186,6 +186,8 @@ model_par <- function(framework,
 } else if (any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
     rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
     weight_sum <- rep(0, framework$N_dom_smp)
+    mean_dep <- rep(0, framework$N_dom_smp)
+    mean_indep <- matrix(0, nrow = framework$N_dom_smp, ncol = length(betas))
     delta2 <- rep(0, framework$N_dom_smp)
     gamma_weight <- rep(0, framework$N_dom_smp)
     for (d in 1:framework$N_dom_smp) {
@@ -195,13 +197,40 @@ model_par <- function(framework,
       weight_sum[d] <- sum(weight_smp)
       delta2[d] <- sum(weight_smp^2) / (weight_sum[d]^2)
       gamma_weight[d] <- sigmau2est / (sigmau2est + sigmae2est * delta2[d])
+      
+      # Domain means of of the dependent variable
+      dep_smp <- transformation_par$transformed_data[[
+        as.character(mixed_model$terms[[2]])]][
+          framework$smp_domains_vec == domain
+        ]
+      # weighted mean of the dependent variable
+      mean_dep[d] <- sum(weight_smp * dep_smp) / weight_sum[d]
+    
+      # weighted means of the auxiliary information
+      indep_smp <- if(length(weight_smp) == 1) {
+        matrix(model.matrix(fixed, framework$smp_data)[framework$smp_domains_vec == domain,]
+               , ncol = length(betas), nrow = 1)
+      } else {
+        model.matrix(fixed, framework$smp_data)[framework$smp_domains_vec == domain,]
+      }
+      for (k in 1:length(betas)) {
+        mean_indep[d, k] <- sum(weight_smp * indep_smp[, k]) / weight_sum[d]
+      }
     }
+      # random effect for in-sample domains (dist_obs_dom)
+      rand_eff[framework$dist_obs_dom] <- gamma_weight * (mean_dep -
+                                                            mean_indep %*% betas)
+      
+      
+      
+    
     return(list(
       betas = betas,
       sigmae2est = sigmae2est,
       sigmau2est = sigmau2est,
       rand_eff = rand_eff,
-      gammaw = gamma_weight
+      gammaw = gamma_weight,
+      delta2 = delta2
     ))
 }
   else {
