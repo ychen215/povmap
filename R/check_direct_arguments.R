@@ -25,7 +25,7 @@ direct_check <- function(y,
                  See also help(direct)."))
   }
 
-  if (HT==TRUE & min(weights)<=1 {
+  if (HT==TRUE & min(weights)<=1) {
     stop(strwrap(prefix = " ", initial = "",
                  "Weights must all be greater than one when using the Horvitz-Thompson approximation"
     )
