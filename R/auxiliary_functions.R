@@ -22,6 +22,10 @@ throw_class_error <- function(object, subclass) {
 
 #' Quick function to estimate weighted quantiles
 #'
+#' @param x a numeric vector
+#' @param weights a numeric vector for the weights
+#' @param probs probabilities
+#'
 #'
 #' @export
 #'

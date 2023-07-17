@@ -6,6 +6,13 @@
 \usage{
 wtd.quantile(x, weights = NULL, probs = NULL)
 }
+\arguments{
+\item{x}{a numeric vector}
+
+\item{weights}{a numeric vector for the weights}
+
+\item{probs}{probabilities}
+}
 \description{
 Quick function to estimate weighted quantiles
 }
