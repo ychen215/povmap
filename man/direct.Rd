@@ -117,7 +117,7 @@ na.rm = TRUE)
 # Example 2: With function as threshold
 emdi_direct <- direct(y = "eqIncome", smp_data = eusilcA_smp,
 smp_domains = "district", weights = "weight", threshold =
-function(y, weights){0.6 * laeken::weightedMedian(y, weights)}, na.rm = TRUE)
+function(y, weights){0.6 * wtd.quantile(y, weights, 0.5)}, na.rm = TRUE)
 
 # Example 3: With custom indicators
 emdi_direct <- direct(y = "eqIncome", smp_data = eusilcA_smp,
