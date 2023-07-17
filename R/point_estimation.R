@@ -163,33 +163,78 @@ model_par <- function(framework,
                       fixed,
                       transformation_par) {
 
-  if (is.null(framework$weights) ||
-      any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
-
-    # fixed parametersn
-    betas <- nlme::fixed.effects(mixed_model)
-    # Estimated error variance
-    sigmae2est <- mixed_model$sigma^2
-    # VarCorr(fit2) is the estimated random error variance
-    sigmau2est <- as.numeric(nlme::VarCorr(mixed_model)[1, 1])
-    # Random effect: vector with zeros for all domains, filled with
-    rand_eff <- rep(0, length(unique(framework$pop_domains_vec)))
+  # fixed parametersn
+  betas <- nlme::fixed.effects(mixed_model)
+  # Estimated error variance
+  sigmae2est <- mixed_model$sigma^2
+  # VarCorr(fit2) is the estimated random error variance
+  sigmau2est <- as.numeric(nlme::VarCorr(mixed_model)[1, 1])
+  # Random effect: vector with zeros for all domains, filled with 0
+  rand_eff <- rep(0, length(unique(framework$pop_domains_vec)))
+  
+  
+  if (is.null(framework$weights)) {
     # random effect for in-sample domains (dist_obs_dom)
     rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
-
+    
     return(list(
       betas = betas,
       sigmae2est = sigmae2est,
       sigmau2est = sigmau2est,
       rand_eff = rand_eff
     ))
-  } else {
-    # fixed parameters
-    betas <- nlme::fixed.effects(mixed_model)
-    # Estimated error variance
-    sigmae2est <- mixed_model$sigma^2
-    # VarCorr(fit2) is the estimated random error variance
-    sigmau2est <- as.numeric(nlme::VarCorr(mixed_model)[1, 1])
+} else if (any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
+    rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
+    weight_sum <- rep(0, framework$N_dom_smp)
+    #mean_dep <- rep(0, framework$N_dom_smp)
+    #mean_indep <- matrix(0, nrow = framework$N_dom_smp, ncol = length(betas))
+    delta2 <- rep(0, framework$N_dom_smp)
+    gamma_weight <- rep(0, framework$N_dom_smp)
+    for (d in 1:framework$N_dom_smp) {
+      domain <- names(table(framework$smp_domains_vec)[d])
+      weight_smp <- transformation_par$transformed_data[[
+      as.character(framework$weights)]][framework$smp_domains_vec == domain]
+      weight_sum[d] <- sum(weight_smp)
+      delta2[d] <- sum(weight_smp^2) / (weight_sum[d]^2)
+      gamma_weight[d] <- sigmau2est / (sigmau2est + sigmae2est * delta2[d])
+      
+      # Domain means of of the dependent variable
+      #dep_smp <- transformation_par$transformed_data[[
+      #  as.character(mixed_model$terms[[2]])]][
+      #    framework$smp_domains_vec == domain
+      #  ]
+      # weighted mean of the dependent variable
+      #mean_dep[d] <- sum(weight_smp * dep_smp) / weight_sum[d]
+    
+      # weighted means of the auxiliary information
+      #indep_smp <- if(length(weight_smp) == 1) {
+      #  matrix(model.matrix(fixed, framework$smp_data)[framework$smp_domains_vec == domain,]
+      #         , ncol = length(betas), nrow = 1)
+      #} else {
+      #  model.matrix(fixed, framework$smp_data)[framework$smp_domains_vec == domain,]
+      #}
+      #for (k in 1:length(betas)) {
+      #  mean_indep[d, k] <- sum(weight_smp * indep_smp[, k]) / weight_sum[d]
+      #}
+    }
+      # random effect for in-sample domains (dist_obs_dom)
+      #rand_eff[framework$dist_obs_dom] <- gamma_weight * (mean_dep -
+       #                                                     mean_indep %*% betas)
+      
+      
+      
+    
+    return(list(
+      betas = betas,
+      sigmae2est = sigmae2est,
+      sigmau2est = sigmau2est,
+      rand_eff = rand_eff,
+      gammaw = gamma_weight,
+      delta2 = delta2
+    ))
+}
+  else {
+
 
     # Calculations needed for pseudo EB
 
@@ -250,8 +295,7 @@ model_par <- function(framework,
 
 
     betas <- solve(den) %*% num
-    # Random effect: vector with zeros for all domains, filled with
-    rand_eff <- rep(0, length(unique(framework$pop_domains_vec)))
+
     # random effect for in-sample domains (dist_obs_dom)
     rand_eff[framework$dist_obs_dom] <- gamma_weight * (mean_dep -
       mean_indep %*% betas)
@@ -276,8 +320,7 @@ gen_model <- function(fixed,
                       framework,
                       model_par) {
 
-  if (is.null(framework$weights) ||
-      any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
+  if (is.null(framework$weights)) {
 
     # Parameter for calculating variance of new random effect
     gamma <- model_par$sigmau2est / (model_par$sigmau2est +
@@ -295,7 +338,22 @@ gen_model <- function(fixed,
     mu <- mu_fixed + rand_eff_pop
 
     return(list(sigmav2est = sigmav2est, mu = mu, mu_fixed = mu_fixed))
-  } else {
+  } 
+  else if (any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
+    #gamma_old <- model_par$sigmau2est / (model_par$sigmau2est +
+                                     #model_par$sigmae2est / framework$n_smp)
+    gamma <- model_par$gammaw
+    sigmav2est <- model_par$sigmau2est * (1 - gamma)
+    rand_eff_pop <- rep(model_par$rand_eff, framework$n_pop)
+    framework$pop_data[[paste0(fixed[2])]] <- seq_len(nrow(framework$pop_data))
+    X_pop <- model.matrix(fixed, framework$pop_data)
+    
+    # Constant part of predicted y
+    mu_fixed <- X_pop %*% model_par$betas
+    mu <- mu_fixed + rand_eff_pop
+    return(list(sigmav2est = sigmav2est, mu = mu, mu_fixed = mu_fixed))
+  }
+  else {
     # Parameter for calculating variance of new random effect
     gamma <- model_par$gammaw
     # Variance of new random effect
@@ -412,7 +470,6 @@ monte_carlo <- function(transformation,
 # See Molina and Rao (2010) p. 375 (20)
 
 errors_gen <- function(framework, model_par, gen_model) {
-  # individual error term in generating model epsilon
   epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
 
   # empty vector for new random effect in generating model
@@ -435,6 +492,7 @@ errors_gen <- function(framework, model_par, gen_model) {
     ),
     framework$n_pop[framework$dist_obs_dom]
   )
+  # individual error term in generating model epsilon
 
   return(list(epsilon = epsilon, vu = vu))
 } # End errors_gen

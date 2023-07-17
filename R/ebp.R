@@ -437,6 +437,7 @@ ebp <- function(fixed,
         "shift_par"
       )],
       model = point_estim$model,
+      model_par = point_estim$model_par, 
       framework = framework[c(
         "N_dom_unobs",
         "N_dom_smp",
@@ -462,6 +463,7 @@ ebp <- function(fixed,
         "shift_par"
       )],
       model = point_estim$model,
+      model_par = point_estim$model_par, 
       framework = framework[c(
         "N_dom_unobs",
         "N_dom_smp",

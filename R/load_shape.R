@@ -9,7 +9,7 @@
 #' @export
 
 load_shapeaustria <- function() {
-  load(system.file("shapes/shape_austria_dis.rda", package = "emdi"),
+  load(system.file("shapes/shape_austria_dis.rda", package = "povmap"),
     envir = .GlobalEnv
   )
 }
