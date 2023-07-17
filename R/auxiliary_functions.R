@@ -20,6 +20,9 @@ throw_class_error <- function(object, subclass) {
 }
 
 
+#' Quick function to estimate weighted quantiles
+#'
+#'
 #' @export
 #'
 
