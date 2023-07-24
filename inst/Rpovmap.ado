@@ -9,15 +9,15 @@ syntax namelist, smp_data(string) pop_data(string) smp_domains(string) pop_domai
 
 * checks 
 if real("`threshold'")==. & "`threshold'"~="" {
-	dis "Threshold must be a real number or empty string"
+	noi dis "Threshold must be a real number or empty string"
 	exit 
 }
 if "`saveobject'"=="" & "savexls"=="" {
-	dis "Please specify either the savexls or saveobject option, and preferably both, to save your results"
+	noi dis "Please specify either the savexls or saveobject option, and preferably both, to save your results"
 	exit 
 }
-if "`benchmark'"~="" & "`bnechmark_level'"=="" {
-	dis "Please specify bencmhark_level option if benchmarking estimates"
+if "`benchmark'"~="" & "`benchmark_level'"=="" {
+	noi dis "Please specify bencmhark_level option if benchmarking estimates"
 	exit 
 }
 
