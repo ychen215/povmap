@@ -157,7 +157,7 @@ file write Rscript `"pop_domains = "`pop_domains'", smp_data = smp, smp_domains 
 file write Rscript `"threshold = `threshold', L = `l', B = `b', MSE = `mse', transformation = "`transformation'", interval = "`interval'","' _n 
 file write Rscript `"boot_type="`boot_type'",na.rm = `na_rm', cpus = `cpus', seed=`seed', weights = `weights', weights_type = "`weights_type'", pop_weights = `pop_weights', aggregate_to = `aggregate_to',benchmark = `benchmark',"' _n          
 file write Rscript `" benchmark_type = `benchmark_type', benchmark_level = `benchmark_level', benchmark_weights = `benchmark_weights', rescale_weights = `rescale_weights', nlme_maxiter = `nlme_maxiter',nlme_tolerance = `nlme_tolerance')"' _n          
-file write Rscript `"write.excel(ebp_results, file = "`savexls'", indicator = "all", MSE = `MSE', CV = `MSE', split = FALSE)"' _n          
+file write Rscript `"write.excel(ebp_results, file = "`savexls'", indicator = "all", MSE = `mse', CV = `mse', split = FALSE)"' _n          
 if "`saveobject'"~="" {
 file write Rscript `"save(ebp_results,file="`saveobject'")"' _n  	
 }
