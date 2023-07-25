@@ -33,7 +33,7 @@
 {synopt:{opt threshold(string)}} a number defining the poverty line threshold for calculating headcount rates. Defaults to 60% of the median of the dependent variable {p_end}
 {synopt:{opt transformation(string)}} specifies the transformation to be applied to the dependent variable. Options are "no","log","box.cox","dual","log.shift",and "ordernorm". Defaults to "box.cox"  {p_end} 
 {synopt:{opt interval(string)}} a string equal to 'default' or a numeric vector containing a lower and upper limit determining an interval for the estimation of the optimal parameter. Defaults to "c(-1,2)"  {p_end} 
-{synopt:{opt MSE(string)}} if TRUE, MSE estimates using a parametric bootstrap approach are calculated. Defaults to FALSE {p_end} 
+{synopt:{opt mse(string)}} if TRUE, MSE estimates using a parametric bootstrap approach are calculated. Defaults to FALSE {p_end} 
 {synopt:{opt b(integer)}} a number determining the number of bootstrap populations in the parametric bootstrap approach used in the MSE estimation. The number must be greater than 1. Defaults to 50. For practical applications, values larger than 200 are recommended {p_end} 
 {synopt:{opt seed(integer)}} an integer to set the seed for the random number generator. For the usage of random number generation. Defaults to 123 {p_end} 
 {synopt:{opt boot_type(string)}} character string to choose between different MSE estimation procedures. The two options are "parametric" and a semi-parametric "wild" bootstrap. Defaults to "parametric". {p_end} 
