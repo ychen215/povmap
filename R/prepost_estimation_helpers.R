@@ -1,69 +1,61 @@
 #' Create Descriptive Statistics for Small Area Estimation Report
 #'
-#' This function estimates the coefficient of variation at level specified, basic
-#' statistics such number of units, regions and target areas as well as the
-#' threshold on which SAE is applied and the outcome indicator of interest
+#' This function estimates the coefficient of variation at level specified,
+#' basic statistics such number of units, regions and target areas as well as
+#' the threshold on which SAE is applied and the outcome indicator of interest
 #' (i.e. poverty line and poverty rate). These indicators are all expressed for
 #' the census and survey
 #'
-#' @param model the EBP object produced from by EMDI from unit model estimation
-#' the object is of class "ebp emdi"
-#' @param smp_weights the sample weight variable in the household dataset
-#' (i.e. the training data), include column of 1s (DO NOT LEAVE UNSPECIFIED)
-#' @param pop_weights the population weight variable in the census (or synthetic)
-#' census dataset (i.e. the test data), include column of 1s (NO NOT LEAVE
-#' UNSPECIFIED)
-#' @param CV_level the variable level at which Coefficient of Variation should be
-#' computed
-#' @param welfare the welfare aggregate variable or outcome variable of interest
-#' @param smp_data the survey/training data
+#' @param model an object returned by the ebp function of type "emdi ebp",
+#' representing point and MSE estimates
+#' @param direct an object of type "direct","emdi", representing point
+#' and MSE estimates.
 #' @param pop_data the population/census/training data
-#' @param threshold the poverty line or threshold specified
 #' @param pop_domains the target area variable within `pop_data`
-#' @param smp_domains the target area variable within `smp_data`
-#' @param indicator the poverty headcount indicator in the ebp object. 
-#' Defaults to "Head_count"   
-
-#' @examples 
-#' data("eusilcA_pop2")
-#' data("eusilcA_smp2")
-#' #### set of variables used in model estimation
-#'variables <- c("gender", "eqsize", "cash", "self_empl",
-#'               "unempl_ben", "age_ben", "surv_ben",
-#'               "sick_ben", "dis_ben", "rent", "fam_allow",
-#'               "house_allow", "cap_inv", "tax_adj")
+#' @param smp_data sample data
+#' @param threshold  a number defining a threshold. The  argument defaults to
+#' \code{NULL}. In this case, the threshold is set to 60\% of the median of the
+#' variable that is selected as dependent variable similary to the
+#' at-risk-of-poverty rate used in the EU (see also
+#' \cite{Social Protection  Committee 2001}). However, any desired threshold can
+#' be chosen.
+#' @param weights a character string containing the name of a variable that
+#' indicates weights in the sample data. If a character string is provided a
+#' weighted version of the ebp will be used. The variable has to be numeric.
+#' Defaults to NULL.
+#' @param pop_weights a character string containing the name of a variable that
+#' indicates population weights in the populatation data. If a character string
+#' is provided weighted indicators are estimated using population weights.
+#' The variable has to be numeric. Defaults to NULL.
+#' @param CV_level the variable level at which Coefficient of Variation should
+#' be computed
 #'
-#'### estimate a unit model
-#'emdi_model <- ebp(fixed = as.formula(paste("eqIncome ~ ", paste(variables, 
-#'                                                                          collapse= "+"))),
-#'                            pop_data = eusilcA_pop2, 
-#'                            pop_domains = "district", 
-#'                            smp_data = eusilcA_smp2, 
-#'                            smp_domains = "district",
-#'                            na.rm = TRUE,
-#'                            weights = "weight",
-#'                            pop_weights = "popweights",
-#'                            MSE = TRUE,
-#'                            threshold = 11000,
-#'                            B = 2,
-#'                            L = 2)
+#' @examples
+#' data("eusilcA_pop")
+#' data("eusilcA_smp")
 #'
-#'### model estimation
-#'ebp_reportdescriptives(model = emdi_model,
-#'                       smp_weights = "weight",
-#'                       pop_weights = "popweights",
-#'                       CV_level = "state",
-#'                       welfare = "eqIncome",
-#'                       smp_data = eusilcA_smp2, 
-#'                       pop_data = eusilcA_pop2, 
-#'                       threshold = 11000, 
-#'                       pop_domains = "district", 
-#'                       smp_domains = "district")
-#'                       
+#' # estimate a unit model
+#' ebp_model <- ebp(fixed = eqIncome ~ gender + eqsize + cash +
+#'                     self_empl + unempl_ben + age_ben + surv_ben + sick_ben +
+#'                     dis_ben + rent + fam_allow + house_allow + cap_inv +
+#'                     tax_adj,
+#'                  pop_data = eusilcA_pop, pop_domains = "district",
+#'                  smp_data = eusilcA_smp, smp_domains = "district",
+#'                  na.rm = TRUE, weights = "weight",
+#'                  pop_weights = "hhsize", MSE = TRUE, weights_type = "nlme",
+#'                  B = 2, L = 2)
 #'
+#' # estimate direct
+#' direct_est <- direct(y = "eqIncome", smp_data = eusilcA_smp,
+#'                      smp_domains = "district", weights = "weight",
+#'                      var = TRUE, B = 2)
 #'
+#' # descritives
+#' ebp_reportdescriptives(model = ebp_model, direct = direct_est,
+#'                        smp_data = eusilcA_smp, weights = "weight",
+#'                        pop_weights = "hhsize", CV_level = "state",
+#'                        pop_data = eusilcA_pop, pop_domains = "district")
 #' @export
-#'
 
 ebp_reportdescriptives <- function(model,
                                    smp_weights,
@@ -404,68 +396,60 @@ ebp_reportcoef_table <- function(model,
 #' head count rates themselves in descending order. The function allows the user
 #' to select the first/last "x" number of areas by name as well.
 #'
-#' @param model the EBP object produced from by EMDI from unit model estimation
-#' the object is of class "ebp emdi"
+#' @param model an object returned by the ebp function of type "emdi ebp".
 #' @param pop_data the population/census/training data
-#' @param pop_domains the target area variable within `pop_data`
-#' @param pop_domnames the population domain names
-#' @param pop_weights the population weight variable in the census
-#' @param byrank_indicator if argument is "count", the function ranks the product
-#' of Head_Count (from object of class `ebp`) and `pop_weights`, otherwise it
-#' the function simply ranks Head_Count output within `ebp` object
+#' @param pop_domains a character string containing the name of a variable that
+#' indicates domains in the population data. The variable can be numeric or a
+#' factor but needs to be of the same class as the variable named in
+#' \code{smp_domains}.
+#' @param pop_weights a character string containing the name of a variable that
+#' indicates population weights in the populatation data. If a character string
+#' is provided weighted indicators are estimated using population weights.
+#' The variable has to be numeric. Defaults to \code{NULL}. Please note that
+#' \code{pop_weights} should only be used if in the \code{pop_data} not
+#' individual data is provided and thus the number of persons per unit (e.g.
+#' household, grid) must be indicated.
+#' @param byrank_indicator if argument is "count", the function ranks the
+#' product of Head_Count (from object of class `ebp`) and `pop_weights`,
+#' otherwise it the function simply ranks Head_Count output within `ebp` object
 #' @param number_to_list an integer, the first `number_to_list` number of
 #' target areas to produce from `byrank_indicator` ordering.
-#' @param head a logical, if `TRUE` the top `number_to_list` results will be returned
-#' and if `FALSE` the bottom `number_to_list` will be returned
-#' @param indicator the indicator to rank by. Defaults to "Head_Count" 
-#' 
-#' @examples 
-#' data("eusilcA_pop2")
-#' data("eusilcA_smp2")
-#' 
-#' #### set of variables used in model estimation
-#'variables <- c("gender", "eqsize", "cash", "self_empl",
-#'               "unempl_ben", "age_ben", "surv_ben",
-#'               "sick_ben", "dis_ben", "rent", "fam_allow",
-#'               "house_allow", "cap_inv", "tax_adj")
+#' @param head a logical, if `TRUE` the top `number_to_list` results will be
+#' returned and if `FALSE` the bottom `number_to_list` will be returned
 #'
-#'### estimate a unit model
-#'emdi_model <- ebp(fixed = as.formula(paste("eqIncome ~ ", paste(variables, 
-#'                                                                          collapse= "+"))),
-#'                            pop_data = eusilcA_pop2, 
-#'                            pop_domains = "district", 
-#'                            smp_data = eusilcA_smp2, 
-#'                            smp_domains = "district",
-#'                            na.rm = TRUE,
-#'                            weights = "weight",
-#'                            pop_weights = "popweights",
-#'                            MSE = TRUE,
-#'                            threshold = 11000,
-#'                            B = 2,
-#'                            L = 2)
-#'                            
-#'### full data of highest population below threshold by rank (descending order)
-#'ebp_report_byrank(model = emdi_model,
-#'                  pop_data = eusilcA_pop2,
-#'                  pop_domnames = "district",
-#'                  pop_weights = "popweights")
+#' @examples
+#' data("eusilcA_pop")
+#' data("eusilcA_smp")
 #'
-#'### full data of highest rate below threshold by rank (descending order)                   
-#'ebp_report_byrank(model = emdi_model,
-#'                  pop_data = eusilcA_pop2, 
-#'                  pop_domains = "district",
-#'                  pop_weights = "popweights",
-#'                  byrank_indicator = "rate")
+#' ebp_model <- ebp(
+#'  fixed = eqIncome ~ gender + eqsize + cash + self_empl +
+#'     unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
+#'     house_allow + cap_inv + tax_adj,
+#'  pop_data = eusilcA_pop, pop_domains = "district",
+#'  smp_data = eusilcA_smp, smp_domains = "district",
+#'  weights = "weight", weights_type = "nlme", na.rm = TRUE,
+#'  pop_weights = "hhsize")
 #'
-#'### bottom 10 poverty count below threshold by rank (in ascending order)                  
-#'ebp_report_byrank(model = emdi_model,
-#'                  pop_data = eusilcA_pop2,
-#'                  pop_domains = "district",
-#'                  pop_weights = "popweights",
-#'                  number_to_list = 10,
-#'                  head = FALSE)
-#'                    
-#'                                    
+#' # full data of highest population below threshold by rank (descending order)
+#' ebp_report_byrank(model = ebp_model,
+#'                   pop_data = eusilcA_pop,
+#'                   pop_domains = "district",
+#'                   pop_weights = "hhsize")
+#'
+#' # full data of highest rate below threshold by rank (descending order)
+#' ebp_report_byrank(model = ebp_model,
+#'                   pop_data = eusilcA_pop,
+#'                   pop_domains = "district",
+#'                   pop_weights = "hhsize",
+#'                   byrank_indicator = "rate")
+#'
+#'# bottom 10 poverty count below threshold by rank (in ascending order)
+#' ebp_report_byrank(model = ebp_model,
+#'                   pop_data = eusilcA_pop,
+#'                   pop_domains = "district",
+#'                   pop_weights = "hhsize",
+#'                   number_to_list = 10,
+#'                   head = FALSE)
 #'
 #' @export
 
