@@ -13,7 +13,7 @@
 #' @param pop_weights the population weight variable in the census (or synthetic)
 #' census dataset (i.e. the test data), include column of 1s (NO NOT LEAVE
 #' UNSPECIFIED)
-#' @param repvar the variable level at which Coefficient of Variation should be
+#' @param CV_level the variable level at which Coefficient of Variation should be
 #' computed
 #' @param welfare the welfare aggregate variable or outcome variable of interest
 #' @param smp_data the survey/training data
@@ -52,7 +52,7 @@
 #'ebp_reportdescriptives(model = emdi_model,
 #'                       smp_weights = "weight",
 #'                       pop_weights = "popweights",
-#'                       repvar = "state",
+#'                       CV_level = "state",
 #'                       welfare = "eqIncome",
 #'                       smp_data = eusilcA_smp2, 
 #'                       pop_data = eusilcA_pop2, 
@@ -68,7 +68,7 @@
 ebp_reportdescriptives <- function(model,
                                    smp_weights,
                                    pop_weights,
-                                   repvar,
+                                   CV_level,
                                    welfare,
                                    smp_data,
                                    pop_data,
@@ -88,13 +88,13 @@ ebp_reportdescriptives <- function(model,
   
   ### subset the survey and census data
   smp_df <- smp_data[complete.cases(smp_data[,hh_varlist]), 
-                     c(hh_varlist, repvar, smp_weights,smp_domains)]
+                     c(hh_varlist, CV_level, smp_weights,smp_domains)]
   pop_df <- pop_data[complete.cases(pop_data[,pop_varlist]),
-                     c(pop_varlist, repvar, pop_weights,pop_domains)]
+                     c(pop_varlist, CV_level, pop_weights,pop_domains)]
   
   
   
-  ### ---------- Estimate CV for census and survey at repvar level --------- ###
+  ### ---------- Estimate CV for census and survey at CV_level level --------- ###
   
   ##### create a dataset with headcounts, MSEs for survey and census information
   smp_doms <- unique(smp_df[[smp_domains]])
@@ -138,19 +138,19 @@ ebp_reportdescriptives <- function(model,
   
   df <- merge(x = df, y = add_df, by = "Domain")
   
-  ### add the repvar variable to df as well
+  ### add the CV_level variable to df as well
   pop_df$Domain <- pop_df[[pop_domains]]
   
-  add_df <- unique(pop_df[, c("Domain", repvar)])
+  add_df <- unique(pop_df[, c("Domain", CV_level)])
   
   df <- merge(x = df,
-              y = add_df[, c("Domain", repvar)],
+              y = add_df[, c("Domain", CV_level)],
               by = "Domain")
   
   df$CV <- df[,paste("MSE_",indicator,sep="")] / df[,indicator]
   
-  ### compute the cvs for census and survey at repvar level
-  naivevar_dt <- povmap:::direct(y = welfare,
+  ### compute the cvs for census and survey at CV_level level
+  naivevar_dt <- direct(y = welfare,
                                  smp_data = model$framework$smp_data,
                                  smp_domains = smp_domains,
                                  weights = smp_weights,
@@ -166,19 +166,19 @@ ebp_reportdescriptives <- function(model,
   naivevar_dt$ind[,paste("Direct_",indicator,"_CV",sep="")] <- sqrt(naivevar_dt$MSE[,indicator]) / naivevar_dt$ind[,indicator]
   
   
-  add_df <- data.frame(unique(df[[repvar]]))
+  add_df <- data.frame(unique(df[[CV_level]]))
   
-  colnames(add_df) <- repvar
+  colnames(add_df) <- CV_level
   
   add_df$sum_smp_weights <- tapply(X = df$smp_weights,
-                                   INDEX = df[[repvar]],
+                                   INDEX = df[[CV_level]],
                                    FUN = sum,
                                    na.rm = TRUE)
   add_df$sum_pop_weights <- tapply(X = df$pop_weights,
-                                   INDEX = df[[repvar]],
+                                   INDEX = df[[CV_level]],
                                    FUN = sum,
                                    na.rm = TRUE)
-  df <- merge(x = df, y = add_df, by = repvar)
+  df <- merge(x = df, y = add_df, by = CV_level)
   
   povrate <- weighted.mean(x = df[,indicator],
                            w = df$smp_weights,
@@ -194,13 +194,13 @@ ebp_reportdescriptives <- function(model,
   
   
   cv_df_region <-
-    data.frame(indicator = paste0("CV for Area: ", unique(df[[repvar]])),
+    data.frame(indicator = paste0("CV for Area: ", unique(df[[CV_level]])),
                ebp_cv = tapply(X = df$CV * df$pop_weights,
-                               INDEX = df[[repvar]],
+                               INDEX = df[[CV_level]],
                                FUN = sum,
                                na.rm = TRUE),
                direct_cv = tapply(X = df[,paste("Direct_",indicator,"_CV",sep="")] * df$smp_weights,
-                                  INDEX = df[[repvar]],
+                                  INDEX = df[[CV_level]],
                                   FUN = sum,
                                   na.rm = TRUE))
   
@@ -210,10 +210,10 @@ ebp_reportdescriptives <- function(model,
     data.frame(indicator = c("Number of Units", "Number of Regions",
                              "Number of Target Areas"),
                census = c(round(sum(pop_df[[pop_weights]], na.rm = TRUE)),
-                          length(unique(pop_df[[repvar]][is.na(pop_df[[repvar]]) == FALSE])),
+                          length(unique(pop_df[[CV_level]][is.na(pop_df[[CV_level]]) == FALSE])),
                           length(unique(pop_df[[pop_domains]][is.na(pop_df[[smp_domains]]) == FALSE]))),
                survey = c(model$framework$N_smp,
-                          length(unique(smp_df[[repvar]][is.na(smp_df[[repvar]]) == FALSE])),
+                          length(unique(smp_df[[CV_level]][is.na(smp_df[[CV_level]]) == FALSE])),
                           length(unique(smp_df[[smp_domains]][is.na(smp_df[[smp_domains]]) == FALSE]))))
   
   basic_df$census <- as.integer(basic_df$census)
@@ -473,7 +473,7 @@ ebp_reportcoef_table <- function(model,
 ebp_report_byrank <- function(model,
                               pop_data,
                               pop_domains,
-                              pop_weights,
+                              pop_weights = NULL,
                               byrank_indicator = "count",
                               number_to_list = NULL,
                               head = TRUE,
