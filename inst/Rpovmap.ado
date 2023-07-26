@@ -90,7 +90,7 @@ if "`aggregate_to'"=="" {
 	local aggregate_to "NULL"
 }
 else {
-	local aggregate_to `"`aggregate_to'"'
+	local aggregate_to `""`aggregate_to'""'
 }
 
 
