@@ -6,7 +6,7 @@
 #' (i.e. poverty line and poverty rate). These indicators are all expressed for
 #' the census and survey
 #'
-#' @param ebp_object the EBP object produced from by EMDI from unit model estimation
+#' @param model the EBP object produced from by EMDI from unit model estimation
 #' the object is of class "ebp emdi"
 #' @param smp_weights the sample weight variable in the household dataset
 #' (i.e. the training data), include column of 1s (DO NOT LEAVE UNSPECIFIED)
@@ -34,7 +34,7 @@
 #'               "house_allow", "cap_inv", "tax_adj")
 #'
 #'### estimate a unit model
-#'emdi_model <- emdiplus::ebp(fixed = as.formula(paste("eqIncome ~ ", paste(variables, 
+#'emdi_model <- ebp(fixed = as.formula(paste("eqIncome ~ ", paste(variables, 
 #'                                                                          collapse= "+"))),
 #'                            pop_data = eusilcA_pop2, 
 #'                            pop_domains = "district", 
@@ -49,7 +49,7 @@
 #'                            L = 2)
 #'
 #'### model estimation
-#'ebp_reportdescriptives(ebp_object = emdi_model,
+#'ebp_reportdescriptives(model = emdi_model,
 #'                       smp_weights = "weight",
 #'                       pop_weights = "popweights",
 #'                       repvar = "state",
@@ -82,8 +82,8 @@ ebp_reportdescriptives <- function(model,
   
   
   ###get list of variables
-  #hh_varlist <- colnames(ebp_object$framework$smp_data)
-  hh_varlist <- as.character(as.list(attributes(ebp_object$model$terms)$variables)[-1])
+  #hh_varlist <- colnames(model$framework$smp_data)
+  hh_varlist <- as.character(as.list(attributes(model$model$terms)$variables)[-1])
   pop_varlist <- hh_varlist[!(hh_varlist %in% c(welfare, smp_weights))]
   
   ### subset the survey and census data
@@ -100,13 +100,13 @@ ebp_reportdescriptives <- function(model,
   smp_doms <- unique(smp_df[[smp_domains]])
   
   ##### quickly rename column names in the MSE section of the EBP object
-  colnames(ebp_object$MSE)[!grepl("Domain",
-                                  colnames(ebp_object$MSE))] <-
-    paste0("MSE_", colnames(ebp_object$MSE)[!grepl("Domain",
-                                                   colnames(ebp_object$MSE))])
+  colnames(model$MSE)[!grepl("Domain",
+                                  colnames(model$MSE))] <-
+    paste0("MSE_", colnames(model$MSE)[!grepl("Domain",
+                                                   colnames(model$MSE))])
   
-  df <- merge(x = ebp_object$MSE[, c("Domain", paste("MSE_",indicator,sep=""))],
-              y = ebp_object$ind[, c("Domain", indicator)],
+  df <- merge(x = model$MSE[, c("Domain", paste("MSE_",indicator,sep=""))],
+              y = model$ind[, c("Domain", indicator)],
               by = "Domain")
   
   
@@ -151,7 +151,7 @@ ebp_reportdescriptives <- function(model,
   
   ### compute the cvs for census and survey at repvar level
   naivevar_dt <- povmap:::direct(y = welfare,
-                                 smp_data = ebp_object$framework$smp_data,
+                                 smp_data = model$framework$smp_data,
                                  smp_domains = smp_domains,
                                  weights = smp_weights,
                                  threshold = threshold,
@@ -212,7 +212,7 @@ ebp_reportdescriptives <- function(model,
                census = c(round(sum(pop_df[[pop_weights]], na.rm = TRUE)),
                           length(unique(pop_df[[repvar]][is.na(pop_df[[repvar]]) == FALSE])),
                           length(unique(pop_df[[pop_domains]][is.na(pop_df[[smp_domains]]) == FALSE]))),
-               survey = c(ebp_object$framework$N_smp,
+               survey = c(model$framework$N_smp,
                           length(unique(smp_df[[repvar]][is.na(smp_df[[repvar]]) == FALSE])),
                           length(unique(smp_df[[smp_domains]][is.na(smp_df[[smp_domains]]) == FALSE]))))
   
@@ -404,7 +404,7 @@ ebp_reportcoef_table <- function(model,
 #' head count rates themselves in descending order. The function allows the user
 #' to select the first/last "x" number of areas by name as well.
 #'
-#' @param ebp_object the EBP object produced from by EMDI from unit model estimation
+#' @param model the EBP object produced from by EMDI from unit model estimation
 #' the object is of class "ebp emdi"
 #' @param pop_data the population/census/training data
 #' @param pop_domains the target area variable within `pop_data`
@@ -430,7 +430,7 @@ ebp_reportcoef_table <- function(model,
 #'               "house_allow", "cap_inv", "tax_adj")
 #'
 #'### estimate a unit model
-#'emdi_model <- emdiplus::ebp(fixed = as.formula(paste("eqIncome ~ ", paste(variables, 
+#'emdi_model <- ebp(fixed = as.formula(paste("eqIncome ~ ", paste(variables, 
 #'                                                                          collapse= "+"))),
 #'                            pop_data = eusilcA_pop2, 
 #'                            pop_domains = "district", 
@@ -445,20 +445,20 @@ ebp_reportcoef_table <- function(model,
 #'                            L = 2)
 #'                            
 #'### full data of highest population below threshold by rank (descending order)
-#'ebp_report_byrank(ebp_object = emdi_model,
+#'ebp_report_byrank(model = emdi_model,
 #'                  pop_data = eusilcA_pop2,
 #'                  pop_domnames = "district",
 #'                  pop_weights = "popweights")
 #'
 #'### full data of highest rate below threshold by rank (descending order)                   
-#'ebp_report_byrank(ebp_object = emdi_model,
+#'ebp_report_byrank(model = emdi_model,
 #'                  pop_data = eusilcA_pop2, 
 #'                  pop_domains = "district",
 #'                  pop_weights = "popweights",
 #'                  byrank_indicator = "rate")
 #'
 #'### bottom 10 poverty count below threshold by rank (in ascending order)                  
-#'ebp_report_byrank(ebp_object = emdi_model,
+#'ebp_report_byrank(model = emdi_model,
 #'                  pop_data = eusilcA_pop2,
 #'                  pop_domains = "district",
 #'                  pop_weights = "popweights",
@@ -498,7 +498,7 @@ ebp_report_byrank <- function(model,
   
   
   result_dt <- merge(x = result_dt,
-                     y = ebp_object$ind[, c("Domain", indicator)],
+                     y = model$ind[, c("Domain", indicator)],
                      by.x = "domain",
                      by.y = "Domain")
   
