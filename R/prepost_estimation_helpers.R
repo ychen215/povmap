@@ -65,7 +65,7 @@
 #' @export
 #'
 
-ebp_reportdescriptives <- function(ebp_object,
+ebp_reportdescriptives <- function(model,
                                    smp_weights,
                                    pop_weights,
                                    repvar,
@@ -470,7 +470,7 @@ ebp_reportcoef_table <- function(model,
 #' @export
 
 
-ebp_report_byrank <- function(ebp_object,
+ebp_report_byrank <- function(model,
                               pop_data,
                               pop_domains,
                               pop_weights,
