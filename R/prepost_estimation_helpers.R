@@ -874,7 +874,7 @@ ebp_normalityfit <- function(model){
   rownames(df) <- NULL
   
   return(df)
-
+}
 
 create_calibmatrix <- function(x){
   
