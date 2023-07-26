@@ -807,6 +807,75 @@ ebp_compute_cv <- function(ebp_object,
 }
 
 
+#' Output Model fit and normality assumptions
+#'
+#' The function uses the results of the \code{ebp} function to produce output a
+#' table showing marginal R-square, conditional R-squared as well as the
+#' skewness and kurtosis of the random and idiosyncratic error terms
+#'
+#' @param model an object returned by the ebp function of type "emdi ebp"
+#'
+#' @examples
+#'
+#' data("eusilcA_pop")
+#' data("eusilcA_smp")
+#'
+#' ebp_model <- ebp(
+#'  fixed = eqIncome ~ gender + eqsize + cash + self_empl +
+#'    unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
+#'    house_allow + cap_inv + tax_adj, pop_data = eusilcA_pop,
+#'  pop_domains = "district", smp_data = eusilcA_smp, smp_domains = "district",
+#'  na.rm = TRUE
+#'  )
+#'
+#'  ebp_normalityfit(model = ebp_model)
+#'
+#' @export
+#' @importFrom MuMIn r.squaredGLMM
+#' @importFrom moments skewness kurtosis
+
+
+ebp_normalityfit <- function(model){
+  
+  ## compute r-squared
+  rsq_model <- model$model
+  
+  rsq_model$call$fixed <- model$fixed
+  
+  rsq <- suppressWarnings(MuMIn::r.squaredGLMM(rsq_model))
+  
+  if (is.matrix(rsq)) {
+    r_marginal <- rsq[1, 1]
+    r_conditional <- rsq[1, 2]
+  } else {
+    r_marginal <- rsq[1]
+    r_conditional <- rsq[2]
+  }
+  
+  # include the skewness and kurtosis
+  skewness_res <- moments::skewness(residuals(model$model,
+                                              level = 0,
+                                              type = "pearson"))
+  kurtosis_res <- moments::kurtosis(residuals(model$model,
+                                              level = 0,
+                                              type = "pearson"))
+  
+  skewness_ran <- moments::skewness(ranef(model$model)$'(Intercept)')
+  kurtosis_ran <- moments::kurtosis(ranef(model$model)$'(Intercept)')
+  
+  
+  df <- data.frame(indicator = c("rsq_marginal", "rsq_conditional",
+                                 "epsilon_skewness", "epsilon_kurtosis",
+                                 "random_skewness", "random_kurtosis"),
+                   value = c(r_marginal, r_conditional,
+                             skewness_res, kurtosis_res,
+                             skewness_ran, kurtosis_ran))
+  
+  rownames(df) <- NULL
+  
+  return(df)
+
+
 create_calibmatrix <- function(x){
   
   
