@@ -78,7 +78,7 @@ direct_variance <- function(direct_estimator,
 
     domain_var <- function(df) {
       tosum <- df[,2] * (df[,2]-1) * df[,1]^2
-      return(nrow(df)^-2 * sum(tosum))
+      return(sum(df[,2])^-2 * sum(tosum))
     }
 
     if (indicator_name == "Mean") {
