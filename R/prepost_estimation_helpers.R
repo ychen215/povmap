@@ -58,126 +58,93 @@
 #' @export
 
 ebp_reportdescriptives <- function(model,
-                                   smp_weights,
-                                   pop_weights,
-                                   CV_level,
-                                   welfare,
-                                   smp_data,
+                                   direct,
                                    pop_data,
-                                   threshold,
                                    pop_domains,
-                                   smp_domains,
-                                   design = NULL,
-                                   HT = TRUE,
-                                   indicator = "Head_Count") {
+                                   smp_data,
+                                   threshold = NULL,
+                                   weights = NULL,
+                                   pop_weights = NULL,
+                                   CV_level,
+                                   indicator = "Head_Count"
+){
   
+  if (is.null(threshold)) {
+    threshold <- 0.6 * median(model$framework$smp_data[[paste(model$fixed[2])]])
+    message(strwrap(prefix = " ", initial = "",
+                    paste0("The threshold for the HCR and the PG is
+                          automatically set to 60% of the median of the
+                          dependent variable and equals ", threshold)))
+  }
   
+  hh_varlist <- colnames(model$framework$smp_data)
+  if ("benchmark_weights" %in% hh_varlist) {
+    hh_varlist <- hh_varlist[- which(hh_varlist == "benchmark_weights")]
+  }
+  pop_varlist <- hh_varlist[!(hh_varlist %in% c(paste(model$fixed[2]),
+                                                weights))]
   
-  ###get list of variables
-  #hh_varlist <- colnames(model$framework$smp_data)
-  hh_varlist <- as.character(as.list(attributes(model$model$terms)$variables)[-1])
-  pop_varlist <- hh_varlist[!(hh_varlist %in% c(welfare, smp_weights))]
-  
-  ### subset the survey and census data
-  smp_df <- smp_data[complete.cases(smp_data[,hh_varlist]), 
-                     c(hh_varlist, CV_level, smp_weights,smp_domains)]
+  # subset the survey and census data
+  smp_df <- smp_data[complete.cases(smp_data[,hh_varlist]),
+                     c(hh_varlist, CV_level, weights)]
   pop_df <- pop_data[complete.cases(pop_data[,pop_varlist]),
-                     c(pop_varlist, CV_level, pop_weights,pop_domains)]
+                     c(pop_varlist, CV_level, pop_weights)]
   
-  
-  
-  ### ---------- Estimate CV for census and survey at CV_level level --------- ###
-  
-  ##### create a dataset with headcounts, MSEs for survey and census information
-  smp_doms <- unique(smp_df[[smp_domains]])
-  
-  ##### quickly rename column names in the MSE section of the EBP object
-  colnames(model$MSE)[!grepl("Domain",
-                                  colnames(model$MSE))] <-
-    paste0("MSE_", colnames(model$MSE)[!grepl("Domain",
-                                                   colnames(model$MSE))])
+  # Estimate CVs
+  colnames(model$MSE)[-1] <- paste0("MSE_", colnames(model$MSE)[-1])
   
   df <- merge(x = model$MSE[, c("Domain", paste("MSE_",indicator,sep=""))],
               y = model$ind[, c("Domain", indicator)],
               by = "Domain")
   
-  
-  
-  df$in_sample <- ifelse(df$Domain %in% smp_doms, 1, 0)
-  
-  # df$Domain <- as.integer(as.character(df$Domain))
   add_df <-
-    data.frame(Domain = names(tapply(smp_df[[smp_weights]],
-                                     smp_df[[smp_domains]],
-                                     sum,
-                                     na.rm = TRUE)),
-               smp_weights = tapply(smp_df[[smp_weights]],
-                                    smp_df[[smp_domains]],
-                                    sum,
-                                    na.rm = TRUE))
+    data.frame(Domain = names(tapply(smp_df[[weights]],
+                                     smp_df[[model$framework$smp_domains]],
+                                     sum, na.rm = TRUE)),
+               weights = tapply(smp_df[[weights]],
+                                smp_df[[model$framework$smp_domains]],
+                                sum, na.rm = TRUE))
   
   df <- merge(x = df, y = add_df, by = "Domain")
   
   add_df <-
     data.frame(Domain = names(tapply(pop_df[[pop_weights]],
                                      pop_df[[pop_domains]],
-                                     sum,
-                                     na.rm = TRUE)),
+                                     sum, na.rm = TRUE)),
                pop_weights = tapply(pop_df[[pop_weights]],
                                     pop_df[[pop_domains]],
-                                    sum,
-                                    na.rm = TRUE))
+                                    sum, na.rm = TRUE))
   
   df <- merge(x = df, y = add_df, by = "Domain")
   
-  ### add the CV_level variable to df as well
+  # add the CV_level variable to df as well
   pop_df$Domain <- pop_df[[pop_domains]]
-  
   add_df <- unique(pop_df[, c("Domain", CV_level)])
   
-  df <- merge(x = df,
-              y = add_df[, c("Domain", CV_level)],
-              by = "Domain")
-  
+  df <- merge(x = df, y = add_df[, c("Domain", CV_level)], by = "Domain")
   df$CV <- df[,paste("MSE_",indicator,sep="")] / df[,indicator]
   
-  ### compute the cvs for census and survey at CV_level level
-  naivevar_dt <- direct(y = welfare,
-                                 smp_data = model$framework$smp_data,
-                                 smp_domains = smp_domains,
-                                 weights = smp_weights,
-                                 threshold = threshold,
-                                 design = design, 
-                                 var = TRUE,
-                                 HT = HT)
-  
+  # compute the cvs for census and survey at CV_level level
+  naivevar_dt <- direct
   naivevar_dt$MSE$Head_Count_bench <- naivevar_dt$MSE$Head_Count
   naivevar_dt$ind$Head_Count_bench <- naivevar_dt$ind$Head_Count
-  
   
   naivevar_dt$ind[,paste("Direct_",indicator,"_CV",sep="")] <- sqrt(naivevar_dt$MSE[,indicator]) / naivevar_dt$ind[,indicator]
   
   
   add_df <- data.frame(unique(df[[CV_level]]))
-  
   colnames(add_df) <- CV_level
   
-  add_df$sum_smp_weights <- tapply(X = df$smp_weights,
-                                   INDEX = df[[CV_level]],
-                                   FUN = sum,
-                                   na.rm = TRUE)
-  add_df$sum_pop_weights <- tapply(X = df$pop_weights,
-                                   INDEX = df[[CV_level]],
-                                   FUN = sum,
-                                   na.rm = TRUE)
+  add_df$sum_weights <- tapply(X = df$weights, INDEX = df[[CV_level]],
+                               FUN = sum, na.rm = TRUE)
+  add_df$sum_pop_weights <- tapply(X = df$pop_weights, INDEX = df[[CV_level]],
+                                   FUN = sum, na.rm = TRUE)
   df <- merge(x = df, y = add_df, by = CV_level)
   
-  povrate <- weighted.mean(x = df[,indicator],
-                           w = df$smp_weights,
-                           na.rm = TRUE)
+  povrate <- weighted.mean(x = df[,indicator], w = df$weights, na.rm = TRUE)
+
   
-  
-  df$smp_weights <- df$smp_weights / df$sum_smp_weights
+  df$weights <- df$weights / df$sum_weights
   df$pop_weights <- df$pop_weights / df$sum_pop_weights
   
   df <- merge(x = df,
@@ -185,53 +152,58 @@ ebp_reportdescriptives <- function(model,
               by = "Domain")
   
   
-  cv_df_region <-
+  cv_df <-
     data.frame(indicator = paste0("CV for Area: ", unique(df[[CV_level]])),
                ebp_cv = tapply(X = df$CV * df$pop_weights,
-                               INDEX = df[[CV_level]],
-                               FUN = sum,
-                               na.rm = TRUE),
-               direct_cv = tapply(X = df[,paste("Direct_",indicator,"_CV",sep="")] * df$smp_weights,
-                                  INDEX = df[[CV_level]],
-                                  FUN = sum,
+                               INDEX = df[[CV_level]], FUN = sum, na.rm = TRUE),
+               direct_cv = tapply(X = df[,paste("Direct_",indicator,"_CV",sep="")] * df$weights,
+                                  INDEX = df[[CV_level]], FUN = sum,
                                   na.rm = TRUE))
   
-  #### ----------------- add other elements of the table ----------------- ####
-  ##### compute number of households in census and survey
+  # compute number of households in census and survey
   basic_df <-
-    data.frame(indicator = c("Number of Units", "Number of Regions",
+    data.frame(indicator = c("Number of Units","Number of Regions",
                              "Number of Target Areas"),
-               census = c(round(sum(pop_df[[pop_weights]], na.rm = TRUE)),
-                          length(unique(pop_df[[CV_level]][is.na(pop_df[[CV_level]]) == FALSE])),
-                          length(unique(pop_df[[pop_domains]][is.na(pop_df[[smp_domains]]) == FALSE]))),
+               census = c(model$framework$N_pop,
+                          length(unique(pop_df[[CV_level]][
+                            is.na(pop_df[[CV_level]]) == FALSE
+                          ])),
+                          length(unique(pop_df[[pop_domains]][
+                            is.na(pop_df[[model$framework$smp_domains]]) == FALSE
+                          ]))),
                survey = c(model$framework$N_smp,
-                          length(unique(smp_df[[CV_level]][is.na(smp_df[[CV_level]]) == FALSE])),
-                          length(unique(smp_df[[smp_domains]][is.na(smp_df[[smp_domains]]) == FALSE]))))
+                          length(unique(smp_df[[CV_level]][
+                            is.na(smp_df[[CV_level]]) == FALSE
+                          ])),
+                          length(unique(smp_df[[model$framework$smp_domains]][
+                            is.na(smp_df[[model$framework$smp_domains]]) == FALSE
+                          ]))))
   
   basic_df$census <- as.integer(basic_df$census)
   basic_df$survey <- as.integer(basic_df$survey)
   
-  ##### compute poverty numbers
-  smp_data$poor <- ifelse(smp_data[[welfare]] < threshold, 1, 0)
+  # compute poverty numbers
+  smp_data$poor <- ifelse(model$framework$smp_data[[paste(model$fixed[2])]] <
+                            threshold, 1, 0)
   
-  smp_data[[smp_weights]] <-
-    smp_data[[smp_weights]] / sum(smp_data[[smp_weights]],
-                                  na.rm = TRUE)
+  smp_data[[weights]] <- smp_data[[weights]] /
+    sum(smp_data[[weights]], na.rm = TRUE)
   
   pov_df <-
     data.frame(indicator = c("National Poverty Rate", "National Poverty Line"),
                model = c(povrate, threshold),
-               survey = c(sum(smp_data$poor * smp_data[[smp_weights]]),
-                          threshold))
+               survey = c(sum(smp_data$poor * smp_data[[weights]]), threshold))
   
-  row.names(cv_df_region) <- NULL
+  row.names(cv_df) <- NULL
   
-  return(list(cv_table = cv_df_region,
+  return(list(cv_table = cv_df,
               basicinfo_df = basic_df,
               poverty_df = format(pov_df, scientific = FALSE)))
   
   
 }
+
+
 
 #' Perform test for difference between survey and census means
 #'
