@@ -11,7 +11,8 @@ ebp_report_byrank(
   pop_weights = NULL,
   byrank_indicator = "count",
   number_to_list = NULL,
-  head = TRUE
+  head = TRUE,
+  indicator = "Head_Count"
 )
 }
 \arguments{

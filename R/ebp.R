@@ -139,7 +139,7 @@
 #' @param nlme_maxiter an integer indicating the maximum number of iterations
 #' the \code{lme} function from package \code{\link{nlme}} will run for
 #' parameter convergence.
-#' @param nlme_tolerance an integer indicating the tolerance criterium for the
+#' @param nlme_tolerance a real number indicating the tolerance criterium for the
 #' the \code{lme} function from package \code{\link{nlme}}.
 #' @param rescale_weights a logical indicating if the sample weights are scaled.
 #' If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
@@ -301,7 +301,7 @@ ebp <- function(fixed,
                 benchmark_level = NULL,
                 benchmark_weights = NULL,
                 nlme_maxiter = 1000,
-                nlme_tolerance = 1e-6,
+                nlme_tolerance = 0.000001,
                 rescale_weights = FALSE
                 ) {
 

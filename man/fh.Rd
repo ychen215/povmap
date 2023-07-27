@@ -19,7 +19,7 @@ fh(
   correlation = "no",
   corMatrix = NULL,
   Ci = NULL,
-  tol = 1e-04,
+  tol = 0.0001,
   maxit = 100,
   MSE = FALSE,
   mse_type = "analytical",

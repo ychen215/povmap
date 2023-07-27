@@ -31,7 +31,7 @@ ebp(
   benchmark_level = NULL,
   benchmark_weights = NULL,
   nlme_maxiter = 1000,
-  nlme_tolerance = 1e-06,
+  nlme_tolerance = 0.000001,
   rescale_weights = FALSE
 )
 }
@@ -187,7 +187,7 @@ internal benchmarking).}
 the \code{lme} function from package \code{\link{nlme}} will run for
 parameter convergence.}
 
-\item{nlme_tolerance}{an integer indicating the tolerance criterium for the
+\item{nlme_tolerance}{a real number indicating the tolerance criterium for the
 the \code{lme} function from package \code{\link{nlme}}.}
 
 \item{rescale_weights}{a logical indicating if the sample weights are scaled.

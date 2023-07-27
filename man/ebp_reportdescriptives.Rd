@@ -13,7 +13,8 @@ ebp_reportdescriptives(
   threshold = NULL,
   weights = NULL,
   pop_weights = NULL,
-  CV_level
+  CV_level,
+  indicator = "Head_Count"
 )
 }
 \arguments{
