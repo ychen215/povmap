@@ -1,3 +1,12 @@
+source("C:/Users/WB200957/OneDrive - WBG/DEC/Github projects/povmap/R/ebp.R")
+source("C:/Users/WB200957/OneDrive - WBG/DEC/Github projects/povmap/R/point_estimation.R")
+source("C:/Users/WB200957/OneDrive - WBG/DEC/Github projects/povmap/R/framework_ebp.R")
+source("C:/Users/WB200957/OneDrive - WBG/DEC/Github projects/povmap/R/check_ebp_arguments.R")
+source("C:/Users/WB200957/OneDrive - WBG/DEC/Github projects/povmap/R/benchmark_ebp.R")
+source("C:/Users/WB200957/OneDrive - WBG/DEC/Github projects/povmap/R/optimal_parameter.R")
+source("C:/Users/WB200957/OneDrive - WBG/DEC/Github projects/povmap/R/transformation_functions.R")
+library(nlme)
+
 library(povmap)
 data("eusilcA_smp")
 data('eusilcA_pop')

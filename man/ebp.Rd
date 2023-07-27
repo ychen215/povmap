@@ -171,8 +171,9 @@ chosen indicators. In this case, survey weights (\code{weights}) are needed.
 Benchmarking is available for \code{"Mean"} and \code{"Head_Count"}.}
 
 \item{benchmark_type}{a character indicating the type of benchmarking. Types
-that can be chosen (i) Raking ("\code{raking}") and (ii) Ratio adjustment
-("\code{ratio}"). Defaults to "\code{ratio}"}
+that can be chosen (i) Raking ("\code{raking}"), (ii) Ratio adjustment
+("\code{ratio}"), and for head count, ratio adjustment of the complement
+("\code{ratio_complement}". Defaults to "\code{ratio}"}
 
 \item{benchmark_level}{a character indicating the level at which the
 benchmarking is performed. This name must be represented in the sample and

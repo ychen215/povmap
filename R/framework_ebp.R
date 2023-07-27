@@ -53,8 +53,9 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
                  function ebp."))
   }
 
+  # rescale weights such that mean is equal to one within each domain 
   if (isTRUE(rescale_weights) && !is.null(weights)) {
-    smp_data[,weights] <- scaler(smp_data[,weights], smp_data[,smp_domains])
+    smp_data[,weights] <- smp_data[,weights] / ave(smp_data[,weights], smp_data[,smp_domains])
   }
 
   # Order of domains

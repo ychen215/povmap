@@ -85,6 +85,12 @@ benchmark_ebp_national <- function (point_estim, framework, fixed, benchmark,
       phi <- share / estim[[i]]
       EBP_bench[[i]] <- estim[[i]] + (1 / (sum(share^2 / phi))) *
         (benchmark[[i]] - sum(share * estim[[i]])) * (share / phi)
+    } else if (benchmark_type == "ratio_complement" && i == "Head_Count") {
+      estim_complement[[i]] <- 1-estim[[i]]
+      benchmark_complement[[i]] <-1-benchmark[[i]] 
+      EBP_bench_complement[[i]] <- estim[[i]] + (1 / (sum(share^2 / phi))) *
+        (benchmark_complement[[i]] - sum(share * estim[[i]])) * (share / phi)
+      EBP_bench[[i]] <- 1 - EBP_bench_complement
     }
   }
 
@@ -232,12 +238,13 @@ benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
           benchmark[[i]][benchmark[[benchmark_level]] == j] -
           sum(share * estim[[i]][estim_levels_num])
       } else if (benchmark_type == "ratio") {
-        phi <- share / estim[[i]][estim_levels_num]
-        EBP_bench[[i]][estim_levels_num] <-
-          estim[[i]][estim_levels_num] +
-          (1 / (sum(share^2 / phi))) *
-          (benchmark[[i]][benchmark[[benchmark_level]] == j] -
-             sum(share * estim[[i]][estim_levels_num])) * (share / phi)
+        EBP_bench[[i]][estim_levels_num] <- estim[[i]][estim_levels_num]*
+          (benchmark[[i]][benchmark[[benchmark_level]] == j]/
+             sum(share * estim[[i]][estim_levels_num]))
+      } else if (benchmark_type == "ratio_complement" && i == "Head_Count") {
+        EBP_bench[[i]][estim_levels_num] <- 1-((1-estim[[i]][estim_levels_num])*
+          (1-benchmark[[i]][benchmark[[benchmark_level]] == j])/
+             sum(share * (1-estim[[i]][estim_levels_num])))
       }
     }
   }
