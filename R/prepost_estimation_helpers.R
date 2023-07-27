@@ -29,6 +29,8 @@
 #' The variable has to be numeric. Defaults to NULL.
 #' @param CV_level the variable level at which Coefficient of Variation should
 #' be computed
+#' @param indicator a character string containing the name of the indicator to 
+#' compute the Coefficient of Variation for. Defaults to "Head_Count" 
 #'
 #' @examples
 #' data("eusilcA_pop")
@@ -388,6 +390,8 @@ ebp_reportcoef_table <- function(model,
 #' target areas to produce from `byrank_indicator` ordering.
 #' @param head a logical, if `TRUE` the top `number_to_list` results will be
 #' returned and if `FALSE` the bottom `number_to_list` will be returned
+#' @param indicator a character string containing the name of the indicator to rank. 
+#' Defaults to "Head_Count" 
 #'
 #' @examples
 #' data("eusilcA_pop")
