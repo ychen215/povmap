@@ -11,7 +11,8 @@ ebp_report_byrank(
   pop_weights = NULL,
   byrank_indicator = "count",
   number_to_list = NULL,
-  head = TRUE
+  head = TRUE,
+  indicator = "Head_Count"
 )
 }
 \arguments{
@@ -41,6 +42,9 @@ target areas to produce from `byrank_indicator` ordering.}
 
 \item{head}{a logical, if `TRUE` the top `number_to_list` results will be
 returned and if `FALSE` the bottom `number_to_list` will be returned}
+
+\item{indicator}{a character string containing the name of the indicator to rank. 
+Defaults to "Head_Count"}
 }
 \description{
 This function combines the ebp object with the census data to produce report

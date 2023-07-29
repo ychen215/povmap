@@ -13,7 +13,8 @@ ebp_reportdescriptives(
   threshold = NULL,
   weights = NULL,
   pop_weights = NULL,
-  CV_level
+  CV_level,
+  indicator = "Head_Count"
 )
 }
 \arguments{
@@ -48,6 +49,9 @@ The variable has to be numeric. Defaults to NULL.}
 
 \item{CV_level}{the variable level at which Coefficient of Variation should
 be computed}
+
+\item{indicator}{a character string containing the name of the indicator to 
+compute the Coefficient of Variation for. Defaults to "Head_Count"}
 }
 \description{
 This function estimates the coefficient of variation at level specified,
