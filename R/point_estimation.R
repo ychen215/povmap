@@ -15,7 +15,8 @@ point_estim <- function(framework,
                         transformation,
                         interval,
                         L,
-                        keep_data = FALSE) {
+                        keep_data = FALSE,
+                        Ydump) {
 
   # Transformation of data -----------------------------------------------------
 
@@ -126,7 +127,8 @@ point_estim <- function(framework,
     shift = shift_par,
     model_par = est_par,
     gen_model = gen_par,
-    fixed = fixed
+    fixed = fixed,
+    Ydump = Ydump 
   )
 
   mixed_model$coefficients_weighted <- if (!is.null(framework$weights)) {
@@ -386,7 +388,8 @@ monte_carlo <- function(transformation,
                         shift,
                         model_par,
                         gen_model,
-                        fixed) {
+                        fixed,
+                        Ydump) {
 
   # Preparing matrices for indicators for the Monte-Carlo simulation
 
@@ -398,6 +401,14 @@ monte_carlo <- function(transformation,
     pop_domains_vec_tmp <- framework$pop_domains_vec
   }
 
+
+  if (!is.null(Ydump)) {
+    Ydumpdf <- data.frame(matrix(ncol = 6, nrow = 0))
+    colnames(Ydumpdf) <- c("L","Domain","Simulated_Y","XBetahat","eta","epsilon")
+    write.csv(Ydumpdf,Ydump,row.names = FALSE)
+  }
+
+  
   ests_mcmc <- array(dim = c(
     N_dom_pop_tmp,
     L,
@@ -431,7 +442,11 @@ monte_carlo <- function(transformation,
     }else{
       pop_weights_vec <- rep(1, nrow(framework$pop_data))
     }
-
+    if (!is.null(Ydump)){
+      Ydumpdf <- data.frame(rep(l,nrow(framework$pop_data)), framework$pop_domains_vec,population_vector,gen_model$mu,errors$vu,errors$epsilon)
+      #write.csv(Ydumpdf,Ydump,row.names = FALSE,append=TRUE)
+      write.table(Ydumpdf,file=Ydump,row.names = FALSE,append=TRUE,col.names=F, sep=",") 
+    }
 
     # Calculation of indicators for each Monte Carlo population
     ests_mcmc[, l, ] <-
