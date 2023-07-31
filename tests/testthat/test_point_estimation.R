@@ -172,7 +172,8 @@ test_that("Does monte_carlo function give benchmark results? Using weights
                         transformation = "log",
                         interval = "default",
                         L = 2,
-                        keep_data = FALSE
+                        keep_data = FALSE,
+                        Ydump = NULL 
   )
 
   # Load benchmark point estimates
