@@ -16,7 +16,7 @@ point_estim <- function(framework,
                         interval,
                         L,
                         keep_data = FALSE,
-                        Ydump) {
+                        Ydump = NULL) {
 
   # Transformation of data -----------------------------------------------------
 
