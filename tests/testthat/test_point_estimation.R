@@ -69,7 +69,8 @@ test_that("Does monte_carlo function give benchmark results?", {
                                       lambda = lambda,
                                       shift = shift,
                                       model_par = est_par,
-                                      gen_model = gen_par
+                                      gen_model = gen_par,
+                                      Ydump = NULL 
                                       )
 
   set.seed(100)
@@ -161,7 +162,8 @@ test_that("Does monte_carlo function give benchmark results? Using weights
                        framework = framework,
                        shift = shift,
                        model_par = est_par,
-                       gen_model = gen_par
+                       gen_model = gen_par,
+                       Ydump = NULL 
   )
 
   set.seed(100)
@@ -170,7 +172,8 @@ test_that("Does monte_carlo function give benchmark results? Using weights
                         transformation = "log",
                         interval = "default",
                         L = 2,
-                        keep_data = FALSE
+                        keep_data = FALSE,
+                        Ydump = NULL 
   )
 
   # Load benchmark point estimates

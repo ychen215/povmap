@@ -31,8 +31,9 @@ ebp(
   benchmark_level = NULL,
   benchmark_weights = NULL,
   nlme_maxiter = 1000,
-  nlme_tolerance = 0.000001,
-  rescale_weights = FALSE
+  nlme_tolerance = 1e-06,
+  rescale_weights = FALSE,
+  Ydump = NULL
 )
 }
 \arguments{
@@ -195,6 +196,10 @@ the \code{lme} function from package \code{\link{nlme}}.}
 If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
 , the sample weights are rescaled such that the average weight is 1
 within each domain.}
+
+\item{Ydump}{a string specifying the name of a .csv file to save all simulated
+values of the dependent value, model predictions, and error terms used for 
+point estimation.}
 }
 \value{
 An object of class "ebp", "emdi" that provides estimators for

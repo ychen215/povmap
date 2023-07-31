@@ -146,6 +146,9 @@
 #' If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
 #' , the sample weights are rescaled such that the average weight is 1
 #' within each domain.
+#' @param Ydump a string specifying the name of a .csv file to save all simulated
+#' values of the dependent value, model predictions, and error terms used for 
+#' point estimation. 
 #' @return An object of class "ebp", "emdi" that provides estimators for
 #' regional disaggregated indicators and optionally corresponding MSE estimates.
 #' Several generic functions have methods for the returned object. For a full
@@ -272,7 +275,7 @@
 #' @importFrom parallel detectCores clusterSetRNGStream
 #' @importFrom stats as.formula dnorm lm median model.matrix na.omit optimize
 #' qnorm quantile residuals rnorm sd fitted
-#' @importFrom utils flush.console
+#' @importFrom utils flush.console write.table 
 
 ebp <- function(fixed,
                 pop_data,
@@ -303,7 +306,8 @@ ebp <- function(fixed,
                 benchmark_weights = NULL,
                 nlme_maxiter = 1000,
                 nlme_tolerance = 0.000001,
-                rescale_weights = FALSE
+                rescale_weights = FALSE,
+                Ydump = NULL 
                 ) {
 
   ebp_check1(
@@ -373,7 +377,8 @@ ebp <- function(fixed,
     transformation = transformation,
     interval = interval,
     L = L,
-    keep_data = TRUE
+    keep_data = TRUE,
+    Ydump = Ydump 
   )
 
   # benchmarking
@@ -400,7 +405,7 @@ ebp <- function(fixed,
               point_estim$ind$Head_Count_bench <= 1)){
           message(strwrap(prefix = " ", initial = "",
                           "Please note that benchmark point estimates for
-                          Head_Count are without the expected range [0,1]."))
+                          Head_Count are outside the expected range [0,1]."))
         }
     }
   }
