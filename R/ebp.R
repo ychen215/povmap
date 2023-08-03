@@ -140,8 +140,10 @@
 #' @param nlme_maxiter an integer indicating the maximum number of iterations
 #' the \code{lme} function from package \code{\link{nlme}} will run for
 #' parameter convergence.
-#' @param nlme_tolerance a real number indicating the tolerance criterium for the
+#' @param nlme_tolerance a real number indicating the tolerance criterion for the
 #' the \code{lme} function from package \code{\link{nlme}}.
+#' @param nlme_opt a string indicating the optimizer to be used by the \code{lme} 
+#' function from package \code{\link{nlme}}, either "nlminb" (the default) or "optim".
 #' @param rescale_weights a logical indicating if the sample weights are scaled.
 #' If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
 #' , the sample weights are rescaled such that the average weight is 1
@@ -306,6 +308,7 @@ ebp <- function(fixed,
                 benchmark_weights = NULL,
                 nlme_maxiter = 1000,
                 nlme_tolerance = 0.000001,
+                nlme_opt = "nlminb",
                 rescale_weights = FALSE,
                 Ydump = NULL 
                 ) {
@@ -364,6 +367,7 @@ ebp <- function(fixed,
     benchmark_weights = benchmark_weights,
     nlme_maxiter = nlme_maxiter,
     nlme_tolerance = nlme_tolerance,
+    nlme_opt = nlme_opt, 
     rescale_weights = rescale_weights
   )
 

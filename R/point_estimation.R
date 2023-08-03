@@ -64,7 +64,8 @@ point_estim <- function(framework,
         as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
       method = "REML",
       control = nlme::lmeControl(maxiter = framework$nlme_maxiter,
-                                 tolerance = framework$nlme_tolerance),
+                                 tolerance = framework$nlme_tolerance,
+                                 opt = framework$nlme_opt),
       keep.data = keep_data,
       weights =
         varComb(
