@@ -22,7 +22,6 @@ if "`benchmark'"~="" & "`benchmark_level'"=="" {
 }
 
 
-
 * set defaults 
 
 if "`weights'"=="" {
@@ -112,9 +111,10 @@ if "`boot_type'"=="" {
 local boot_type="parametric"
 }
 
-if "`nmle_opt'"=="" {
+if "`nlme_opt'"=="" {
 local nlme_opt "nlminb"
 }
+ 
  
 local pop_data : subinstr local pop_data "\" "/", all 
 local smp_data : subinstr local smp_data "\" "/", all 
