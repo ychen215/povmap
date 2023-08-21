@@ -193,7 +193,7 @@ parameter convergence.}
 \item{nlme_tolerance}{a real number indicating the tolerance criterion for the
 the \code{lme} function from package \code{\link{nlme}}.}
 
-\item{nlme_opt}{a string indicating the optimizer to be used by the \code{lme} 
+\item{nlme_opt}{a string indicating the optimizer to be used by the \code{lme}
 function from package \code{\link{nlme}}, either "nlminb" (the default) or "optim".}
 
 \item{rescale_weights}{a logical indicating if the sample weights are scaled.
@@ -202,7 +202,7 @@ If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
 within each domain.}
 
 \item{Ydump}{a string specifying the name of a .csv file to save all simulated
-values of the dependent value, model predictions, and error terms used for 
+values of the dependent value, model predictions, and error terms used for
 point estimation.}
 }
 \value{

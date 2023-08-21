@@ -142,15 +142,15 @@
 #' parameter convergence.
 #' @param nlme_tolerance a real number indicating the tolerance criterion for the
 #' the \code{lme} function from package \code{\link{nlme}}.
-#' @param nlme_opt a string indicating the optimizer to be used by the \code{lme} 
+#' @param nlme_opt a string indicating the optimizer to be used by the \code{lme}
 #' function from package \code{\link{nlme}}, either "nlminb" (the default) or "optim".
 #' @param rescale_weights a logical indicating if the sample weights are scaled.
 #' If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
 #' , the sample weights are rescaled such that the average weight is 1
 #' within each domain.
 #' @param Ydump a string specifying the name of a .csv file to save all simulated
-#' values of the dependent value, model predictions, and error terms used for 
-#' point estimation. 
+#' values of the dependent value, model predictions, and error terms used for
+#' point estimation.
 #' @return An object of class "ebp", "emdi" that provides estimators for
 #' regional disaggregated indicators and optionally corresponding MSE estimates.
 #' Several generic functions have methods for the returned object. For a full
@@ -276,8 +276,8 @@
 #' @importFrom parallelMap parallelStop parallelLapply parallelLibrary
 #' @importFrom parallel detectCores clusterSetRNGStream
 #' @importFrom stats as.formula dnorm lm median model.matrix na.omit optimize
-#' qnorm quantile residuals rnorm sd fitted
-#' @importFrom utils flush.console write.table 
+#' qnorm quantile residuals rnorm sd fitted ave
+#' @importFrom utils flush.console write.table write.csv
 
 ebp <- function(fixed,
                 pop_data,
@@ -310,7 +310,7 @@ ebp <- function(fixed,
                 nlme_tolerance = 0.000001,
                 nlme_opt = "nlminb",
                 rescale_weights = FALSE,
-                Ydump = NULL 
+                Ydump = NULL
                 ) {
 
   ebp_check1(
@@ -367,7 +367,7 @@ ebp <- function(fixed,
     benchmark_weights = benchmark_weights,
     nlme_maxiter = nlme_maxiter,
     nlme_tolerance = nlme_tolerance,
-    nlme_opt = nlme_opt, 
+    nlme_opt = nlme_opt,
     rescale_weights = rescale_weights
   )
 
@@ -382,7 +382,7 @@ ebp <- function(fixed,
     interval = interval,
     L = L,
     keep_data = TRUE,
-    Ydump = Ydump 
+    Ydump = Ydump
   )
 
   # benchmarking
@@ -447,7 +447,7 @@ ebp <- function(fixed,
         "shift_par"
       )],
       model = point_estim$model,
-      model_par = point_estim$model_par, 
+      model_par = point_estim$model_par,
       framework = framework[c(
         "N_dom_unobs",
         "N_dom_smp",
@@ -473,7 +473,7 @@ ebp <- function(fixed,
         "shift_par"
       )],
       model = point_estim$model,
-      model_par = point_estim$model_par, 
+      model_par = point_estim$model_par,
       framework = framework[c(
         "N_dom_unobs",
         "N_dom_smp",
