@@ -33,6 +33,7 @@
 #' compute the Coefficient of Variation for. Defaults to "Head_Count"
 #'
 #' @examples
+#' \donotrun{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'
@@ -53,7 +54,6 @@
 #'                      var = TRUE, B = 2)
 #'
 #' # descritives
-#' \donttest{
 #' ebp_reportdescriptives(model = ebp_model, direct = direct_est,
 #'                        smp_data = eusilcA_smp, weights = "weight",
 #'                        pop_weights = "hhsize", CV_level = "state",
@@ -537,11 +537,11 @@ ebp_report_byrank <- function(model,
 #' to number of bootstrap iteration in ebp obeject (specified in \code{model}).
 #'
 #' @examples
+#' \donotrun{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'
 #' # estimate a unit model
-#' \donttest{
 #' ebp_model <- ebp(fixed = eqIncome ~ gender + eqsize + cash +
 #'                     self_empl + unempl_ben + age_ben + surv_ben + sick_ben +
 #'                     dis_ben + rent + fam_allow + house_allow + cap_inv +
@@ -551,10 +551,10 @@ ebp_report_byrank <- function(model,
 #'                  na.rm = TRUE, weights = "weight",
 #'                  pop_weights = "hhsize", MSE = TRUE, weights_type = "nlme",
 #'                  B = 2, L = 2)
-#' }
 #'
 #' # compute CV table
 #' ebp_compute_cv(model = ebp_model, calibvar = "gender")
+#' }
 #'
 #'@export
 #'@importFrom survey svydesign svymean

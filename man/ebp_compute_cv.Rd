@@ -63,6 +63,7 @@ data("eusilcA_pop")
 data("eusilcA_smp")
 
 # estimate a unit model
+\donttest{
 ebp_model <- ebp(fixed = eqIncome ~ gender + eqsize + cash +
                     self_empl + unempl_ben + age_ben + surv_ben + sick_ben +
                     dis_ben + rent + fam_allow + house_allow + cap_inv +
@@ -75,5 +76,6 @@ ebp_model <- ebp(fixed = eqIncome ~ gender + eqsize + cash +
 
 # compute CV table
 ebp_compute_cv(model = ebp_model, calibvar = "gender")
+}
 
 }

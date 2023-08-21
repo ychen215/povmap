@@ -43,7 +43,7 @@ target areas to produce from `byrank_indicator` ordering.}
 \item{head}{a logical, if `TRUE` the top `number_to_list` results will be
 returned and if `FALSE` the bottom `number_to_list` will be returned}
 
-\item{indicator}{a character string containing the name of the indicator to rank. 
+\item{indicator}{a character string containing the name of the indicator to rank.
 Defaults to "Head_Count"}
 }
 \description{

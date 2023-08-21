@@ -50,7 +50,7 @@ The variable has to be numeric. Defaults to NULL.}
 \item{CV_level}{the variable level at which Coefficient of Variation should
 be computed}
 
-\item{indicator}{a character string containing the name of the indicator to 
+\item{indicator}{a character string containing the name of the indicator to
 compute the Coefficient of Variation for. Defaults to "Head_Count"}
 }
 \description{
@@ -81,8 +81,10 @@ direct_est <- direct(y = "eqIncome", smp_data = eusilcA_smp,
                      var = TRUE, B = 2)
 
 # descritives
+\donttest{
 ebp_reportdescriptives(model = ebp_model, direct = direct_est,
                        smp_data = eusilcA_smp, weights = "weight",
                        pop_weights = "hhsize", CV_level = "state",
                        pop_data = eusilcA_pop, pop_domains = "district")
+}
 }
