@@ -33,7 +33,7 @@
 #' compute the Coefficient of Variation for. Defaults to "Head_Count"
 #'
 #' @examples
-#' \donotrun{
+#' \dontrun{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'
@@ -537,7 +537,7 @@ ebp_report_byrank <- function(model,
 #' to number of bootstrap iteration in ebp obeject (specified in \code{model}).
 #'
 #' @examples
-#' \donotrun{
+#' \dontrun{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'

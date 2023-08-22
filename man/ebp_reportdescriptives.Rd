@@ -61,6 +61,7 @@ the threshold on which SAE is applied and the outcome indicator of interest
 the census and survey
 }
 \examples{
+\dontrun{
 data("eusilcA_pop")
 data("eusilcA_smp")
 
@@ -81,7 +82,6 @@ direct_est <- direct(y = "eqIncome", smp_data = eusilcA_smp,
                      var = TRUE, B = 2)
 
 # descritives
-\donttest{
 ebp_reportdescriptives(model = ebp_model, direct = direct_est,
                        smp_data = eusilcA_smp, weights = "weight",
                        pop_weights = "hhsize", CV_level = "state",

@@ -59,11 +59,11 @@ Method 3 finally uses the design effect adjusted naive calibrated MSE. The
 design effect is estimated using the \code{survey::svydesign} function.
 }
 \examples{
+\dontrun{
 data("eusilcA_pop")
 data("eusilcA_smp")
 
 # estimate a unit model
-\donttest{
 ebp_model <- ebp(fixed = eqIncome ~ gender + eqsize + cash +
                     self_empl + unempl_ben + age_ben + surv_ben + sick_ben +
                     dis_ben + rent + fam_allow + house_allow + cap_inv +
