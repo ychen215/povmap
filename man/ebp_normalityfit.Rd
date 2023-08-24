@@ -9,6 +9,10 @@ ebp_normalityfit(model)
 \arguments{
 \item{model}{an object returned by the ebp function of type "emdi ebp"}
 }
+\value{
+dataframe with marginal R-square, conditional R-squared as well as
+the skewness and kurtosis of the random and idiosyncratic error term
+}
 \description{
 The function uses the results of the \code{ebp} function to produce output a
 table showing marginal R-square, conditional R-squared as well as the
@@ -24,7 +28,7 @@ ebp_model <- ebp(
    unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
    house_allow + cap_inv + tax_adj, pop_data = eusilcA_pop,
  pop_domains = "district", smp_data = eusilcA_smp, smp_domains = "district",
- na.rm = TRUE
+ L = 2, na.rm = TRUE
  )
 
  ebp_normalityfit(model = ebp_model)

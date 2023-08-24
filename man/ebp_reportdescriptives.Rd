@@ -53,6 +53,11 @@ be computed}
 \item{indicator}{a character string containing the name of the indicator to
 compute the Coefficient of Variation for. Defaults to "Head_Count"}
 }
+\value{
+an list containing three dataframes (first dataframe with direct an
+ebp CV values, second dataframe with basic statistics and third dataframe
+with national poverline and rate for census and survey
+}
 \description{
 This function estimates the coefficient of variation at level specified,
 basic statistics such number of units, regions and target areas as well as
@@ -61,7 +66,7 @@ the threshold on which SAE is applied and the outcome indicator of interest
 the census and survey
 }
 \examples{
-\dontrun{
+\donttest{
 data("eusilcA_pop")
 data("eusilcA_smp")
 

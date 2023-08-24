@@ -31,9 +31,11 @@
 #' be computed
 #' @param indicator a character string containing the name of the indicator to
 #' compute the Coefficient of Variation for. Defaults to "Head_Count"
-#'
+#' @return an list containing three dataframes (first dataframe with direct an
+#' ebp CV values, second dataframe with basic statistics and third dataframe
+#' with national poverline and rate for census and survey
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'
@@ -133,7 +135,8 @@ ebp_reportdescriptives <- function(model,
   naivevar_dt$MSE$Head_Count_bench <- naivevar_dt$MSE$Head_Count
   naivevar_dt$ind$Head_Count_bench <- naivevar_dt$ind$Head_Count
 
-  naivevar_dt$ind[,paste("Direct_",indicator,"_CV",sep="")] <- sqrt(naivevar_dt$MSE[,indicator]) / naivevar_dt$ind[,indicator]
+  naivevar_dt$ind[,paste("Direct_",indicator,"_CV",sep="")] <-
+    sqrt(naivevar_dt$MSE[,indicator]) / naivevar_dt$ind[,indicator]
 
 
   add_df <- data.frame(unique(df[[CV_level]]))
@@ -230,7 +233,8 @@ ebp_reportdescriptives <- function(model,
 #' are at different levels (e.g.: \code{smp_data} at individual level and
 #' \code{pop_data} at household level, then \code{pop_weights} is needed for
 #' the comparison with a variable indicating household size).
-#'
+#' @return dataframe with census and survey means and test results for their
+#' difference.
 #' @examples
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
@@ -311,7 +315,7 @@ ebp_test_means <- function(varlist,
 #' @param model an object returned by the ebp function of type "emdi ebp",
 #' representing point and MSE estimates
 #' @param decimals the number of decimals to report on coefficient estimates
-#'
+#' @return dataframe with regression model results
 #' @examples
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
@@ -321,7 +325,7 @@ ebp_test_means <- function(varlist,
 #'    unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
 #'    house_allow + cap_inv + tax_adj, pop_data = eusilcA_pop,
 #'  pop_domains = "district", smp_data = eusilcA_smp, smp_domains = "district",
-#'  na.rm = TRUE)
+#'  L = 2, na.rm = TRUE)
 #'
 #'ebp_reportcoef_table(ebp_model, 4)
 #'
@@ -394,6 +398,8 @@ ebp_reportcoef_table <- function(model,
 #' returned and if `FALSE` the bottom `number_to_list` will be returned
 #' @param indicator a character string containing the name of the indicator to rank.
 #' Defaults to "Head_Count"
+#' @return dataframe containing population size, head count values and counts of
+#' poor population
 #'
 #' @examples
 #' data("eusilcA_pop")
@@ -404,7 +410,7 @@ ebp_reportcoef_table <- function(model,
 #'     unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
 #'     house_allow + cap_inv + tax_adj,
 #'  pop_data = eusilcA_pop, pop_domains = "district",
-#'  smp_data = eusilcA_smp, smp_domains = "district",
+#'  smp_data = eusilcA_smp, smp_domains = "district", L = 2,
 #'  weights = "weight", weights_type = "nlme", na.rm = TRUE,
 #'  pop_weights = "hhsize")
 #'
@@ -535,9 +541,10 @@ ebp_report_byrank <- function(model,
 #' be chosen.
 #' @param B number of bootstrap iterations for variance estimation. Defaults
 #' to number of bootstrap iteration in ebp obeject (specified in \code{model}).
+#' @return dataframe containing different types of CV values for the headcount
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'
@@ -690,6 +697,8 @@ ebp_compute_cv <- function(model,
 #' skewness and kurtosis of the random and idiosyncratic error terms
 #'
 #' @param model an object returned by the ebp function of type "emdi ebp"
+#' @return dataframe with marginal R-square, conditional R-squared as well as
+#' the skewness and kurtosis of the random and idiosyncratic error term
 #'
 #' @examples
 #'
@@ -701,7 +710,7 @@ ebp_compute_cv <- function(model,
 #'    unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
 #'    house_allow + cap_inv + tax_adj, pop_data = eusilcA_pop,
 #'  pop_domains = "district", smp_data = eusilcA_smp, smp_domains = "district",
-#'  na.rm = TRUE
+#'  L = 2, na.rm = TRUE
 #'  )
 #'
 #'  ebp_normalityfit(model = ebp_model)

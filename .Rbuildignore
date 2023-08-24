@@ -9,6 +9,7 @@ revdep
 ^revdep$
 ^\.Rprofile$
 ^CRAN-RELEASE$
+inst\sticker
 
 ^\.github$
 

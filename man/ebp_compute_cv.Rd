@@ -36,6 +36,9 @@ be chosen.}
 \item{B}{number of bootstrap iterations for variance estimation. Defaults
 to number of bootstrap iteration in ebp obeject (specified in \code{model}).}
 }
+\value{
+dataframe containing different types of CV values for the headcount
+}
 \description{
 Function \code{ebp_compute_cv} estimates CVs for the headcount of the unit
 model EBP functions using three different methods. CV, by definition, is the
@@ -59,7 +62,7 @@ Method 3 finally uses the design effect adjusted naive calibrated MSE. The
 design effect is estimated using the \code{survey::svydesign} function.
 }
 \examples{
-\dontrun{
+\donttest{
 data("eusilcA_pop")
 data("eusilcA_smp")
 
