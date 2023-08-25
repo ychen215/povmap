@@ -13,6 +13,9 @@ wtd.quantile(x, weights = NULL, probs = NULL)
 
 \item{probs}{probabilities}
 }
+\value{
+weighted quantile
+}
 \description{
 Quick function to estimate weighted quantiles
 }

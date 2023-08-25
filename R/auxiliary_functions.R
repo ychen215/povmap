@@ -25,10 +25,9 @@ throw_class_error <- function(object, subclass) {
 #' @param x a numeric vector
 #' @param weights a numeric vector for the weights
 #' @param probs probabilities
-#'
+#' @return weighted quantile
 #'
 #' @export
-#'
 
 
 wtd.quantile <- function (x, weights = NULL, probs = NULL) {

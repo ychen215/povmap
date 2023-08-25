@@ -51,7 +51,8 @@
 #' @seealso \code{\link{direct}}, \code{\link{emdiObject}}, \code{\link{ebp}},
 #' \code{\link{fh}}
 #' @examples
-#' \dontrun{
+#'
+#' \donttest{
 #' # Loading data - population and sample data
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
@@ -78,22 +79,14 @@
 #'
 #' # Example 1: Export estimates for all indicators and uncertainty measures
 #' # and diagnostics to Excel
-#' write.excel(emdi_model,
-#'   file = "excel_output_all.xlsx", indicator = "all",
-#'   MSE = TRUE, CV = TRUE
-#' )
+#' write.excel(emdi_model, indicator = "all",  MSE = TRUE, CV = TRUE)
 #'
 #' # Example 2: Single Excel sheets for point, MSE and CV estimates
-#' write.excel(emdi_model,
-#'   file = "excel_output_all_split.xlsx",
-#'   indicator = "all", MSE = TRUE, CV = TRUE, split = TRUE
-#' )
+#' write.excel(emdi_model, indicator = "all", MSE = TRUE, CV = TRUE,
+#'             split = TRUE)
 #'
 #' # Example 3: Same as example 1 but for an ODS output
-#' write.ods(emdi_model,
-#'   file = "ods_output_all.ods", indicator = "all",
-#'   MSE = TRUE, CV = TRUE
-#' )
+#' write.ods(emdi_model, indicator = "all", MSE = TRUE, CV = TRUE)
 #' }
 #'
 #' @export
@@ -102,11 +95,17 @@
 #' @importFrom openxlsx addStyle writeDataTable setColWidths
 #'
 write.excel <- function(object,
-                        file = "excel_output.xlsx",
+                        file = NULL,
                         indicator = "all",
                         MSE = FALSE,
                         CV = FALSE,
                         split = FALSE) {
+
+
+  if (is.null(file) == TRUE) {
+    file <- paste0(tempdir(),"\\", "excel_output.xlsx")
+  }
+
   writeexcel_check(
     object = object,
     file = file,
@@ -170,7 +169,9 @@ write.excel <- function(object,
       )
     }
   }
+
   saveWorkbook(wb, file, overwrite = TRUE)
+
 }
 
 add_summary_ebp <- function(object, wb, headlines_cs) {

@@ -3,11 +3,18 @@
 #' @export
 
 write.ods <- function(object,
-                      file = "ods_output.ods",
+                      file = NULL,
                       indicator = "all",
                       MSE = FALSE,
                       CV = FALSE,
                       split = FALSE) {
+
+  no_file <- FALSE
+  if (is.null(file)) {
+    file <-"ods_output.ods"
+    no_file <- TRUE
+  }
+
   writeods_check(
     object = object,
     file = file,
@@ -17,43 +24,28 @@ write.ods <- function(object,
   wb <- gsub(".ods", "", file)
 
   if (inherits(object, "direct")) {
-    add_summary_direct_ods(
-      object = object,
-      wb = wb
-    )
+    add_summary_direct_ods(object = object, wb = wb, no_file = no_file)
   } else if (inherits(object, "ebp")) {
-    add_summary_ods_ebp(object = object, wb = wb)
+    add_summary_ods_ebp(object = object, wb = wb, no_file = no_file)
   } else if (inherits(object, "fh")) {
-    add_summary_ods_fh(object = object, wb = wb)
+    add_summary_ods_fh(object = object, no_file = no_file, wb = wb)
   }
 
   if (!split && (MSE || CV)) {
-    add_estims_ods(
-      object = object,
-      indicator = indicator,
-      wb = wb,
-      MSE = MSE,
-      CV = CV
-    )
+    add_estims_ods(object = object, indicator = indicator, wb = wb,
+                   no_file = no_file, MSE = MSE, CV = CV)
   } else {
-    add_pointests_ods(
-      wb = wb,
-      object = object,
-      indicator = indicator
-    )
+    add_pointests_ods(wb = wb, object = object, no_file = no_file,
+      indicator = indicator)
     if (MSE || CV) {
-      add_precisions_ods(
-        object = object,
-        indicator = indicator,
-        MSE = MSE,
-        wb = wb,
-        CV = CV
-      )
+      add_precisions_ods(object = object, indicator = indicator, MSE = MSE,
+        wb = wb, no_file = no_file, CV = CV)
     }
   }
 }
 
-add_summary_ods_ebp <- function(object, wb, headlines_cs) {
+add_summary_ods_ebp <- function(object, wb, no_file, headlines_cs) {
+
   su <- summary(object)
 
   df_nobs <- data.frame(Count = c(
@@ -68,34 +60,52 @@ add_summary_ods_ebp <- function(object, wb, headlines_cs) {
     "in sample observations"
   )
   df_nobs <- cbind.data.frame(rownames(df_nobs), df_nobs)
-  readODS::write_ods(x = df_nobs, path = paste0(wb, "_sumObs", ".ods"))
+  if (no_file == TRUE) {
+    readODS::write_ods(x = df_nobs,
+                     path = paste0(tempdir(), "\\", wb, "_sumObs", ".ods"))
+  } else {
+    readODS::write_ods(x = df_nobs, path = paste0(wb, "_sumObs", ".ods"))
+  }
+
 
   df_size_dom <- as.data.frame(su$size_dom)
   df_size_dom <- cbind.data.frame(rownames(df_size_dom), df_size_dom)
-  readODS::write_ods(x = df_size_dom, path = paste0(wb, "_sumDom", ".ods"))
+  if (no_file == TRUE) {
+    readODS::write_ods(x = df_size_dom,
+                       path = paste0(tempdir(),"\\", wb, "_sumDom", ".ods"))
+  } else {
+    readODS::write_ods(x = df_size_dom, path = paste0(wb, "_sumDom", ".ods"))
+  }
 
   if (!is.null(su$transform)) {
-    readODS::write_ods(
-      x = su$transform,
-      path = paste0(wb, "_sumTrafo", ".ods")
-    )
+    if (no_file == TRUE) {
+      readODS::write_ods(x = su$transform,
+                         path = paste0(tempdir(), "\\", wb, "_sumTrafo", ".ods"))
+    } else {
+      readODS::write_ods(x = su$transform,
+                         path = paste0(wb, "_sumTrafo", ".ods"))
+    }
   }
   su$normality <- cbind.data.frame(rownames(su$normality), su$normality)
-  readODS::write_ods(x = su$normality, path = paste0(wb, "_sumNorm", ".ods"))
+  readODS::write_ods(x = su$normality,
+                     path = paste0(tempdir(),"\\", wb, "_sumNorm", ".ods"))
 
   su$coeff_determ <- cbind.data.frame(
     "Coefficients of determination",
     su$coeff_determ
   )
-  readODS::write_ods(x = su$coeff_determ, path = paste0(
-    wb, "_sumCoefDet",
-    ".ods"
-  ))
+  if (no_file == TRUE) {
+    readODS::write_ods(x = su$coeff_determ,
+                       path = paste0(tempdir(),"\\", wb, "_sumCoefDet", ".ods"))
+  } else {
+    readODS::write_ods(x = su$coeff_determ,
+                       path = paste0(wb, "_sumCoefDet", ".ods"))
+  }
 
   return(NULL)
 }
 
-add_summary_ods_fh <- function(object, wb, headlines_cs) {
+add_summary_ods_fh <- function(object, wb, no_file, headlines_cs) {
   su <- summary(object)
 
   df_nobs <- data.frame(Count = c(
@@ -108,7 +118,13 @@ add_summary_ods_fh <- function(object, wb, headlines_cs) {
   )
 
   df_nobs <- cbind.data.frame(rownames(df_nobs), df_nobs)
-  readODS::write_ods(x = df_nobs, path = paste0(wb, "_sumObs", ".ods"))
+
+  if (no_file == TRUE) {
+    readODS::write_ods(x = df_nobs,
+                       path = paste0(tempdir(), "\\", wb, "_sumObs", ".ods"))
+  } else {
+    readODS::write_ods(x = df_nobs, path = paste0(wb, "_sumObs", ".ods"))
+  }
 
   if (su$model$correlation == "no") {
     estimMethods <- data.frame(su$method$method, su$model$variance,
@@ -157,36 +173,54 @@ add_summary_ods_fh <- function(object, wb, headlines_cs) {
       )]
     }
   }
-  readODS::write_ods(
-    x = estimMethods,
-    path = paste0(wb, "_sumEstimMethods", ".ods")
-  )
+
+  if (no_file == TRUE) {
+    readODS::write_ods(x = estimMethods,
+                       path = paste0(tempdir(),"\\", wb,
+                                     "_sumEstimMethods", ".ods"))
+  } else {
+    readODS::write_ods(x = estimMethods,
+                       path = paste0(wb, "_sumEstimMethods", ".ods"))
+  }
 
   if (!is.null(su$transform)) {
-    readODS::write_ods(
-      x = su$transform,
-      path = paste0(wb, "_sumTrafo", ".ods")
-    )
+    if (no_file == TRUE) {
+      readODS::write_ods(x = su$transform,
+                         path = paste0(tempdir(), "\\", wb, "_sumTrafo", ".ods"))
+    } else {
+      readODS::write_ods(x = su$transform,
+                         path = paste0(wb, "_sumTrafo", ".ods"))
+    }
+
   }
   su$normality <- cbind.data.frame(rownames(su$normality), su$normality)
-  readODS::write_ods(x = su$normality, path = paste0(wb, "_sumNorm", ".ods"))
+  if (no_file == TRUE) {
+    readODS::write_ods(x = su$normality,
+                       path = paste0(tempdir(), "\\", wb, "_sumNorm", ".ods"))
+  } else {
+    readODS::write_ods(x = su$normality, path = paste0(wb, "_sumNorm", ".ods"))
+  }
+
 
   if (su$model$correlation == "no" && !(su$method$method %in% c(
     "reblup",
     "reblupbc"
   ) |
     su$method$method == "me")) {
-    readODS::write_ods(
-      x = su$model$model_select,
-      path = paste0(wb, "_sumModelSelect", ".ods")
-    )
+    if (no_file == TRUE) {
+      readODS::write_ods(x = su$model$model_select,
+                         path = paste0(tempdir(), "\\", wb,
+                                       "_sumModelSelect", ".ods"))
+    } else {
+      readODS::write_ods(x = su$model$model_select,
+                         path = paste0(wb, "_sumModelSelect", ".ods"))
+    }
   }
 
   return(NULL)
 }
 
-
-add_summary_direct_ods <- function(object, wb, headlines_cs) {
+add_summary_direct_ods <- function(object, wb, no_file, headlines_cs) {
   su <- summary(object)
 
   df_nobs <- data.frame(Count = c(su$in_smp, su$size_smp))
@@ -195,24 +229,40 @@ add_summary_direct_ods <- function(object, wb, headlines_cs) {
     "in sample observations"
   )
   df_nobs <- cbind.data.frame(rownames(df_nobs), df_nobs)
-  readODS::write_ods(x = df_nobs, path = paste0(wb, "_sumObs", ".ods"))
+
+  if (no_file == TRUE) {
+    readODS::write_ods(x = df_nobs,
+                       path = paste0(tempdir(), "\\", wb, "_sumObs", ".ods"))
+  } else {
+    readODS::write_ods(x = df_nobs, path = paste0(wb, "_sumObs", ".ods"))
+  }
+
 
   df_size_dom <- as.data.frame(su$size_dom)
   df_size_dom <- cbind.data.frame(rownames(df_size_dom), df_size_dom)
-  readODS::write_ods(x = df_size_dom, path = paste0(wb, "_sumDom", ".ods"))
+  if (no_file == TRUE) {
+    readODS::write_ods(x = df_size_dom,
+                      path = paste0(tempdir(), "\\", wb, "_sumDom", ".ods"))
+  } else {
+    readODS::write_ods(x = df_size_dom, path = paste0(wb, "_sumDom", ".ods"))
+  }
+
 
   df_smp_sizes <- as.data.frame(su$smp_size_tab)
   colnames(df_smp_sizes) <- c("Domain", "Frequency")
   df_smp_sizes <- cbind.data.frame(rownames(df_smp_sizes), df_smp_sizes)
-  readODS::write_ods(
-    x = df_smp_sizes,
-    path = paste0(wb, "_sumSmpsize", ".ods")
-  )
+  if (no_file == TRUE) {
+    readODS::write_ods(x = df_smp_sizes,
+                       path = paste0(tempdir(), "\\", wb, "_sumSmpsize", ".ods"))
+  } else {
+    readODS::write_ods(x = df_smp_sizes,
+                       path = paste0(wb, "_sumSmpsize", ".ods"))
+  }
 
   return(NULL)
 }
 
-add_pointests_ods <- function(object, indicator, wb, headlines_cs) {
+add_pointests_ods <- function(object, indicator, wb, no_file, headlines_cs) {
   if (is.null(indicator) || !all(indicator == "all" | indicator == "Quantiles" |
     indicator == "quantiles" |
     indicator == "Poverty" | indicator == "poverty" |
@@ -228,42 +278,57 @@ add_pointests_ods <- function(object, indicator, wb, headlines_cs) {
 
   data <- point_emdi(object = object, indicator = indicator)$ind
   data[, 1] <- iconv(x = data[, 1], from = "", to = "UTF-8")
-  readODS::write_ods(x = data, path = paste0(wb, "_pointEstim", ".ods"))
+  if (no_file == TRUE) {
+    readODS::write_ods(x = data,
+                       path = paste0(tempdir(), "\\", wb, "_pointEstim", ".ods"))
+  } else {
+    readODS::write_ods(x = data, path = paste0(wb, "_pointEstim", ".ods"))
+  }
 
   return(NULL)
 }
 
-
-add_precisions_ods <- function(object, indicator, MSE, wb, headlines_cs, CV) {
+add_precisions_ods <- function(object, indicator, MSE, wb, no_file,
+                               headlines_cs, CV) {
   precisions <- mse_emdi(object = object, indicator = indicator, CV = TRUE)
   if (MSE) {
     precisions$ind[, 1] <-
       iconv(x <- precisions$ind[, 1], from = "", to = "UTF-8")
-    readODS::write_ods(
-      x = precisions$ind,
-      path = paste0(wb, "_precMSE", ".ods")
-    )
+    if (no_file == TRUE) {
+      readODS::write_ods(x = precisions$ind,
+                         path = paste0(tempdir(), "\\", wb, "_precMSE", ".ods"))
+    } else {
+      readODS::write_ods(x = precisions$ind,
+                         path = paste0(wb, "_precMSE", ".ods"))
+    }
   }
   if (CV) {
     precisions$ind_cv[, 1] <-
       iconv(x <- precisions$ind_cv[, 1], from = "", to = "UTF-8")
-    readODS::write_ods(
-      x = precisions$ind_cv,
-      path = paste0(wb, "_precCV", ".ods")
-    )
+    if (no_file == TRUE) {
+      readODS::write_ods(x = precisions$ind_cv,
+                         path = paste0(tempdir(), "\\", wb, "_precCV", ".ods"))
+    } else {
+      readODS::write_ods(x = precisions$ind_cv,
+                         path = paste0(wb, "_precCV", ".ods"))
+    }
   }
   return(NULL)
 }
 
-
-add_estims_ods <- function(object, indicator, wb, headlines_cs, MSE, CV) {
+add_estims_ods <- function(object, indicator, wb, headlines_cs, no_file, MSE,
+                           CV) {
   data <- estimators(
-    object = object, indicator = indicator,
-    MSE = MSE, CV = CV
+    object = object, indicator = indicator, MSE = MSE, CV = CV
   )$ind
   data[, 1] <-
     iconv(x <- data[, 1], from = "", to = "UTF-8")
 
-  readODS::write_ods(x = data, path = paste0(wb, "_estim", ".ods"))
+  if (no_file == TRUE) {
+    readODS::write_ods(x = data,
+                       path = paste0(tempdir(), "\\", wb, "_estim", ".ods"))
+  } else {
+    readODS::write_ods(x = data, path = paste0(wb, "_estim", ".ods"))
+  }
   return(NULL)
 }
