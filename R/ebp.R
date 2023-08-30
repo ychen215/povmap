@@ -388,14 +388,14 @@ ebp <- function(fixed,
   # benchmarking
   if (!is.null(benchmark)) {
     if (is.null(benchmark_level)) {
-      point_estim$ind <- benchmark_ebp_national(
+      point_estim$ind <- povmap:::benchmark_ebp_national(
         point_estim = point_estim,
         framework = framework,
         fixed = fixed,
         benchmark = benchmark,
         benchmark_type = benchmark_type)
     } else {
-      point_estim$ind <- benchmark_ebp_level(
+      point_estim$ind <- povmap:::benchmark_ebp_level(
         point_estim = point_estim,
         framework = framework,
         fixed = fixed,
@@ -403,14 +403,27 @@ ebp <- function(fixed,
         benchmark_type = benchmark_type,
         benchmark_level = benchmark_level)
     }
-
+    
+    if (any(names(point_estim$ind) %in% c("Mean_bench"))) {
+      if (any(is.na(point_estim$ind$Mean_bench))) {
+        message(strwrap(prefix = " ", initial = "",
+                        "Benchmark point estimates for
+                          Mean contain missing values. Please check source data"))
+      }
+    }
+    
     if (any(names(point_estim$ind) %in% c("Head_Count_bench"))) {
-        if(!all(point_estim$ind$Head_Count_bench >= 0 &
-              point_estim$ind$Head_Count_bench <= 1)){
-          message(strwrap(prefix = " ", initial = "",
-                          "Please note that benchmark point estimates for
+      if (any(is.na(point_estim$ind$Head_Count_bench))) {
+        message(strwrap(prefix = " ", initial = "",
+                        "Benchmark point estimates for
+                          Head_Count contain missing values. Please check source data"))
+      }
+      else if(!all(point_estim$ind$Head_Count_bench >= 0 &
+                   point_estim$ind$Head_Count_bench <= 1)){
+        message(strwrap(prefix = " ", initial = "",
+                        "Please note that benchmark point estimates for
                           Head_Count are outside the expected range [0,1]."))
-        }
+      }
     }
   }
 
