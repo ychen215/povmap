@@ -388,14 +388,14 @@ ebp <- function(fixed,
   # benchmarking
   if (!is.null(benchmark)) {
     if (is.null(benchmark_level)) {
-      point_estim$ind <- povmap:::benchmark_ebp_national(
+      point_estim$ind <- benchmark_ebp_national(
         point_estim = point_estim,
         framework = framework,
         fixed = fixed,
         benchmark = benchmark,
         benchmark_type = benchmark_type)
     } else {
-      point_estim$ind <- povmap:::benchmark_ebp_level(
+      point_estim$ind <- benchmark_ebp_level(
         point_estim = point_estim,
         framework = framework,
         fixed = fixed,
