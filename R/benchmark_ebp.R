@@ -87,7 +87,7 @@ benchmark_ebp_national <- function (point_estim, framework, fixed, benchmark,
         (benchmark[[i]] - sum(share * estim[[i]])) * (share / phi)
     } else if (benchmark_type == "ratio_complement" && i == "Head_Count") {
       estim_complement[[i]] <- 1-estim[[i]]
-      benchmark_complement[[i]] <-1-benchmark[[i]] 
+      benchmark_complement[[i]] <-1-benchmark[[i]]
       EBP_bench_complement[[i]] <- estim[[i]] + (1 / (sum(share^2 / phi))) *
         (benchmark_complement[[i]] - sum(share * estim[[i]])) * (share / phi)
       EBP_bench[[i]] <- 1 - EBP_bench_complement
@@ -114,11 +114,10 @@ benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
                                  benchmark_type, benchmark_level) {
 
   if (!(is.numeric(benchmark) || is.data.frame(benchmark))) {
-
-    benchmark_ <- data.frame(unique(framework$pop_data[[benchmark_level]]),
+    benchmark_ <- list(unique(framework$pop_data[[benchmark_level]]),
                              rep(NA, length(benchmark)))
 
-    names(benchmark_) <- c(benchmark_level, benchmark)
+    names(benchmark_) <- c("benchmark_level", "benchmark")
 
     if (is.list(point_estim)) {# for point_estimation.R
 
