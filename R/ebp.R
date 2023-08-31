@@ -233,7 +233,7 @@
 #'       my_min = function(y) {
 #'         min(y)
 #'       }
-#'     ), na.rm = TRUE, cpus = 1
+#'     ), na.rm = TRUE, cpus = 1, nlme_opt="optim" 
 #' )
 #'
 #' # Example 3: With default setting but na.rm=TRUE under informative sampling.
