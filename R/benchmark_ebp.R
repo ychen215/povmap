@@ -114,10 +114,10 @@ benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
                                  benchmark_type, benchmark_level) {
 
   if (!(is.numeric(benchmark) || is.data.frame(benchmark))) {
-    benchmark_ <- list(unique(framework$pop_data[[benchmark_level]]),
-                             rep(NA, length(benchmark)))
+    benchmark_ <- data.frame(unique(framework$pop_data[[benchmark_level]]),
+                             as.data.frame(matrix(nrow=length(unique(framework$pop_data[[benchmark_level]])),ncol=length(benchmark))))
 
-    names(benchmark_) <- c("benchmark_level", "benchmark")
+    names(benchmark_) <- c(benchmark_level, benchmark)
 
     if (is.list(point_estim)) {# for point_estimation.R
 
