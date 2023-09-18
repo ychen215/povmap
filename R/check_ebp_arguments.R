@@ -358,7 +358,14 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
       stop(strwrap(prefix = " ", initial = "",
                    "The benchmark version of ebp is only available with
                    'raking', 'ratio', and 'ratio_complement'."))
-    }
+  }
+  
+  if (benchmark_type == "ratio_complement" && (names(benchmark)[-1] %in% "Head_Count") && max(benchmark[["Head_Count"]])>1) {
+    stop(strwrap(prefix = " ", initial = "",
+                 "When benchmarking the headcount rate with ratio_complement, the target values must lie between 0 and 1."))
+  }
+  
+  
     if (is.null(benchmark) && benchmark_type != "ratio") {
       stop(strwrap(prefix = " ", initial = "",
                    "A benchmark type is provided, but no benchmark value.
