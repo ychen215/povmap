@@ -134,6 +134,10 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
       sum((1 - (y[y < threshold]/threshold)) * pop_weights[y < threshold])/
         sum(pop_weights)
     },
+    psev = function(y, pop_weights, threshold) {
+      sum((1 - (y[y < threshold]/threshold)^2) * pop_weights[y < threshold])/
+        sum(pop_weights)
+    },
     gini = function(y, pop_weights, threshold) {
         n <- length(y)
         pop_weights <- pop_weights[order(y)]
@@ -166,6 +170,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
     "Mean",
     "Head_Count",
     "Poverty_Gap",
+    "Poverty_Severity",
     "Gini",
     "Quintile_Share",
     "Quantile_10",
