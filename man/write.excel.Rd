@@ -11,7 +11,8 @@ write.excel(
   indicator = "all",
   MSE = FALSE,
   CV = FALSE,
-  split = FALSE
+  split = FALSE,
+  model = FALSE
 )
 
 write.ods(
@@ -53,6 +54,9 @@ Defaults to \code{FALSE}.}
 to different sheets in the Excel file. In \code{write.ods} \code{TRUE} will
 result in different files for point estimates and their precisions.
 Defaults to \code{FALSE}.}
+
+\item{model}{logical if \code{TRUE}, the estimation model is exported.
+#' Defaults to \code{FALSE}.}
 }
 \value{
 An Excel file is created in your working directory, or at the given
