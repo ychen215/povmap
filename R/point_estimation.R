@@ -62,10 +62,13 @@ point_estim <- function(framework,
       data = transformation_par$transformed_data,
       random =
         as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
-      method = "REML",
+      method = framework$nlme_method,
       control = nlme::lmeControl(maxiter = framework$nlme_maxiter,
                                  tolerance = framework$nlme_tolerance,
-                                 opt = framework$nlme_opt),
+                                 opt = framework$nlme_opt,
+                                 msmaxiter=framework$nlme_msmaxiter,
+                                 mstol=framework$nlme_mstol
+                                 ),
       keep.data = keep_data,
       weights =
         varComb(
@@ -81,10 +84,12 @@ point_estim <- function(framework,
       data = transformation_par$transformed_data,
       random =
         as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
-      method = "REML",
+      method = framework$nlme_method,
       control = nlme::lmeControl(maxiter = framework$nlme_maxiter,
                                  tolerance = framework$nlme_tolerance,
-                                 opt = framework$nlme_opt),
+                                 opt = framework$nlme_opt,
+                                 msmaxiter=framework$nlme_msmaxiter,
+                                 mstol=framework$nlme_mstol),
       keep.data = keep_data
     )
   }

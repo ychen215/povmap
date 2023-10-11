@@ -139,9 +139,17 @@
 #' internal benchmarking).
 #' @param nlme_maxiter an integer indicating the maximum number of iterations
 #' the \code{lme} function from package \code{\link{nlme}} will run for
-#' parameter convergence.
+#' parameter convergence. Defaults to 1000. 
 #' @param nlme_tolerance a real number indicating the tolerance criterion for the
-#' the \code{lme} function from package \code{\link{nlme}}.
+#' the \code{lme} function from package \code{\link{nlme}}. Defaults to 1e^-6. 
+#' @param nlme_msmaxiter an integer indicating the maximum number of iterations
+#' for the optimization step of the \code{lme} function from package \code{\link{nlme}} 
+#' will run for parameter convergence. Defaults to 100. 
+#' @param nlme_mstol a real number indicating the tolerance criterion for the
+#' the optimization step of the \code{lme} function from package \code{\link{nlme}}. 
+#' Defaults to 1e^-7. 
+#' @param nlme_method a string indicating the method to be used by the \code{lme}
+#' function from package \code{\link{nlme}}, either "REML" (the default) or "ML".
 #' @param nlme_opt a string indicating the optimizer to be used by the \code{lme}
 #' function from package \code{\link{nlme}}, either "nlminb" (the default) or "optim".
 #' @param rescale_weights a logical indicating if the sample weights are scaled.
@@ -309,6 +317,9 @@ ebp <- function(fixed,
                 nlme_maxiter = 1000,
                 nlme_tolerance = 0.000001,
                 nlme_opt = "nlminb",
+                nlme_method = "REML",
+                nlme_mstol = 0.0000001,
+                nlme_msmaxiter = 50, 
                 rescale_weights = FALSE,
                 Ydump = NULL
                 ) {
@@ -368,6 +379,9 @@ ebp <- function(fixed,
     nlme_maxiter = nlme_maxiter,
     nlme_tolerance = nlme_tolerance,
     nlme_opt = nlme_opt,
+    nlme_method = nlme_method, 
+    nlme_mstol=nlme_mstol, 
+    nlme_msmaxiter = nlme_msmaxiter, 
     rescale_weights = rescale_weights
   )
 
