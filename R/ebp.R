@@ -144,7 +144,7 @@
 #' the \code{lme} function from package \code{\link{nlme}}. Defaults to 1e^-6. 
 #' @param nlme_msmaxiter an integer indicating the maximum number of iterations
 #' for the optimization step of the \code{lme} function from package \code{\link{nlme}} 
-#' will run for parameter convergence. Defaults to 100. 
+#' will run for parameter convergence. Defaults to 1000. 
 #' @param nlme_mstol a real number indicating the tolerance criterion for the
 #' the optimization step of the \code{lme} function from package \code{\link{nlme}}. 
 #' Defaults to 1e^-7. 
@@ -327,7 +327,7 @@ ebp <- function(fixed,
                 nlme_optimmethod = "BFGS", 
                 nlme_method = "REML",
                 nlme_mstol = 0.0000001,
-                nlme_msmaxiter = 50, 
+                nlme_msmaxiter = 1000, 
                 nlme_returnobject = FALSE, 
                 rescale_weights = FALSE,
                 Ydump = NULL
