@@ -29,6 +29,7 @@ test_that("Does monte_carlo function give benchmark results?", {
                         nlme_tolerance = NULL,
                         nlme_opt = "nlminb",
                         nlme_optimmethod = "BFGS",
+                        nlme_method = "REML", 
                         nlme_msmaxiter = NULL, 
                         nlme_mstol = NULL,
                         nlme_returnobject = F)
@@ -136,6 +137,7 @@ test_that("Does monte_carlo function give benchmark results? Using weights
                              nlme_tolerance = NULL,
                              nlme_opt="nlminb",
                              nlme_optimmethod = "BFGS",
+                             nlme_method = "REML", 
                              nlme_msmaxiter = NULL, 
                              nlme_mstol = NULL,
                              nlme_returnobject = F)
