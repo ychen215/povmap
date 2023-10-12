@@ -36,7 +36,7 @@ ebp(
   nlme_optimmethod = "BFGS",
   nlme_method = "REML",
   nlme_mstol = 1e-07,
-  nlme_msmaxiter = 50,
+  nlme_msmaxiter = 1000,
   nlme_returnobject = FALSE,
   rescale_weights = FALSE,
   Ydump = NULL
@@ -214,7 +214,7 @@ Defaults to 1e^-7.}
 
 \item{nlme_msmaxiter}{an integer indicating the maximum number of iterations
 for the optimization step of the \code{lme} function from package \code{\link{nlme}} 
-will run for parameter convergence. Defaults to 100.}
+will run for parameter convergence. Defaults to 1000.}
 
 \item{nlme_returnobject}{a logical indicating whether the fitted object should 
 be returned with a warning (instead of an error via stop()) when the maximum 
