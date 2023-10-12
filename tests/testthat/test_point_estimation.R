@@ -134,7 +134,11 @@ test_that("Does monte_carlo function give benchmark results? Using weights
                              rescale_weights = NULL,
                              nlme_maxiter = NULL,
                              nlme_tolerance = NULL,
-                             nlme_opt="nlminb")
+                             nlme_opt="nlminb",
+                             nlme_optimmethod = "BFGS",
+                             nlme_msmaxiter = NULL, 
+                             nlme_mstol = NULL,
+                             nlme_returnobject = F)
 
   # Conduct transformation using the optimal parameter
   transformation_par <- data_transformation(fixed          = income ~ educ1,
