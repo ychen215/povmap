@@ -27,7 +27,11 @@ test_that("Does monte_carlo function give benchmark results?", {
                         rescale_weights = NULL,
                         nlme_maxiter = NULL,
                         nlme_tolerance = NULL,
-                        nlme_opt = "nlminb")
+                        nlme_opt = "nlminb",
+                        nlme_optimmethod = "BFGS",
+                        nlme_msmaxiter = NULL, 
+                        nlme_mstol = NULL,
+                        nlme_returnobject = F)
 
 
   # Fixed optimal parameter and shift (benchmark values)
