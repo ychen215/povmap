@@ -152,6 +152,13 @@
 #' function from package \code{\link{nlme}}, either "REML" (the default) or "ML".
 #' @param nlme_opt a string indicating the optimizer to be used by the \code{lme}
 #' function from package \code{\link{nlme}}, either "nlminb" (the default) or "optim".
+#' @param nlme_optimmethod a string indicating the optimization method to be used 
+#' with the optim optimizer the \code{lme} function from packages \code{\link{nlme}} and  
+#' \code{\link{optim}} Defaults to "BFGS".   
+#' @param nlme_returnobject a logical indicating whether the fitted object should 
+#' be returned with a warning (instead of an error via stop()) when the maximum 
+#' number of iterations is reached without convergence of the algorithm. Defaults 
+#' to FALSE 
 #' @param rescale_weights a logical indicating if the sample weights are scaled.
 #' If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
 #' , the sample weights are rescaled such that the average weight is 1
@@ -317,9 +324,11 @@ ebp <- function(fixed,
                 nlme_maxiter = 1000,
                 nlme_tolerance = 0.000001,
                 nlme_opt = "nlminb",
+                nlme_optimmethod = "BFGS", 
                 nlme_method = "REML",
                 nlme_mstol = 0.0000001,
                 nlme_msmaxiter = 50, 
+                nlme_returnobject = FALSE, 
                 rescale_weights = FALSE,
                 Ydump = NULL
                 ) {
@@ -379,9 +388,11 @@ ebp <- function(fixed,
     nlme_maxiter = nlme_maxiter,
     nlme_tolerance = nlme_tolerance,
     nlme_opt = nlme_opt,
+    nlme_optimmethod, 
     nlme_method = nlme_method, 
     nlme_mstol=nlme_mstol, 
     nlme_msmaxiter = nlme_msmaxiter, 
+    nlme_returnobject = nlme_returnobject, 
     rescale_weights = rescale_weights
   )
 

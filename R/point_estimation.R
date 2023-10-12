@@ -66,8 +66,10 @@ point_estim <- function(framework,
       control = nlme::lmeControl(maxiter = framework$nlme_maxiter,
                                  tolerance = framework$nlme_tolerance,
                                  opt = framework$nlme_opt,
+                                 optimmethod = framework$nlme_optimmethod, 
                                  msmaxiter=framework$nlme_msmaxiter,
-                                 mstol=framework$nlme_mstol
+                                 mstol=framework$nlme_mstol,
+                                 returnObject = framework$nlme_returnobject 
                                  ),
       keep.data = keep_data,
       weights =
@@ -88,8 +90,11 @@ point_estim <- function(framework,
       control = nlme::lmeControl(maxiter = framework$nlme_maxiter,
                                  tolerance = framework$nlme_tolerance,
                                  opt = framework$nlme_opt,
+                                 optimmethod = framework$nlme_optimmethod, 
                                  msmaxiter=framework$nlme_msmaxiter,
-                                 mstol=framework$nlme_mstol),
+                                 mstol=framework$nlme_mstol,
+                                 returnObject = framework$nlme_returnobject
+                                 ),
       keep.data = keep_data
     )
   }

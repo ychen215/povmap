@@ -10,8 +10,9 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
                           threshold, custom_indicator = NULL, na.rm,
                           aggregate_to = NULL, weights, pop_weights,
                           weights_type, benchmark_level, benchmark_weights,
-                          nlme_maxiter, nlme_tolerance, nlme_opt, nlme_method,
-                          nlme_mstol, nlme_msmaxiter, rescale_weights) {
+                          nlme_maxiter, nlme_tolerance, nlme_opt, 
+                          nlme_optimmethod, nlme_method, nlme_mstol, 
+                          nlme_returnobject, nlme_msmaxiter, rescale_weights) {
 
 
   # Reduction of number of variables
@@ -229,8 +230,10 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
     nlme_maxiter = nlme_maxiter,
     nlme_tolerance = nlme_tolerance,
     nlme_opt = nlme_opt, 
+    nlme_optimmethod = nlme_optimmethod, 
     nlme_msmaxiter=nlme_msmaxiter, 
     nlme_mstol=nlme_mstol, 
+    nlme_returnobject=nlme_returnobject, 
     nlme_method=nlme_method
   ))
 }
