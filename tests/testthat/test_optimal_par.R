@@ -32,7 +32,12 @@ test_that("Does function optimal_parameter() return the benchmark lambda?", {
                         rescale_weights = FALSE,
                         nlme_maxiter = NULL,
                         nlme_tolerance = NULL,
-                        nlme_opt="nlminb")
+                        nlme_opt="nlminb",
+                        nlme_optimmethod = "BFGS",
+                        nlme_method = "REML", 
+                        nlme_msmaxiter = NULL, 
+                        nlme_mstol = NULL,
+                        nlme_returnobject = F)
 
 
 
