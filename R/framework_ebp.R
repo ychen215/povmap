@@ -231,10 +231,10 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
     nlme_tolerance = nlme_tolerance,
     nlme_opt = nlme_opt, 
     nlme_optimmethod = nlme_optimmethod, 
-    nlme_msmaxiter=nlme_msmaxiter, 
-    nlme_mstol=nlme_mstol, 
-    nlme_returnobject=nlme_returnobject, 
-    nlme_method=nlme_method
+    nlme_msmaxiter = nlme_msmaxiter, 
+    nlme_mstol = nlme_mstol, 
+    nlme_returnobject = nlme_returnobject, 
+    nlme_method = nlme_method
   ))
 }
 
