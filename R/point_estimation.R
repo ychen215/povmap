@@ -63,12 +63,12 @@ point_estim <- function(framework,
       random =
         as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
       method = framework$nlme_method,
-      control = nlme::lmeControl(maxiter = framework$nlme_maxiter,
+      control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
                                  tolerance = framework$nlme_tolerance,
                                  opt = framework$nlme_opt,
-                                 optimmethod = framework$nlme_optimmethod, 
-                                 msmaxiter=framework$nlme_msmaxiter,
-                                 mstol=framework$nlme_mstol,
+                                 optimMethod = framework$nlme_optimmethod, 
+                                 msMaxIter=framework$nlme_msmaxiter,
+                                 msTol=framework$nlme_mstol,
                                  returnObject = framework$nlme_returnobject 
                                  ),
       keep.data = keep_data,
@@ -87,13 +87,13 @@ point_estim <- function(framework,
       random =
         as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
       method = framework$nlme_method,
-      control = nlme::lmeControl(maxiter = framework$nlme_maxiter,
+      control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
                                  tolerance = framework$nlme_tolerance,
                                  opt = framework$nlme_opt,
-                                 optimmethod = framework$nlme_optimmethod, 
-                                 msmaxiter=framework$nlme_msmaxiter,
-                                 mstol=framework$nlme_mstol,
-                                 returnObject = framework$nlme_returnobject
+                                 optimMethod = framework$nlme_optimmethod, 
+                                 msMaxIter=framework$nlme_msmaxiter,
+                                 msTol=framework$nlme_mstol,
+                                 returnObject = framework$nlme_returnobject 
                                  ),
       keep.data = keep_data
     )
