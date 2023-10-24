@@ -40,9 +40,10 @@ Imports:
     readODS,
     formula.tools,
     saeRobust,
-    spdep, 
+    spdep,
     bestNormalize,
-    survey
+    survey,
+    sf
 Suggests:
     testthat,
     R.rsp,

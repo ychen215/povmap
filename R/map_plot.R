@@ -113,17 +113,17 @@ map_plot <- function(object,
                      return_data = FALSE) {
   if (is.null(map_obj)) {
     message(strwrap(prefix = " ", initial = "", "No Map Object has been
-                    provided. An artificial polygone is used for
+                    provided. An artificial polygon is used for
                     visualization"))
     map_pseudo(
       object = object, indicator = indicator, panelplot = FALSE,
       MSE = MSE, CV = CV
     )
-  } else if (!inherits(x = map_obj, what = "SpatialPolygonsDataFrame") ||
-    attr(class(map_obj), "package") != "sp") {
+  } else if (!inherits(x = map_obj, what = "sf") ||
+    attr(class(map_obj), "package") != "sf") {
     stop(strwrap(prefix = " ", initial = "",
-                 "map_obj is not of class SpatialPolygonsDataFrame from the
-                 sp package"))
+                 "map_obj is not of class 'sf, data.frame' from the
+                  sf package"))
   } else {
     if (length(color) != 2 || !is.vector(color)) {
       stop(strwrap(prefix = " ", initial = "",
@@ -230,7 +230,8 @@ plot_real <- function(object,
       names(map_tab)
     ), drop = F]
   } else {
-    matcher <- match(map_obj@data[map_dom_id][, 1], map_data[, "Domain"])
+    matcher <- match(as.vector(unlist(sf::st_drop_geometry(map_obj[map_dom_id][, 1]))),
+                     map_data[, "Domain"])
 
     if (any(is.na(matcher))) {
       if (all(is.na(matcher))) {
@@ -246,13 +247,18 @@ plot_real <- function(object,
     map_data <- map_data[matcher, ]
   }
 
-  map_obj@data[colnames(map_data)] <- map_data
+  # map_obj@data[colnames(map_data)] <- map_data
+  #
+  #
+  # map_obj.fort <- fortify(map_obj, region = map_dom_id)
+  # map_obj.fort <- merge(map_obj.fort, map_obj@data,
+  #   by.x = "id", by.y = map_dom_id
+  # )
 
-
-  map_obj.fort <- fortify(map_obj, region = map_dom_id)
-  map_obj.fort <- merge(map_obj.fort, map_obj@data,
-    by.x = "id", by.y = map_dom_id
-  )
+  map_obj <- merge(x = map_obj,
+                   y = map_data,
+                   by.x = "Domain",
+                   by.y = map_dom_id)
 
   indicator <- colnames(map_data)
   indicator <- indicator[!(indicator %in% "Domain")]
