@@ -20,3 +20,22 @@ emdi_model <- ebp(
 load_shapeaustria()
 
 
+# First find the right order
+dom_ord <- match(shape_austria_dis$PB, emdi_model$ind$Domain)
+
+# Create the mapping table based on the order obtained above
+map_tab <- data.frame(
+  pop_data_id = emdi_model$ind$Domain[dom_ord],
+  shape_id = shape_austria_dis$BKZ
+)
+
+# Create map plot for mean indicator - point and CV estimates but no MSE
+# using the numerical domain identifiers of the shape file
+
+plot_real(
+  object = emdi_model, MSE = FALSE, CV = TRUE,
+  map_obj = shape_austria_dis, indicator = c("Mean"),
+  map_dom_id = "BKZ", map_tab = map_tab
+)
+
+

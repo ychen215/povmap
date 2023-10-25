@@ -77,12 +77,12 @@
 #' # file
 #'
 #' # First find the right order
-#' dom_ord <- match(shape_austria_dis@data$PB, emdi_model$ind$Domain)
+#' dom_ord <- match(shape_austria_dis$PB, emdi_model$ind$Domain)
 #'
 #' # Create the mapping table based on the order obtained above
 #' map_tab <- data.frame(
 #'   pop_data_id = emdi_model$ind$Domain[dom_ord],
-#'   shape_id = shape_austria_dis@data$BKZ
+#'   shape_id = shape_austria_dis$BKZ
 #' )
 #'
 #' # Create map plot for mean indicator - point and CV estimates but no MSE
@@ -98,7 +98,7 @@
 #' @importFrom reshape2 melt
 #' @importFrom ggplot2 aes geom_polygon facet_wrap fortify coord_equal labs
 #' @importFrom ggplot2 theme element_blank guides scale_fill_gradient
-#' @importFrom ggplot2 scale_colour_gradient
+#' @importFrom ggplot2 scale_colour_gradient geom_sf
 
 map_plot <- function(object,
                      indicator = "all",
@@ -119,11 +119,10 @@ map_plot <- function(object,
       object = object, indicator = indicator, panelplot = FALSE,
       MSE = MSE, CV = CV
     )
-  } else if (!inherits(x = map_obj, what = "sf") ||
-    attr(class(map_obj), "package") != "sf") {
+  } else if (!inherits(x = map_obj, what = "sf")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "map_obj is not of class 'sf, data.frame' from the
-                  sf package"))
+                 "map_obj is not of class 'sf', 'data.frame'  from the
+                 sp package"))
   } else {
     if (length(color) != 2 || !is.vector(color)) {
       stop(strwrap(prefix = " ", initial = "",
@@ -208,7 +207,7 @@ plot_real <- function(object,
       by.x = "Domain", by.y = names(map_tab)[1]
     )
     matcher <- match(
-      map_obj@data[map_dom_id][, 1],
+      as.vector(unlist(sf::st_drop_geometry(map_obj[map_dom_id][, 1]))),
       map_data[, names(map_tab)[2]]
     )
 
@@ -225,7 +224,6 @@ plot_real <- function(object,
     }
     map_data <- map_data[matcher, ]
     map_data <- map_data[, !colnames(map_data) %in% c(
-      "Domain",
       map_dom_id,
       names(map_tab)
     ), drop = F]
@@ -257,37 +255,38 @@ plot_real <- function(object,
 
   map_obj <- merge(x = map_obj,
                    y = map_data,
-                   by.x = "Domain",
-                   by.y = map_dom_id)
+                   by.x = map_dom_id,
+                   by.y = "Domain")
 
   indicator <- colnames(map_data)
   indicator <- indicator[!(indicator %in% "Domain")]
+
   for (ind in indicator) {
-    map_obj.fort[ind][, 1][!is.finite(map_obj.fort[ind][, 1])] <- NA
-    scale_point <- get_scale_points(map_obj.fort[ind][, 1], ind, scale_points)
-    print(ggplot(map_obj.fort, aes(long, lat,
-      group = group,
-      fill = map_obj.fort[ind][, 1]
-    )) +
-      geom_polygon(color = "azure3") +
-      coord_equal() +
-      labs(x = "", y = "", fill = ind) +
-      ggtitle(gsub(pattern = "_", replacement = " ", x = ind)) +
-      scale_fill_gradient(
-        low = col[1], high = col[2],
-        limits = scale_point, guide = guide
-      ) +
-      theme(
-        axis.ticks = element_blank(), axis.text = element_blank(),
-        legend.title = element_blank()
-      ))
+    map_obj2 <- sf::st_drop_geometry(map_obj)
+    map_obj2[ind][,1][!is.finite(map_obj2[ind][,1])] <- NA
+
+    scale_point <- get_scale_points(map_obj2[ind][, 1], ind, scale_points)
+
+    print(ggplot(map_obj,
+                 aes(fill = get(ind))) +
+          geom_sf(color = "azure3") +
+          labs(x = "", y = "", fill = ind) +
+          ggtitle(gsub(pattern = "_", replacement = " ", x = ind)) +
+          scale_fill_gradient(
+            low = col[1], high = col[2],
+            limits = scale_point, guide = guide
+          ) +
+          theme(
+            axis.ticks = element_blank(), axis.text = element_blank(),
+            legend.title = element_blank()
+          ))
     if (!ind == tail(indicator, 1)) {
       cat("Press [enter] to continue")
       line <- readline()
     }
   }
   if (return_data) {
-    return(map_obj.fort)
+    return(map_obj)
   }
 }
 
