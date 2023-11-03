@@ -35,7 +35,13 @@ map_tab <- data.frame(
 plot_real(
   object = emdi_model, MSE = FALSE, CV = TRUE,
   map_obj = shape_austria_dis, indicator = c("Mean"),
-  map_dom_id = "BKZ", map_tab = map_tab
+  map_dom_id = "BKZ", map_tab = map_tab,
+  col = c("lightblue", "darkblue")
 )
 
+map_plot(
+  object = emdi_model, MSE = FALSE, CV = TRUE,
+  map_obj = shape_austria_dis, indicator = c("Mean"),
+  map_dom_id = "BKZ", map_tab = map_tab
+)
 

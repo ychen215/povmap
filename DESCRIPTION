@@ -49,7 +49,5 @@ Suggests:
     R.rsp,
     simFrame,
     laeken,
-    rgeos,
-    maptools,
     graphics
 VignetteBuilder: R.rsp

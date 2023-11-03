@@ -23,14 +23,15 @@
 #' Defaults to \code{FALSE}.
 #' @param CV optional logical. If \code{TRUE}, the CV is also visualized.
 #' Defaults to \code{FALSE}.
-#' @param map_obj an \code{SpatialPolygonsDataFrame} object as defined by the
-#' \pkg{sp} package on which the data should be visualized.
+#' @param map_obj an \code{sf, data.frame} object as defined by the
+#' \pkg{sf} package on which the data should be visualized. The typical example
+#' is polygon shapefile object
 #' @param map_dom_id a character string containing the name of a variable in
 #' \code{map_obj} that indicates the domains.
 #' @param map_tab a \code{data.frame} object with two columns that match the
 #' domain variable from the census data set (first column) with the domain
 #' variable in the map_obj (second column). This should only be used if the IDs
-#' in both objects differ.
+#' in both objects (`map_obj` and `object`) differ.
 #' @param color a \code{vector} of length 2 defining the lowest and highest
 #' color in the plots.
 #' @param scale_points a structure defining the lowest and the highest
@@ -46,7 +47,7 @@
 #' @return Creates the plots demanded, and, if selected, a fortified data.frame
 #' containing the mapdata and chosen indicators.
 #' @seealso \code{\link{direct}}, \code{\link{ebp}}, \code{\link{fh}},
-#' \code{\link{emdiObject}}, \code{\link[maptools]{readShapePoly}}
+#' \code{\link{emdiObject}}
 #' @examples
 #' \donttest{
 #' data("eusilcA_pop")
@@ -122,7 +123,7 @@ map_plot <- function(object,
   } else if (!inherits(x = map_obj, what = "sf")) {
     stop(strwrap(prefix = " ", initial = "",
                  "map_obj is not of class 'sf', 'data.frame'  from the
-                 sp package"))
+                 sf package"))
   } else {
     if (length(color) != 2 || !is.vector(color)) {
       stop(strwrap(prefix = " ", initial = "",
@@ -202,12 +203,13 @@ plot_real <- function(object,
   )$ind
 
   if (!is.null(map_tab)) {
+    names(map_tab)[2] <- map_dom_id
     map_data <- merge(
       x = map_data, y = map_tab,
       by.x = "Domain", by.y = names(map_tab)[1]
     )
     matcher <- match(
-      as.vector(unlist(sf::st_drop_geometry(map_obj[map_dom_id][, 1]))),
+      as.vector(unlist(sf::st_drop_geometry(map_obj[map_dom_id]))),
       map_data[, names(map_tab)[2]]
     )
 
@@ -223,10 +225,11 @@ plot_real <- function(object,
       }
     }
     map_data <- map_data[matcher, ]
-    map_data <- map_data[, !colnames(map_data) %in% c(
-      map_dom_id,
-      names(map_tab)
-    ), drop = F]
+
+    # map_data <- map_data[, !colnames(map_data) %in% c(
+    #   map_dom_id,
+    #   names(map_tab)
+    # ), drop = F]
   } else {
     matcher <- match(as.vector(unlist(sf::st_drop_geometry(map_obj[map_dom_id][, 1]))),
                      map_data[, "Domain"])
@@ -245,21 +248,10 @@ plot_real <- function(object,
     map_data <- map_data[matcher, ]
   }
 
-  # map_obj@data[colnames(map_data)] <- map_data
-  #
-  #
-  # map_obj.fort <- fortify(map_obj, region = map_dom_id)
-  # map_obj.fort <- merge(map_obj.fort, map_obj@data,
-  #   by.x = "id", by.y = map_dom_id
-  # )
-
-  map_obj <- merge(x = map_obj,
-                   y = map_data,
-                   by.x = map_dom_id,
-                   by.y = "Domain")
+  map_obj <- merge(x = map_obj, y = map_data)
 
   indicator <- colnames(map_data)
-  indicator <- indicator[!(indicator %in% "Domain")]
+  indicator <- indicator[!(indicator %in% c("Domain", map_dom_id))]
 
   for (ind in indicator) {
     map_obj2 <- sf::st_drop_geometry(map_obj)
