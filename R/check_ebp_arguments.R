@@ -32,12 +32,13 @@ ebp_check1 <- function(fixed, pop_data, pop_domains, smp_data, smp_domains, L) {
                  also help(ebp)."))
   }
 
-  if (!is.numeric(L) || length(L) != 1 || L < 1) {
+  if (!is.numeric(L) || length(L) != 1 || L < 0) {
     stop(strwrap(prefix = " ", initial = "",
                  "L needs to be a single value, interpreted as an integer,
                  determining the number of Monte-Carlo simulations. The value
-                 must be at least 1. See also help(ebp)."))
+                 must be at least 0. See also help(ebp)."))
   }
+  
   if (!all(unique(as.character(smp_data[[smp_domains]])) %in%
     unique(as.character(pop_data[[pop_domains]])))) {
     stop(strwrap(prefix = " ", initial = "",
@@ -47,7 +48,7 @@ ebp_check1 <- function(fixed, pop_data, pop_domains, smp_data, smp_domains, L) {
 }
 
 ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
-                       custom_indicator, cpus, seed, na.rm, weights,
+                       L, custom_indicator, cpus, seed, na.rm, weights,
                        pop_weights, weights_type, benchmark, benchmark_type,
                        benchmark_level, benchmark_weights) {
 
@@ -76,6 +77,14 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  ''box.cox'', ''dual'', ''log.shift'', ''ordernorm'',
                  ''arcsin''."))
   }
+  
+  
+  if (transformation != "no" & L==0) {
+    stop(strwrap(prefix = " ", initial = "",
+                 "Analytic calculations not supported with transformations at this time"))
+  }
+  
+  
   if (any(interval != "default") & (!is.vector(interval, mode = "numeric") ||
     length(interval) != 2 || !(interval[1] < interval[2]))) {
     stop(strwrap(prefix = " ", initial = "",

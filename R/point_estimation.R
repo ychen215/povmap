@@ -56,7 +56,7 @@ point_estim <- function(framework,
     transformation_par$transformed_data$weights_scaled <-
       framework$smp_data[,framework$weights] /
         mean(framework$smp_data[,framework$weights], na.rm = TRUE)
-
+    
     mixed_model <- nlme::lme(
       fixed = fixed,
       data = transformation_par$transformed_data,
@@ -80,6 +80,7 @@ point_estim <- function(framework,
           varFixed(as.formula(paste0("~1/", "weights_scaled")))
         )
     )
+    
   } else {
     mixed_model <- nlme::lme(
       fixed = fixed,
@@ -131,7 +132,8 @@ point_estim <- function(framework,
   }
 
   # The monte-carlo function returns a data frame of desired indicators.
-  indicator_prediction <- monte_carlo(
+ if (L>0) {
+   indicator_prediction <- monte_carlo(
     transformation = transformation,
     L = L,
     framework = framework,
@@ -142,7 +144,21 @@ point_estim <- function(framework,
     fixed = fixed,
     Ydump = Ydump 
   )
-
+ }
+  else {
+    indicator_prediction <- analytic(
+      transformation=transformation,
+      framework = framework,
+      lambda = optimal_lambda,
+      shift = shift_par,
+      model_par = est_par,
+      gen_model = gen_par, 
+      fixed = fixed, 
+      Ydump=Ydump
+    )
+  }
+  
+  
   mixed_model$coefficients_weighted <- if (!is.null(framework$weights)) {
     as.numeric(est_par$betas)
   } else {
@@ -387,6 +403,40 @@ gen_model <- function(fixed,
   }
 } # End gen_model
 
+
+#analytic functions 
+# This function calculates the expected value, intially in the case of no transformation 
+analytic <- function(transformation,
+                     framework,
+                     lambda,  
+                     shift, 
+                     model_par, 
+                     gen_model, 
+                     fixed, 
+                     Ydump
+                     ) {
+
+  if(!is.null(framework$aggregate_to_vec)){
+    N_dom_pop_tmp <- framework$N_dom_pop_agg
+    pop_domains_vec_tmp <- framework$aggregate_to_vec
+  } else {
+    N_dom_pop_tmp <- framework$N_dom_pop
+    pop_domains_vec_tmp <- framework$pop_domains_vec
+  }
+
+
+# construct vector for variance of random effect, copied from errors_gen line 568
+sigma2vu <- vector(length = framework$N_pop)
+# variance of random effect for out-of-sample domains
+sigma2vu[!framework$obs_dom] <- model_par$sigmau2est
+# variance of random effect for in-sample domains
+sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framework$dist_obs_dom])
+
+gen_model$Head_Count <- pnorm(framework$threshold - gen_model$mu,sd=(sigma2vu+model_par$sigmae2est)^0.5)
+indicators <- data.frame("Mean" = gen_model$mu,"Head_Count" = gen_model$Head_Count)
+point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
+return(point_estimates)
+} # end analytic 
 
 # Monte-Carlo approximation ----------------------------------------------------
 

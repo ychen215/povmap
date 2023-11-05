@@ -332,7 +332,7 @@ ebp <- function(fixed,
                 rescale_weights = FALSE,
                 Ydump = NULL
                 ) {
-
+  start.time <- Sys.time()
   ebp_check1(
     fixed = fixed, pop_data = pop_data, pop_domains = pop_domains,
     smp_data = smp_data, smp_domains = smp_domains, L = L
@@ -340,7 +340,7 @@ ebp <- function(fixed,
 
   ebp_check2(
     threshold = threshold, transformation = transformation,
-    interval = interval, MSE = MSE, boot_type = boot_type, B = B,
+    interval = interval, MSE = MSE, boot_type = boot_type, B = B, L= L, 
     custom_indicator = custom_indicator, cpus = cpus, seed = seed,
     na.rm = na.rm, weights = weights, pop_weights = pop_weights,
     weights_type = weights_type, benchmark = benchmark,
@@ -531,9 +531,15 @@ ebp <- function(fixed,
     )
   }
 
+  
+  end.time <- Sys.time()
+  print(round(end.time - start.time,2))
+  
   if (cpus > 1 && parallel_mode != "socket") {
     RNGkind(RNG_kind[1]) # restoring RNG type
   }
   class(ebp_out) <- c("ebp", "emdi")
   return(ebp_out)
+
+  
 }
