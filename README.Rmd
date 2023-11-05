@@ -11,6 +11,8 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+
+pacman::p_load(povmap)
 ```
 
 # povmap: Extension to the package emdi <img src="man/figures/logo.png" align="right" height="139" />
@@ -53,7 +55,7 @@ remotes::install_github("SSA-Statistical-Team-Projects/povmap")
 ```
 
 ## Usage
-```{r}
+```{r, message = FALSE}
 library(povmap)
 
 ### estimate a unit level model with sample and population weights
@@ -126,7 +128,7 @@ ebp_reportcoef_table(ebp_model, 4)
 ### compute the CVs (several CV types are estimated including
 ### Horowitz Thompson CVs, CVs accounting for the design effect,
 ### bootstraped CVs i.e. calibrated or naive)
-ebp_compute_cv(model = ebp_model, calibvar = "gender")
+head(ebp_compute_cv(model = ebp_model, calibvar = "gender"))
 
 ### report the model fit and normality assumptions
 ebp_normalityfit(model = ebp_model)
@@ -134,7 +136,9 @@ ebp_normalityfit(model = ebp_model)
 ```
 
 
+## Getting help
 
+If you encounter a clear bug, please file an issue with a minimal reproducible example on [GitHub](https://github.com/SSA-Statistical-Team-Projects/povmap/issues)
 
 
 
