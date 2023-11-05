@@ -8,10 +8,116 @@
 [![R-CMD-check](https://github.com/SSA-Statistical-Team-Projects/povmap/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/SSA-Statistical-Team-Projects/povmap/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
+## Overview
+
 The R package povmap is designed to facilitate the production of small
 area estimates of means and poverty headcount rates. It adds several new
-features to the emdi package. These include new options for
-incorporating survey weights, ex-post benchmarking of estimates, two
-additional transformations, and several new convenient functions to
-assist with reporting results.
+features to the
+[emdi](https://cran.r-project.org/web/packages/emdi/index.html) package.
+These include new options for:
 
+- incorporating survey weights,
+- ex-post benchmarking of estimates,
+- two additional outcome variable transformations,
+- and several new convenience functions to assist with reporting
+  results.
+
+## Installation
+
+``` r
+## To install the package from CRAN, run the following in R: 
+
+install.packages("povmap")
+```
+
+## Development Version
+
+``` r
+## To get a bug fix or to use a feature from the development version, you can install 
+## the development version of povmap from GitHub. Sometimes, povmap maybe unavailable in CRAN (although this is typically ## unlikely)
+
+devtools::install_github("SSA-Statistical-Team-Projects/povmap")
+## alternatively,
+remotes::install_github("SSA-Statistical-Team-Projects/povmap")
+```
+
+## Usage
+
+``` r
+
+
+### estimate a unit level model with sample and population weights
+ebp_model <- ebp(fixed = eqIncome ~ gender + eqsize + cash +
+                 self_empl + unempl_ben + age_ben + surv_ben + sick_ben +
+                 dis_ben + rent + fam_allow + house_allow + cap_inv +
+                 tax_adj,
+                 pop_data = eusilcA_pop, 
+                 pop_domains = "district",
+                 smp_data = eusilcA_smp, 
+                 smp_domains = "district",
+                 na.rm = TRUE, 
+                 weights = "weight",
+                 pop_weights = "hhsize", 
+                 MSE = TRUE, 
+                 weights_type = "nlme",
+                 B = 2, 
+                 L = 2)
+
+summary(ebp_model)
+
+### showcasing the actual poverty map
+load_shapeaustria()  ## reading in the shapefile
+
+## the new `map_plot` now requires sf shapefile objects
+## rather than the older `sp` (it's dependencies are being phased out)
+map_plot(object = ebp_model, 
+         MSE = FALSE, 
+         CV = FALSE, 
+         map_obj = shape_austria_dis, 
+         indicator = c("Head_Count"), 
+         map_dom_id = "PB")
+
+
+###### ---------------------------------------------------- #######
+# compute direct estimates 
+direct_est <- direct(y = "eqIncome", 
+                     smp_data = eusilcA_smp,
+                     smp_domains = "district", 
+                     weights = "weight",
+                     var = TRUE, 
+                     B = 2)
+
+### some general pre-estimation statistics
+ebp_reportdescriptives(model = ebp_model, 
+                       direct = direct_est,
+                       smp_data = eusilcA_smp, 
+                       weights = "weight",
+                       pop_weights = "hhsize", 
+                       CV_level = "state",
+                       pop_data = eusilcA_pop, 
+                       pop_domains = "district")
+
+
+### compare the means between survey and census prior to model estimation
+variables <- c("gender", "eqsize", "cash", "self_empl",
+               "unempl_ben", "age_ben", "surv_ben",
+               "sick_ben", "dis_ben", "rent", "fam_allow",
+               "house_allow", "cap_inv", "tax_adj")
+
+ebp_test_means(varlist = variables,
+               pop_data = eusilcA_pop,
+               smp_data = eusilcA_smp,
+               weights = "weight")
+
+### report EBP model coefficients with significance levels
+ebp_reportcoef_table(ebp_model, 4)
+
+
+### compute the CVs (several CV types are estimated including
+### Horowitz Thompson CVs, CVs accounting for the design effect,
+### bootstraped CVs i.e. calibrated or naive)
+ebp_compute_cv(model = ebp_model, calibvar = "gender")
+
+### report the model fit and normality assumptions
+ebp_normalityfit(model = ebp_model)
+```
