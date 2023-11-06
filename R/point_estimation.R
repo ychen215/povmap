@@ -435,6 +435,9 @@ sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framewor
 gen_model$Head_Count <- pnorm(framework$threshold - gen_model$mu,sd=(sigma2vu+model_par$sigmae2est)^0.5)
 indicators <- data.frame("Mean" = gen_model$mu,"Head_Count" = gen_model$Head_Count)
 point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
+# add N/As for other indicators (besides 2 that we calculated)  
+point_estimates <- cbind(point_estimates,data.frame(matrix(ncol=length(framework$indicator_names)-2,nrow=nrow(point_estimates))))
+colnames(point_estimates) <- c("Domain",framework$indicator_names) #Mean and Head_Count are first in indicator_names 
 return(point_estimates)
 } # end analytic 
 
