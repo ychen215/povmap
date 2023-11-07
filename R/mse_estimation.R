@@ -291,6 +291,8 @@ mse_estim <- function(framework,
         benchmark_level = benchmark_level)
     }
   }
+
+  
   return((bootstrap_point_estim - true_indicators)^2)
 } # End mse_estim
 
@@ -352,6 +354,11 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
     sqrt(model_par$sigmae2est +
       model_par$sigmau2est)
   )
+  # Divide eps by mse_pop_weights^0.5 to scale down variance by mse_pop_weights  
+  if (!is.null(framework$MSE_pop_weights)) {
+  eps <- eps / framework$pop_data[framework$MSE_pop_weights]^0.5 
+  }
+  
   # superpopulation random effect
   vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)

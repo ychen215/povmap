@@ -8,10 +8,10 @@
 
 framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
                           threshold, custom_indicator = NULL, na.rm,
-                          aggregate_to = NULL, weights, pop_weights,
-                          weights_type, benchmark_level, benchmark_weights,
-                          nlme_maxiter, nlme_tolerance, nlme_opt, 
-                          nlme_optimmethod, nlme_method, nlme_mstol, 
+                          aggregate_to = NULL, weights, pop_weights, 
+                          MSE_pop_weights, weights_type, benchmark_level, 
+                          benchmark_weights,nlme_maxiter, nlme_tolerance, 
+                          nlme_opt, nlme_optimmethod, nlme_method, nlme_mstol, 
                           nlme_returnobject, nlme_msmaxiter, rescale_weights) {
 
 
@@ -226,6 +226,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
     weights = weights,
     benchmark_weights = benchmark_weights,
     pop_weights = pop_weights,
+    MSE_pop_weights = MSE_pop_weights, 
     weights_type = weights_type,
     nlme_maxiter = nlme_maxiter,
     nlme_tolerance = nlme_tolerance,

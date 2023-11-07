@@ -98,6 +98,12 @@
 #' indicates population weights in the populatation data. If a character string
 #' is provided weighted indicators are estimated using population weights.
 #' The variable has to be numeric. Defaults to \code{NULL}.
+#' @param MSE_pop_weights a character string containing the name of a variable 
+#' that indicates population weights to be used for MSE estimation. When constructing 
+#' the super-population in the parametric bootstrap, the variance 
+#' of the epsilon term is scaled down by this amount. This option is useful when 
+#' substituting one observation for many identical observations in the population
+#' data. Defaults to \code{NULL}. 
 #' @param aggregate_to a character string containing the name of a variable from
 #' population data that indicates the target domain level for which the
 #' results are to be displayed. The variable can be numeric or a factor.
@@ -315,6 +321,7 @@ ebp <- function(fixed,
                 na.rm = FALSE,
                 weights = NULL,
                 pop_weights = NULL,
+                MSE_pop_weights = NULL, 
                 aggregate_to = NULL,
                 weights_type = "Guadarrama",
                 benchmark = NULL,
@@ -382,6 +389,7 @@ ebp <- function(fixed,
     na.rm = na.rm,
     weights = weights,
     pop_weights = pop_weights,
+    MSE_pop_weights = MSE_pop_weights, 
     weights_type = weights_type,
     benchmark_level = benchmark_level,
     benchmark_weights = benchmark_weights,
