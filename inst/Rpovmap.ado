@@ -5,7 +5,9 @@
 
 cap program drop Rpovmap
 program define Rpovmap 
-syntax namelist, smp_data(string) pop_data(string) smp_domains(string) pop_domains(string) [weights(string) WEIGHTS_Type(string) pop_weights(string) threshold(string)  l(int 50) b(int 100) mse(string) transformation(string) interval(string) na_rm(string) cpus(int 1) seed(int 123) savexls(string) saveobject(string) interval(string) benchmark(string) aggregate_to(string) weights_type(string) benchmark_level(string) benchmark_type(string) benchmark_weights(string) rescale_weights(string) nlme_maxiter(int 1000) nlme_tolerance(real 1e-06) nlme_opt(string) boot_type(string)] 
+syntax namelist, smp_data(string) pop_data(string) smp_domains(string) pop_domains(string) [weights(string) WEIGHTS_Type(string) pop_weights(string) mse_pop_weights(string) threshold(string)  l(int 50) b(int 100) mse(string) transformation(string) interval(string) na_rm(string) cpus(int 1) seed(int 123) savexls(string) saveobject(string) interval(string) benchmark(string) aggregate_to(string) weights_type(string) benchmark_level(string) benchmark_type(string) benchmark_weights(string) rescale_weights(string) nlme_maxiter(int 1000) nlme_tolerance(real 1e-06) nlme_opt(string) boot_type(string)] 
+
+
 
 * checks 
 if real("`threshold'")==. & "`threshold'"~="" {
@@ -41,6 +43,13 @@ else {
 	local pop_weights `""`pop_weights'""'
 }
 
+if "mse_pop_weights'"=="" {
+	local mse_pop_weights="NULL" 
+}
+else {
+	local mse_pop_weights `""`mse_pop_weights'""'
+}
+
 if "`threshold'"=="" {
 local threshold="NULL"
 }
@@ -70,9 +79,14 @@ local scale_bootvar "NULL"
 if "`benchmark'"=="" {
 	local benchmark "NULL"
 }
-else {
+else if strpos("`benchmark'","Head_Count")>0 | strpos("`benchmark'","Mean")>0 { 
 	local benchmark `"c("`benchmark'")"'
 }
+else {
+    local benchmark "`benchmark'"
+	local benchmark_external "TRUE" 
+} 
+
 if "`benchmark_level'"=="" {
 	local benchmark_level  "NULL"
 }
@@ -142,11 +156,6 @@ local working_dir : subinstr local working_dir "\" "/", all
 restore 
 
 
-*source('point_estimation.R')
-*source('mse_estimation.R'); ///
-*reassignInPackage("point_estim", pkgName="emdi", point_estim); ///
-*reassignInPackage("mse_estim", pkgName="emdi", mse_estim); ///
-
 file open Rscript using "povmap.R", write replace 
 file write Rscript `"library("haven");"' _n
 file write Rscript `"library("povmap");"' _n
@@ -155,15 +164,24 @@ file write Rscript `"pop <- as_factor(as.data.frame(read_dta("`pop_data'")));"' 
 file write Rscript `"smp <- as_factor(as.data.frame(read_dta("`smp_data'")));"' _n
 file write Rscript `"model <- read.delim("`modelfile'.txt", header = FALSE, sep = "\t");"' _n
 file write Rscript "model <- as.formula(as.character(model[1,1]));" _n
+
+if "`benchmark_external'"=="TRUE" {
+local benchmark_level_clean : list clean benchmark_level 	
+file write Rscript "benchmark_value <- tapply(smp\$`benchmark', smp\$`benchmark_level_clean', mean)" _n     
+file write Rscript "benchmark_table <- data.frame(`benchmark_level_clean' = names(benchmark_value), Head_Count = benchmark_value)" _n     
+local benchmark "benchmark_table"
+}
+
+
 file write Rscript "ebp_results <- ebp(fixed = model,pop_data = pop," _n 
 file write Rscript `"pop_domains = "`pop_domains'", smp_data = smp, smp_domains = "`smp_domains'","' _n 
 file write Rscript `"threshold = `threshold', L = `l', B = `b', MSE = `mse', transformation = "`transformation'", interval = "`interval'","' _n 
 file write Rscript `"boot_type="`boot_type'",na.rm = `na_rm', cpus = `cpus', seed=`seed', weights = `weights', weights_type = "`weights_type'", pop_weights = `pop_weights', aggregate_to = `aggregate_to',benchmark = `benchmark',"' _n          
 file write Rscript `" benchmark_type = `benchmark_type', benchmark_level = `benchmark_level', benchmark_weights = `benchmark_weights', rescale_weights = `rescale_weights', nlme_maxiter = `nlme_maxiter',nlme_tolerance = `nlme_tolerance',nlme_opt = "`nlme_opt'")"' _n          
-file write Rscript `"write.excel(ebp_results, file = "`savexls'", indicator = "all", MSE = `mse', CV = `mse', split = FALSE)"' _n          
 if "`saveobject'"~="" {
 file write Rscript `"save(ebp_results,file="`saveobject'")"' _n  	
 }
+file write Rscript `"write.excel(ebp_results, file = "`savexls'", indicator = "all", MSE = `mse', CV = `mse', split = FALSE)"' _n          
 file close Rscript 
 
 rscript using povmap.R, require(povmap haven)
