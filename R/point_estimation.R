@@ -55,7 +55,7 @@ point_estim <- function(framework,
 
     transformation_par$transformed_data$weights_scaled <-
       framework$smp_data[,framework$weights] /
-        colMeans(framework$smp_data[,framework$weights], na.rm = TRUE)
+        mean(framework$smp_data[,framework$weights], na.rm = TRUE)
     
     mixed_model <- nlme::lme(
       fixed = fixed,
