@@ -43,8 +43,17 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
 
 
   pop_data <- pop_data[, pop_vars]
-
-
+  # convert to dataframe if necessary 
+  if is_tibble(pop_data) {
+    pop_data <- as.data.frame(pop_data)
+  }
+  if is_tibble(smp_data) {
+    smp_data <- as.data.frame(pop_data)
+  }
+  
+  
+  
+  
   # Deletion of NA
   if (na.rm == TRUE) {
     pop_data <- na.omit(pop_data)
@@ -59,7 +68,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
   if (isTRUE(rescale_weights) && !is.null(weights)) {
     smp_data[,weights] <- smp_data[,weights] / ave(smp_data[,weights], smp_data[,smp_domains])
   }
-
+  
   # Order of domains
   pop_data <- pop_data[order(pop_data[[pop_domains]]), ]
 
