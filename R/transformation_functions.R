@@ -66,7 +66,7 @@ data_transformation <- function(fixed,
                                 transformation,
                                 lambda) {
 
-  y_vector <- as.matrix(smp_data[paste(fixed[2])])
+  y_vector <- as.matrix(smp_data[paste(fixed[[2]])])
 
   transformed <- if (transformation == "no") {
     no_transform(y = y_vector, shift = NULL)
@@ -84,7 +84,7 @@ data_transformation <- function(fixed,
     ordernorm(y = y_vector, shift = NULL)
   }
 
-  smp_data[paste(fixed[2])] <- transformed$y
+  smp_data[paste(fixed[[2]])] <- transformed$y
 
   return(list(transformed_data = smp_data, shift = transformed$shift))
 } # End data_transformation
@@ -98,7 +98,7 @@ data_transformation <- function(fixed,
 std_data_transformation <- function(fixed = fixed, smp_data, transformation,
                                     lambda) {
 
-  y_vector <- as.matrix(smp_data[paste(fixed[2])])
+  y_vector <- as.matrix(smp_data[paste(fixed[[2]])])
 
   std_transformed <- if (transformation == "box.cox") {
     as.data.frame(box_cox_std(y = y_vector, lambda = lambda))
@@ -107,16 +107,16 @@ std_data_transformation <- function(fixed = fixed, smp_data, transformation,
   } else if (transformation == "log.shift") {
     as.data.frame(log_shift_opt_std(y = y_vector, lambda = lambda))
   } else if (transformation == "log") {
-    smp_data[paste(fixed[2])]
+    smp_data[paste(fixed[[2]])]
   } else if (transformation == "no") {
-    smp_data[paste(fixed[2])]
+    smp_data[paste(fixed[[2]])]
   } else if (transformation == "arcsin") {
-      smp_data[paste(fixed[2])]
+      smp_data[paste(fixed[[2]])]
   } else if (transformation == "ordernorm") {
-    smp_data[paste(fixed[2])]
+    smp_data[paste(fixed[[2]])]
   }
 
-  smp_data[paste(fixed[2])] <- std_transformed
+  smp_data[paste(fixed[[2]])] <- std_transformed
   return(transformed_data = smp_data)
 } # End std_data_transformation
 
@@ -395,7 +395,7 @@ ordernorm <- function(y, shift = NULL) {
 
 ordernorm_back <- function(y, shift = NULL, framework, fixed){
 
-  orderNorm_obj <- orderNorm(x = framework$smp_data[,paste(fixed[2])],
+  orderNorm_obj <- orderNorm(x = framework$smp_data[,paste(fixed[[2]])],
                              warn = FALSE)
 
   y <- inv_orderNorm_trans(orderNorm_obj = orderNorm_obj, new_points_x_t = y,
@@ -430,13 +430,13 @@ inv_orderNorm_trans <- function(orderNorm_obj, new_points_x_t, warn) {
       logits <- log(pnorm(vals$x[l_idx] + min(p, na.rm = T) - min(x_t, na.rm = T)) /
                       (1 - pnorm(vals$x[l_idx] + min(p, na.rm = T) - min(x_t, na.rm = T))))
       vals$y[l_idx] <-
-        unname((logits - fit$coef[1]) / fit$coef[2])
+        unname((logits - fit$coef[1]) / fit$coef[[2]])
     }
     if (any(h_idx)) {
       logits <- log(pnorm(vals$x[h_idx] + max(p, na.rm = T) - max(x_t, na.rm = T)) /
                       (1 - pnorm(vals$x[h_idx] + max(p, na.rm = T) - max(x_t, na.rm = T))))
       vals$y[h_idx] <-
-        unname((logits - fit$coef[1]) / fit$coef[2])
+        unname((logits - fit$coef[1]) / fit$coef[[2]])
     }
   }
 
