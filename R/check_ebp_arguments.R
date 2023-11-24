@@ -80,9 +80,9 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   }
   
   
-  if (transformation != "no" & L==0) {
+  if (L==0 && !(transformation == "no" || transformation == "arcsin" || transformation=="logit" )) {
     stop(strwrap(prefix = " ", initial = "",
-                 "Analytic calculations not supported with transformations at this time"))
+                 "Analytic calculations not supported with transformations other than arcsin and logit at this time"))
   }
   
   
