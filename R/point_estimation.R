@@ -443,7 +443,7 @@ if (is.null(framework$pop_weights)) {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)  
 } 
 else {
-  point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted_mean,w=framework$pop_weights))  
+  point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted_mean,w=framework$pop_weights)  
 }
 
 #if (!is.null(framework$pop_weights)) {# rescale if using weights  
