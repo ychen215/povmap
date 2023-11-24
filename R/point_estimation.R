@@ -441,8 +441,7 @@ indicators <- data.frame("Mean" = gen_model$mu,"Head_Count" = gen_model$Head_Cou
 
 if (is.null(framework$pop_weights)) {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)  
-} 
-else {
+} else {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted_mean,w=framework$pop_weights)  
 }
 
