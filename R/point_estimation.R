@@ -435,17 +435,52 @@ sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framewor
 if (transformation=="no") { # no transformation specified 
 gen_model$Head_Count <- pnorm(framework$threshold - gen_model$mu,sd=(sigma2vu+model_par$sigmae2est)^0.5) # formula for head count 
 indicators <- data.frame("Mean" = gen_model$mu,"Head_Count" = gen_model$Head_Count) # take mu as mean and headcount 
-if (!is.null(framework$pop_weights)) {# adjust head count and mean to take into account weights by group 
- indicators <- indicators*framework$pop_data[,framework$pop_weights]
+#if (!is.null(framework$pop_weights)) {# adjust head count and mean to take into account weights by group 
+# indicators <- indicators*framework$pop_data[,framework$pop_weights]
+#}
+
+if (is.null(framework$pop_weights)) {
+  point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)  
+} 
+else {
+  point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted_mean,w=framework$pop_weights))  
+}
+
+#if (!is.null(framework$pop_weights)) {# rescale if using weights  
+#  mean_weights <- aggregate(framework$pop_data[,framework$pop_weights],by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
+#  point_estimates[,c("Mean","Head_Count")]<-point_estimates[,c("Mean","Head_Count")]/mean_weights[,"x"] 
+#} 
+
+else if (transformation=="arcsin") { #arcsin transformation 
+  gen_model$Head_Count <- matrix(nrow=framework$N_pop,ncol=1) # set Head_Count to NA 
+  mu <- gen_model$mu
+  mu[mu<=0] <- 1e-6 # censoring required for approximation to be defined 
+  mu[mu>=1] <- 1-1e-6 
+  term1 <- povmap:::arcsin_transform(mu)$y # f(mu), f=arcsin(x^0.5), f'(mu)=(1-mu^2)^-0.5 * 0.5X^-0.5 via chain rule 
+  g_mu <- (1-mu^2)^-0.5 # # g(x)=(1-X^2)^-0.5 = first derivative of arcsin
+  g_prime_mu <- mu*(-mu^2+1)^(-1.5)*0.5   # g' =x*(-x^2+1)^(-1.5) = second derivative of arcsin   
+  h_mu <- 0.5*mu^0.5 # first derivative of X^0.5  
+  h_prime_mu <- -0.25*mu^-0.5 # second derivative of X^0.5 
+  term2=0.5*g_mu*h_prime_mu+h_mu*g_prime_mu # product rule for differentiation   
+  # expected value of transformation of normal: e[f(x)] = f(mu)+0+0.5*f''(x)*variance(x)
+  
+  
+  gen_model$Mean <- term1+0.5*term2*(sigma2vu+model_par$sigmae2est) 
+  indicators <- data.frame("Mean" = gen_model$Mean,"Head_Count" = NA) # take mu as mean and headcount 
+  if (is.null(framework$pop_weights)) {
+  point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
+  }
+  else {
+    point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted_mean,w=framework$pop_weights))  
+  }
+  point_estimates$Mean[point_estimates$Mean>1] <- 1
+  point_estimates$Mean[point_estimates$Mean<0] <- 0
 }
 
 
-point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
 
-if (!is.null(framework$pop_weights)) {# rescale if using population weights  
-  mean_weights <- aggregate(framework$pop_data[,framework$pop_weights],by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
-  point_estimates[,c("Mean","Head_Count")]<-point_estimates[,c("Mean","Head_Count")]/mean_weights[,"x"] 
-} 
+
+
 
 
 }
@@ -457,6 +492,10 @@ point_estimates <- cbind(point_estimates,data.frame(matrix(ncol=length(framework
 colnames(point_estimates) <- c("Domain",framework$indicator_names) #Mean and Head_Count are first in indicator_names 
 return(point_estimates)
 } # end analytic 
+
+
+aggregate_weighted_mean <- 
+
 
 # Monte-Carlo approximation ----------------------------------------------------
 

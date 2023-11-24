@@ -462,7 +462,7 @@ arcsin_transform_back <- function(y, shift = NULL) {
   return(y = y)
 }
 
-# the logit trnasformation -----------------------------------------------------
+# the Logit trnasformation -----------------------------------------------------
 logit_transform <- function(y, shift = NULL) {
   y <- log(y/(1-y))
   return(list(y = y, shift=shift))
