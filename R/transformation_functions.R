@@ -82,7 +82,10 @@ data_transformation <- function(fixed,
     arcsin_transform(y = y_vector, shift = NULL)
   } else if (transformation == "ordernorm") {
     ordernorm(y = y_vector, shift = NULL)
+  } else if (transformation=="logit") {
+    logit_transform(y = y_vector, shift = NULL)
   }
+  
 
   smp_data[paste(fixed[[2]])] <- transformed$y
 
@@ -114,7 +117,9 @@ std_data_transformation <- function(fixed = fixed, smp_data, transformation,
       smp_data[paste(fixed[[2]])]
   } else if (transformation == "ordernorm") {
     smp_data[paste(fixed[[2]])]
-  }
+  } else if (transformation == "logit") {
+    smp_data[paste(fixed[[2]])]
+  } 
 
   smp_data[paste(fixed[[2]])] <- std_transformed
   return(transformed_data = smp_data)
@@ -141,8 +146,10 @@ back_transformation <- function(y, transformation, lambda, shift,
     arcsin_transform_back(y = y, shift = shift)
   } else if (transformation == "ordernorm") {
     ordernorm_back(y = y, shift = shift, framework = framework, fixed = fixed)
-  }
-
+  } else if (transformation == "logit") {
+    logit_transform_back(y = y, shift = shift)
+  } 
+  
   return(y = back_transformed)
 } # End back_transform
 
@@ -454,3 +461,14 @@ arcsin_transform_back <- function(y, shift = NULL) {
   y <- sin(y)^2
   return(y = y)
 }
+
+# the logit trnasformation -----------------------------------------------------
+logit_transform <- function(y, shift = NULL) {
+  y <- log(y/(1-y))
+  return(list(y = y, shift=shift))
+}
+
+logit_transform_back <- function(y, shift = NULL) {
+  y <- exp(y)/(1+exp(y))
+  return(y = y)  
+
