@@ -449,7 +449,7 @@ if (is.null(framework$pop_weights)) {
 #  mean_weights <- aggregate(framework$pop_data[,framework$pop_weights],by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
 #  point_estimates[,c("Mean","Head_Count")]<-point_estimates[,c("Mean","Head_Count")]/mean_weights[,"x"] 
 #} 
-
+} # close no transformation 
 else if (transformation=="arcsin") { #arcsin transformation 
   gen_model$Head_Count <- matrix(nrow=framework$N_pop,ncol=1) # set Head_Count to NA 
   mu <- gen_model$mu
@@ -468,9 +468,8 @@ else if (transformation=="arcsin") { #arcsin transformation
   indicators <- data.frame("Mean" = gen_model$Mean,"Head_Count" = NA) # take mu as mean and headcount 
   if (is.null(framework$pop_weights)) {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
-  }
-  else {
-    point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted_mean,w=framework$pop_weights))  
+  } else {
+    point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted_mean,w=framework$pop_weights)  
   }
   point_estimates$Mean[point_estimates$Mean>1] <- 1
   point_estimates$Mean[point_estimates$Mean<0] <- 0
@@ -480,9 +479,6 @@ else if (transformation=="arcsin") { #arcsin transformation
 
 
 
-
-
-}
 
 
 
