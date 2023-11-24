@@ -473,9 +473,22 @@ else if (transformation=="arcsin") { #arcsin transformation
   }
   point_estimates$Mean[point_estimates$Mean>1] <- 1
   point_estimates$Mean[point_estimates$Mean<0] <- 0
-}
-
-
+} # end arcsin transformation 
+else if (transformation=="logit") { #Logit transformation 
+  gen_model$Head_Count <- matrix(nrow=framework$N_pop,ncol=1) # set Head_Count to NA 
+  mu <- gen_model$mu
+  term1 <- povmap:::logit_transform(mu)$y
+  term2 <- -mu^-2-(1-mu)^-2 
+  term3 <- -6*mu^-4 - 6*(1-mu)^-4 
+  gen_model$Mean <- term1+0.5*term2*(sigma2vu+model_par$sigmae2est)+(1/24)*term3*3
+  indicators <- data.frame("Mean" = gen_model$Mean,"Head_Count" = NA) # take mu as mean and headcount 
+  if (is.null(framework$pop_weights)) {
+    point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
+  } else {
+    point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted_mean,w=framework$pop_weights)  
+  }
+  
+} # end logit transformation 
 
 
 
