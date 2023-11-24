@@ -72,7 +72,7 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
     transformation == "log" || transformation == "dual" ||
     transformation == "log.shift" || transformation == "no" ||
     transformation == "ordernorm" || transformation == "arcsin")
-    | transfolrmation=="logit") {
+    | transformation=="logit") {
     stop(strwrap(prefix = " ", initial = "",
                  "The seven options for transformation are ''no'', ''log'',
                  ''box.cox'', ''dual'', ''log.shift'', ''ordernorm'',
