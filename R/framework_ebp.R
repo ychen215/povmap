@@ -44,10 +44,10 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
 
   pop_data <- pop_data[, pop_vars]
   # convert to dataframe if necessary 
-  if (is_tibble(pop_data)) {
+  if ("tbl_df" %in% class(pop_data))
     pop_data <- as.data.frame(pop_data)
   }
-  if (is_tibble(smp_data)) {
+  if ("tbl_df" %in% class(smp_data))
     smp_data <- as.data.frame(smp_data)
   }
   
