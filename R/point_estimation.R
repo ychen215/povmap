@@ -408,7 +408,7 @@ gen_model <- function(fixed,
 
 aggregate_weighted_mean  <-function(df,by,w) {
   wdf <- cbind(df*df$w,df$w)  
-  wdf_mean <- aggregate(wdf,by=list("Domain" = by), FUN=sum)
+  wdf_sum <- aggregate(wdf,by=list("Domain" = by), FUN=sum)
   aggregate_weighted_mean <- wdf_mean/wdf_mean$w
 }
 
