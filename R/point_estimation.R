@@ -446,7 +446,6 @@ if (is.null(framework$pop_weights)) {
   point_estimates$Mean <- aggregate(indicators$Mean,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted.mean,w=framework$pop_data[,framework$pop_weights])  
 }
 
-aggregate(row~Month, df, function(i) weighted.mean(df$Variable[i], df$Weighting[i]))
 
 #if (!is.null(framework$pop_weights)) {# rescale if using weights  
 #  mean_weights <- aggregate(framework$pop_data[,framework$pop_weights],by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
@@ -462,22 +461,19 @@ else if (transformation=="arcsin") { #arcsin transformation
   # dy/dx= <- 2(sin(x)*cos(x))  
   dy2dx <- -2*sin(mu)^2+2*cos(mu)^2 # product rule for differentiation, f=2sin(x),g=cos(x),f'=2cos(x),g'=-sin(x),dy2dx=f*g'+g*f'=-2sin(x)^2+2*cos(X)^2   
   #dy3dx=-4*sin(mu)*cos(m)-4*cos(x)*sin(x)=-8*sin(x)*cos(x)=-4*dy/dyx
-  #dy4/dx <- -4*dy2dx   
-  #dy5/dx=-4*dy3dx = 32*sin(x)*cos(x)=16*dydx 
-  #dy6/dx <- 16*dy2dx
-  #dy8/dx <- -64*dy2dx
+  #dy4/dx <- -4*dy2dx, dy5/dx=-4*dy3dx = 32*sin(x)*cos(x)=16*dydx, dy6/dx <- 16*dy2dx, dy8/dx <- -64*dy2dx
   s2 <- sigma2vu+model_par$sigmae2est # variance 
   
   # expected value of transformation of normal: e[f(x)] = f(mu)+0+0.5*f''(x)*variance(x)
-  gen_model$Mean <- term1+0.5*dy2dx*(s2)-(1/24)*-4*dy2dx*3*(s2^2)+(1/720)*-16*dy2dx*(s2^3)+(1/40320)*-64*dy2dx*(s2^4)  
+  gen_model$Mean <- term1+0.5*dy2dx*(s2)-(1/24)*-4*dy2dx*3*(s2^2)+(1/720)*-16*dy2dx*(s2^3)+(1/40320)*-64*dy2dx*(s2^4)  # 9th order Taylor series  
   indicators <- data.frame("Mean" = gen_model$Mean,"Head_Count" = NA) # take mu as mean and headcount 
   if (is.null(framework$pop_weights)) {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
   } else {
     point_estimates$Mean <- aggregate(indicators$Mean,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted.mean,w=framework$pop_data[,framework$pop_weights])  
   }
-  point_estimates$Mean[point_estimates$Mean>1] <- 1
-  point_estimates$Mean[point_estimates$Mean<0] <- 0
+  #point_estimates$Mean[point_estimates$Mean>1] <- 1
+  #point_estimates$Mean[point_estimates$Mean<0] <- 0
 } # end arcsin transformation 
 else if (transformation=="logit") { #Logit transformation 
   gen_model$Head_Count <- matrix(nrow=framework$N_pop,ncol=1) # set Head_Count to NA 
