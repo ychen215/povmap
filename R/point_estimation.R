@@ -451,11 +451,7 @@ indicators <- data.frame("Mean" = gen_model$mu,"Head_Count" = gen_model$Head_Cou
 if (is.null(framework$pop_weights)) {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)  
 } else {
-  
-  #point_estimates <- by(data=indicators,framework$pop_data[,framework$pop_weights] , weighted.mean)
   point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=framework$pop_data[,framework$pop_weights])
-  # point_estimates$Head_Count <- aggregate(indicators$Head_Count,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted.mean,w=framework$pop_data[,framework$pop_weights])
-  #point_estimates$Mean <- aggregate(indicators$Mean,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted.mean,w=framework$pop_data[,framework$pop_weights])  
 }
 
 
@@ -482,7 +478,7 @@ else if (transformation=="arcsin") { #arcsin transformation
   if (is.null(framework$pop_weights)) {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
   } else {
-    point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted.mean,w=framework$pop_data[,framework$pop_weights])  
+    point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=framework$pop_data[,framework$pop_weights]) 
   }
   #point_estimates$Mean[point_estimates$Mean>1] <- 1
   #point_estimates$Mean[point_estimates$Mean<0] <- 0
@@ -498,7 +494,7 @@ else if (transformation=="logit") { #Logit transformation
   if (is.null(framework$pop_weights)) {
     point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
   } else {
-    point_estimates$Mean <- aggregate(indicators$Mean,by=list("Domain" = pop_domains_vec_tmp), FUN=weighted.mean,w=framework$pop_data[,framework$pop_weights])  
+    point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=framework$pop_data[,framework$pop_weights])
   }
   
 } # end logit transformation 
