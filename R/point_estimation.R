@@ -462,14 +462,14 @@ else if (transformation=="arcsin") { #arcsin transformation
   # dy/dx= <- 2(sin(x)*cos(x))  
   dy2dx <- -2*sin(mu)^2+2*cos(mu)^2 # product rule for differentiation, f=2sin(x),g=cos(x),f'=2cos(x),g'=-sin(x),dy2dx=f*g'+g*f'=-2sin(x)^2+2*cos(X)^2   
   #dy3dx=-4*sin(mu)*cos(m)-4*cos(x)*sin(x)=-8*sin(x)*cos(x)=-4*dy/dyx
-  dy4/dx <- -4*dy2dx      #=-4*dy2.dx 
+  #dy4/dx <- -4*dy2dx   
   #dy5/dx=-4*dy3dx = 32*sin(x)*cos(x)=16*dydx 
-  dy6/dx <- 16*dy2dx
-  dy8/dx <- -64*dy2dx
+  #dy6/dx <- 16*dy2dx
+  #dy8/dx <- -64*dy2dx
   s2 <- sigma2vu+model_par$sigmae2est # variance 
   
   # expected value of transformation of normal: e[f(x)] = f(mu)+0+0.5*f''(x)*variance(x)
-  gen_model$Mean <- term1+0.5*dy2dx*(s2)+(1/24)*dy4dx*3*(s2^2)+(1/720)*dy6dx*(s2^3)+(1/40320)*dy8dx*(s2^4)  
+  gen_model$Mean <- term1+0.5*dy2dx*(s2)-(1/24)*-4*dy2dx*3*(s2^2)+(1/720)*-16*dy2dx*(s2^3)+(1/40320)*-64*dy2dx*(s2^4)  
   indicators <- data.frame("Mean" = gen_model$Mean,"Head_Count" = NA) # take mu as mean and headcount 
   if (is.null(framework$pop_weights)) {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
