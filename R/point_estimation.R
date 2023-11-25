@@ -404,12 +404,12 @@ gen_model <- function(fixed,
 } # End gen_model
 
 
-#weighted mean through aggregate 
-
+#calculate weighted mean using R's aggregate function 
 aggregate_weighted_mean  <-function(df,by,w) {
-  wdf <- cbind(df*df$w,df$w)  
-  wdf_sum <- aggregate(wdf,by=list("Domain" = by), FUN=sum)
-  aggregate_weighted_mean <- wdf_mean/wdf_mean$w
+  wdf <- cbind(df*w,w)  
+  wdf_sum <- aggregate(wdf,by=by, FUN=sum)
+  aggregate_weighted_mean <- wdf_sum/wdf_sum$w
+  aggregate_weighted_mean <-within(aggregate_weighted_mean,rm(w))
 }
 
 
