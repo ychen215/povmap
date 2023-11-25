@@ -456,18 +456,20 @@ aggregate(row~Month, df, function(i) weighted.mean(df$Variable[i], df$Weighting[
 else if (transformation=="arcsin") { #arcsin transformation 
   gen_model$Head_Count <- matrix(nrow=framework$N_pop,ncol=1) # set Head_Count to NA 
   mu <- gen_model$mu
-  mu[mu<=0] <- 1e-6 # censoring required for approximation to be defined 
-  mu[mu>=1] <- 1-1e-6 
-  term1 <- povmap:::arcsin_transform(mu)$y # f(mu), f=arcsin(x^0.5), f'(mu)=(1-mu^2)^-0.5 * 0.5X^-0.5 via chain rule 
-  g_mu <- (1-mu^2)^-0.5 # # g(x)=(1-X^2)^-0.5 = first derivative of arcsin
-  g_prime_mu <- mu*(-mu^2+1)^(-1.5)*0.5   # g' =x*(-x^2+1)^(-1.5) = second derivative of arcsin   
-  h_mu <- 0.5*mu^0.5 # first derivative of X^0.5  
-  h_prime_mu <- -0.25*mu^-0.5 # second derivative of X^0.5 
-  term2=0.5*g_mu*h_prime_mu+h_mu*g_prime_mu # product rule for differentiation   
+  #mu[mu<=0] <- 1e-6 # censoring required for approximation to be defined 
+  #mu[mu>=1] <- 1-1e-6 
+  term1 <- povmap:::arcsin_transform_back(mu)$y # y = sin(x)^2,  
+  # dy/dx= <- 2(sin(x)*cos(x))  
+  dy2dx <- -2*sin(mu)^2+2*cos(mu)^2 # product rule for differentiation, f=2sin(x),g=cos(x),f'=2cos(x),g'=-sin(x),dy2dx=f*g'+g*f'=-2sin(x)^2+2*cos(X)^2   
+  #dy3dx=-4*sin(mu)*cos(m)-4*cos(x)*sin(x)=-8*sin(x)*cos(x)=-4*dy/dyx
+  dy4/dx <- -4*dy2dx      #=-4*dy2.dx 
+  #dy5/dx=-4*dy3dx = 32*sin(x)*cos(x)=16*dydx 
+  dy6/dx <- 16*dy2dx
+  dy8/dx <- -64*dy2dx
+  s2 <- sigma2vu+model_par$sigmae2est # variance 
+  
   # expected value of transformation of normal: e[f(x)] = f(mu)+0+0.5*f''(x)*variance(x)
-  
-  
-  gen_model$Mean <- term1+0.5*term2*(sigma2vu+model_par$sigmae2est) 
+  gen_model$Mean <- term1+0.5*dy2dx*(s2)+(1/24)*dy4dx*3*(s2^2)+(1/720)*dy6dx*(s2^3)+(1/40320)*dy8dx*(s2^4)  
   indicators <- data.frame("Mean" = gen_model$Mean,"Head_Count" = NA) # take mu as mean and headcount 
   if (is.null(framework$pop_weights)) {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
