@@ -71,18 +71,17 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   if (is.null(transformation) || !(transformation == "box.cox" ||
     transformation == "log" || transformation == "dual" ||
     transformation == "log.shift" || transformation == "no" ||
-    transformation == "ordernorm" || transformation == "arcsin" || 
-    transformation == "logit")) {
+    transformation == "ordernorm" || transformation == "arcsin"  {
     stop(strwrap(prefix = " ", initial = "",
-                 "The eight options for transformation are no', log,
-                 'box.cox', dual', log.shift', 'ordernorm',
-                 'arcsin', and 'logit'."))
+                 "The seven options for transformation are no', log,
+                 'box.cox', dual', log.shift', 'ordernorm', and
+                 'arcsin'."))
   }
   
   
-  if (L==0 && !(transformation == "no" || transformation == "arcsin" || transformation=="logit" )) {
+  if (L==0 && !(transformation == "no" || transformation == "arcsin")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "Analytic calculations not supported with transformations other than arcsin and logit at this time"))
+                 "Analytic calculations not supported with transformations other than arcsin at this time"))
   }
   
   
