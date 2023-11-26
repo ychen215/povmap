@@ -345,18 +345,28 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
                             transformation, fixed) {
   # superpopulation individual errors
   eps <- vector(length = framework$N_pop)
-  eps[framework$obs_dom] <- rnorm(
-    sum(framework$obs_dom), 0,
-    sqrt(model_par$sigmae2est)
-  )
-  eps[!framework$obs_dom] <- rnorm(
-    sum(!framework$obs_dom), 0,
-    sqrt(model_par$sigmae2est)
-  )
-  # Divide eps by mse_pop_weights^0.5 to scale down variance by mse_pop_weights  
-  if (!is.null(framework$MSE_pop_weights)) {
-  eps <- eps / framework$pop_data[framework$MSE_pop_weights]^0.5 
+  if (is.null(framework$MSE_pop_weights)) {
+    eps[framework$obs_dom] <- rnorm(
+      sum(framework$obs_dom), 0,
+      sqrt(model_par$sigmae2est+model_par$sigmau2est)
+    )
+    eps[!framework$obs_dom] <- rnorm(
+      sum(!framework$obs_dom), 0,
+      sqrt(model_par$sigmae2est)
+    )
   }
+  else { # draw espilon from variance scaled down by weights 
+    eps_var <- rep(model_par$sigmae2est,framework$N_pop)/framework$pop_data[,framework$MSE_pop_weights]
+    eps[framework$obs_dom] <- rnorm(
+      sum(framework$obs_dom), 0,
+      sqrt(eps_var[framework$obs_dom]+model_par$sigmau2est)
+    )
+    eps[!framework$obs_dom] <- rnorm(
+      sum(!framework$obs_dom), 0,
+      sqrt(eps_var[!framework$obs_dom])
+    )
+  } # close is.null(MSE_pop_weights)
+  
   # add area effect for non-sample domains 
   eps[!framework$obs_dom] <- eps[!framework$obs_dom] + rnorm(sum(!framework$obs_dom),0,sqrt(model_par$sigmau2est))
   

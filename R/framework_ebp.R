@@ -28,7 +28,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, smp_data, smp_domains,
   }
 
   pop_vars <- c(mod_vars, pop_domains, aggregate_to, pop_weights,
-                benchmark_level)
+                benchmark_level,MSE_pop_weights)
   smp_data <- smp_data[, smp_vars]
   weights <- weights
   pop_weights <- pop_weights
