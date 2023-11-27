@@ -465,7 +465,7 @@ else if (transformation=="arcsin") { #arcsin transformation
   mu <- gen_model$mu
   #mu[mu<=0] <- 1e-6 # censoring required for approximation to be defined 
   #mu[mu>=1] <- 1-1e-6 
-  term1 <- povmap:::arcsin_transform_back(mu) # y = sin(x)^2,  
+  term1 <- arcsin_transform_back(mu) # y = sin(x)^2,  
   # dy/dx= <- 2(sin(x)*cos(x))  
   dy2dx <- -2*sin(mu)^2+2*cos(mu)^2 # product rule for differentiation, f=2sin(x),g=cos(x),f'=2cos(x),g'=-sin(x),dy2dx=f*g'+g*f'=-2sin(x)^2+2*cos(X)^2   
   #dy3dx=-4*sin(mu)*cos(m)-4*cos(x)*sin(x)=-8*sin(x)*cos(x)=-4*dy/dyx
