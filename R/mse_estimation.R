@@ -348,27 +348,26 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
   if (is.null(framework$MSE_pop_weights)) {
     eps[framework$obs_dom] <- rnorm(
       sum(framework$obs_dom), 0,
-      sqrt(model_par$sigmae2est+model_par$sigmau2est)
+      sqrt(model_par$sigmae2est)
     )
     eps[!framework$obs_dom] <- rnorm(
       sum(!framework$obs_dom), 0,
-      sqrt(model_par$sigmae2est)
+      sqrt(model_par$sigmae2est +
+             model_par$sigmau2est)
     )
   }
   else { # draw espilon from variance scaled down by weights 
     eps_var <- rep(model_par$sigmae2est,framework$N_pop)/framework$pop_data[,framework$MSE_pop_weights]
     eps[framework$obs_dom] <- rnorm(
       sum(framework$obs_dom), 0,
-      sqrt(eps_var[framework$obs_dom]+model_par$sigmau2est)
+      sqrt(eps_var[framework$obs_dom])
     )
     eps[!framework$obs_dom] <- rnorm(
       sum(!framework$obs_dom), 0,
-      sqrt(eps_var[!framework$obs_dom])
+      sqrt(eps_var[!framework$obs_dom] +
+             model_par$sigmau2est)
     )
   } # close is.null(MSE_pop_weights)
-  
-  # add area effect for non-sample domains 
-  eps[!framework$obs_dom] <- eps[!framework$obs_dom] + rnorm(sum(!framework$obs_dom),0,sqrt(model_par$sigmau2est))
   
   # superpopulation random effect
   vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
