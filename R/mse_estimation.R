@@ -343,31 +343,25 @@ superpopulation_wild <- function(framework, model_par, gen_model, lambda,
 
 superpopulation <- function(framework, model_par, gen_model, lambda, shift,
                             transformation, fixed) {
+  
   # superpopulation individual errors
   eps <- vector(length = framework$N_pop)
-  if (is.null(framework$MSE_pop_weights)) {
-    eps[framework$obs_dom] <- rnorm(
-      sum(framework$obs_dom), 0,
-      sqrt(model_par$sigmae2est)
-    )
-    eps[!framework$obs_dom] <- rnorm(
-      sum(!framework$obs_dom), 0,
-      sqrt(model_par$sigmae2est +
-             model_par$sigmau2est)
-    )
-  }
-  else { # draw espilon from variance scaled down by weights 
-    eps_var <- rep(model_par$sigmae2est,framework$N_pop)/framework$pop_data[,framework$MSE_pop_weights]
-    eps[framework$obs_dom] <- rnorm(
-      sum(framework$obs_dom), 0,
-      sqrt(eps_var[framework$obs_dom])
-    )
-    eps[!framework$obs_dom] <- rnorm(
-      sum(!framework$obs_dom), 0,
-      sqrt(eps_var[!framework$obs_dom] +
-             model_par$sigmau2est)
-    )
-  } # close is.null(MSE_pop_weights)
+  eps[framework$obs_dom] <- rnorm(
+    sum(framework$obs_dom), 0,
+    sqrt(model_par$sigmae2est)
+  )
+  eps[!framework$obs_dom] <- rnorm(
+    sum(!framework$obs_dom), 0,
+    sqrt(model_par$sigmae2est +
+           model_par$sigmau2est)
+  )
+  
+  if (!is.null(framework$MSE_pop_weights)) { 
+  # scale down variance by MSE_pop_weights to simulate duplicate households 
+  eps <- eps/sqrt(framework$pop_data[,framework$MSE_pop_weights])
+  } # close !is.null(MSE_pop_weights)
+  
+  
   
   # superpopulation random effect
   vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
