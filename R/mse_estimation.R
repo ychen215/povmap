@@ -29,7 +29,6 @@ parametric_bootstrap <- function(framework,
     res_s <- NULL
     fitted_s <- NULL
   }
-browser()
   start_time <- Sys.time()
   if (cpus > 1) {
     cpus <- min(cpus, parallel::detectCores())
