@@ -357,7 +357,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
   }
   
   
-  true_indicators<-matrix(nrow = N_dom_pop_tmp, 
+  true_indicators_weighted<-matrix(nrow = N_dom_pop_tmp, 
                           ncol = length(framework$indicator_list))
   
   
@@ -374,7 +374,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
            model_par$sigmau2est)
   ) 
   eps <- eps / sqrt(framework$pop_data[,framework$MSE_pop_weights])
-    true_indicators[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b+eps, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
+    true_indicators_weighted[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b+eps, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
       
 # Do headcount calculation for population
    
@@ -384,7 +384,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     p_pov[!framework$obs_dom] <- pnorm(framework$threshold - as.vector(Y_pop_b[!framework$obs_dom]), sd=(model_par$sigmau2est + model_par$sigmae2est)^0.5) # formula for head count for non-sampled domains  
     pov <- mapply(FUN=rbinom,n=1,size=framework$pop_data[,framework$MSE_pop_weights],prob=p_pov)
     pov <- as.vector(pov)/framework$pop_data[,framework$MSE_pop_weights]
-    true_indicators[,2] <- mapply(FUN=weighted.mean, x=split(pov, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
+    true_indicators_weighted[,2] <- mapply(FUN=weighted.mean, x=split(pov, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
 }
 
 
