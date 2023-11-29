@@ -358,7 +358,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
   
   
   true_indicators_weighted<-matrix(nrow = N_dom_pop_tmp, 
-                          ncol = length(framework$indicator_list))
+                          ncol = length(framework$indicator_names))
   
   
 
