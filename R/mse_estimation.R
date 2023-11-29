@@ -388,9 +388,8 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     pov <- mapply(FUN=rbinom,n=1,size=framework$pop_data[,framework$MSE_pop_weights],prob=p_pov)
     pov <- as.vector(pov)/framework$pop_data[,framework$MSE_pop_weights]
     true_indicators_weighted[,2] <- mapply(FUN=weighted.mean, x=split(pov, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
-    return(true_indicators=true_indicators_weighted,vu_tmp = vu_tmp)
+    return(list(true_indicators=true_indicators_weighted,vu_tmp = vu_tmp))
 }
-
 
 
 
