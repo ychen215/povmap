@@ -338,7 +338,6 @@ mse_estim <- function(framework,
 # True_indicators_weighted function ---------------------------------------------
 #This returns "true" superpopulation Mean and Headcount estimated from the population data when MSE_pop_Weight=TRUE 
 true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,transformation,fixed) {
-  browser()
   # draw new superpopulation random effect
   vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)
