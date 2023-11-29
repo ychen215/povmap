@@ -202,6 +202,7 @@ mse_estim <- function(framework,
       threshold = framework$threshold
     ))
   )
+  vu_tmp <- superpop$vu_tmp 
 } # close if no MSE pop weighting 
   
   else {
@@ -226,7 +227,7 @@ mse_estim <- function(framework,
     }
     
     # True indicator values
-    true_indicators <- true_indicators_weighted(
+    true_indicators_weighted <- true_indicators_weighted(
       framework = framework,
       model_par = model_par, 
       gen_model = gen_model,
@@ -235,6 +236,8 @@ mse_estim <- function(framework,
       transformation = transformation,
       fixed = fixed
     )
+    true_indicators <- true_indicators_weighted$true_indicators
+    vu_tmp<- true_indicators_weighted$vu_tmp
   }
   
   
@@ -282,7 +285,7 @@ mse_estim <- function(framework,
       model_par = model_par,
       lambda = lambda,
       shift = shift,
-      vu_tmp = superpop$vu_tmp,
+      vu_tmp = vu_tmp,
       res_s = res_s,
       fitted_s = fitted_s
     )
@@ -294,7 +297,7 @@ mse_estim <- function(framework,
       model_par = model_par,
       lambda = lambda,
       shift = shift,
-      vu_tmp = superpop$vu_tmp
+      vu_tmp = vu_tmp
     )
   }
 
@@ -385,7 +388,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     pov <- mapply(FUN=rbinom,n=1,size=framework$pop_data[,framework$MSE_pop_weights],prob=p_pov)
     pov <- as.vector(pov)/framework$pop_data[,framework$MSE_pop_weights]
     true_indicators_weighted[,2] <- mapply(FUN=weighted.mean, x=split(pov, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
-    return(true_indicators_weighted)
+    return(true_indicators=true_indicators_weighted,vu_tmp = vu_tmp)
 }
 
 
