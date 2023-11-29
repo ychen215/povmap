@@ -444,9 +444,7 @@ sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framewor
 if (transformation=="no") { # no transformation specified 
 gen_model$Head_Count <- pnorm(framework$threshold - gen_model$mu,sd=(sigma2vu+model_par$sigmae2est)^0.5) # formula for head count 
 indicators <- data.frame("Mean" = gen_model$mu,"Head_Count" = gen_model$Head_Count) # take mu as mean and headcount 
-#if (!is.null(framework$pop_weights)) {# adjust head count and mean to take into account weights by group 
-# indicators <- indicators*framework$pop_data[,framework$pop_weights]
-#}
+
 
 if (is.null(framework$pop_weights)) {
   point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)  
@@ -455,10 +453,7 @@ if (is.null(framework$pop_weights)) {
 }
 
 
-#if (!is.null(framework$pop_weights)) {# rescale if using weights  
-#  mean_weights <- aggregate(framework$pop_data[,framework$pop_weights],by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
-#  point_estimates[,c("Mean","Head_Count")]<-point_estimates[,c("Mean","Head_Count")]/mean_weights[,"x"] 
-#} 
+
 } # close no transformation 
 else if (transformation=="arcsin") { #arcsin transformation 
   gen_model$Head_Count <- matrix(nrow=framework$N_pop,ncol=1) # set Head_Count to NA 

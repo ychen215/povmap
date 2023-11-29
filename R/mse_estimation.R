@@ -334,7 +334,6 @@ mse_estim <- function(framework,
   return((bootstrap_point_estim - true_indicators)^2)
 } # End mse_estim
 
-
 # True_indicators_weighted function ---------------------------------------------
 #This returns "true" superpopulation Mean and Headcount estimated from the population data when MSE_pop_Weight=TRUE 
 true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,transformation,fixed) {
@@ -343,10 +342,28 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
   vu_pop <- rep(vu_tmp, framework$n_pop)
   #  superpopulation income vector
   Y_pop_b <- gen_model$mu_fixed + vu_pop
+  if(!is.null(framework$aggregate_to_vec)) {
+    N_dom_pop_tmp <- framework$N_dom_pop_agg
+    pop_domains_vec_tmp <- framework$aggregate_to_vec
+  } else {
+    N_dom_pop_tmp <- framework$N_dom_pop
+    pop_domains_vec_tmp <- framework$pop_domains_vec
+  }
+  
+  if(!is.null(framework$pop_weights)) {
+    pop_weights_vec <- framework$pop_data[[framework$pop_weights]]
+  }else{
+    pop_weights_vec <- rep(1, nrow(framework$pop_data))
+  }
+  
+  
   true_indicators<-matrix(nrow = N_dom_pop_tmp, 
-                          ncol = framework$indicator_list)
-  # check this 
-  eps <- vector(length = framework$N_dom_pop)
+                          ncol = length(framework$indicator_list))
+  
+  
+
+# Do Mean calculation 
+  eps <- vector(length = framework$N_pop)
   eps[framework$obs_dom] <- rnorm(
     sum(framework$obs_dom), 0,
     sqrt(model_par$sigmae2est)
@@ -356,32 +373,17 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     sqrt(model_par$sigmae2est +
            model_par$sigmau2est)
   ) 
-  
-  true_indicators[framework$obs_dom,1] <- Y_pop_b+rnorm(sum(framework$obs_dom),0,)
- 
-  
-  
-  
-   true_indicators <- matrix(
-    nrow = N_dom_pop_tmp,
-    data = unlist(lapply(framework$indicator_list,
-                         function(f, threshold) {
-                           matrix(
-                             nrow = N_dom_pop_tmp,
-                             data =
-                               unlist(mapply(
-                                 y = split(pop_income_vector, pop_domains_vec_tmp),
-                                 pop_weights = split(pop_weights_vec, pop_domains_vec_tmp),
-                                 f,
-                                 threshold = framework$threshold
-                               )),
-                             byrow = TRUE
-                           )
-                         },
-                         threshold = framework$threshold
-    ))  
-   )
-  
+  eps <- eps / framework$pop_data[,framework$MSE_pop_weights]^0.5
+    true_indicators[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b+eps, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
+      
+# Do headcount calculation for population
+   
+    
+    p_pov <- vector(length = framework$N_pop)
+    p_pov[framework$obs_dom] <- pnorm(framework$threshold - as.vector(Y_pop_b[framework$obs_dom]), sd=(model_par$sigmae2est^0.5)) # formula for head count for sampled domains  
+    p_pov[!framework$obs_dom] <- pnorm(framework$threshold - as.vector(Y_pop_b[!framework$obs_dom]), sd=(model_par$sigmau2est + model_par$sigmae2est)^0.5) # formula for head count for non-sampled domains  
+    pov <- mapply(FUN=rbinom,n=1,size=framework$pop_data[,framework$MSE_pop_weights],prob=p_pov)
+    true_indicators[,2] <- mapply(FUN=weighted.mean, x=split(pov, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
 }
 
 
