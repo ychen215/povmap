@@ -29,7 +29,7 @@ parametric_bootstrap <- function(framework,
     res_s <- NULL
     fitted_s <- NULL
   }
-
+browser()
   start_time <- Sys.time()
   if (cpus > 1) {
     cpus <- min(cpus, parallel::detectCores())
@@ -132,11 +132,13 @@ mse_estim <- function(framework,
 
 
 
-
   # The function superpopulation returns an income vector and a temporary
   # variable that passes the random effect to generating bootstrap populations
   # in bootstrap_par.
 
+  if (is.null(framework$MSE_pop_weights)) { 
+  
+  
   if (boot_type == "wild") {
     superpop <- superpopulation_wild(
       framework = framework,
@@ -201,7 +203,44 @@ mse_estim <- function(framework,
       threshold = framework$threshold
     ))
   )
-
+} # close if no MSE pop weighting 
+  
+  else {
+    
+    if (inherits(framework$threshold, "function")) {
+      framework$threshold <-
+        framework$threshold(y = pop_income_vector)
+    }
+    
+    if(!is.null(framework$aggregate_to_vec)) {
+      N_dom_pop_tmp <- framework$N_dom_pop_agg
+      pop_domains_vec_tmp <- framework$aggregate_to_vec
+    } else {
+      N_dom_pop_tmp <- framework$N_dom_pop
+      pop_domains_vec_tmp <- framework$pop_domains_vec
+    }
+    
+    if(!is.null(framework$pop_weights)) {
+      pop_weights_vec <- framework$pop_data[[framework$pop_weights]]
+    }else{
+      pop_weights_vec <- rep(1, nrow(framework$pop_data))
+    }
+    
+    # True indicator values
+    true_indicators <- true_indicators_weighted(
+      framework = framework,
+      model_par = model_par, 
+      gen_model = gen_model,
+      lambda = lambda, 
+      shift = shift,
+      transformation = transformation,
+      fixed = fixed
+    )
+  }
+  
+  
+  
+  
   colnames(true_indicators) <- framework$indicator_names
 
   if (!is.null(benchmark)) {
@@ -297,6 +336,59 @@ mse_estim <- function(framework,
 } # End mse_estim
 
 
+# True_indicators_weighted function ---------------------------------------------
+#This returns "true" superpopulation Mean and Headcount estimated from the population data when MSE_pop_Weight=TRUE 
+true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,transformation,fixed) {
+  browser()
+  # draw new superpopulation random effect
+  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
+  vu_pop <- rep(vu_tmp, framework$n_pop)
+  #  superpopulation income vector
+  Y_pop_b <- gen_model$mu_fixed + vu_pop
+  true_indicators<-matrix(nrow = N_dom_pop_tmp, 
+                          ncol = framework$indicator_list)
+  # check this 
+  eps <- vector(length = framework$N_dom_pop)
+  eps[framework$obs_dom] <- rnorm(
+    sum(framework$obs_dom), 0,
+    sqrt(model_par$sigmae2est)
+  )
+  eps[!framework$obs_dom] <- rnorm(
+    sum(!framework$obs_dom), 0,
+    sqrt(model_par$sigmae2est +
+           model_par$sigmau2est)
+  ) 
+  
+  true_indicators[framework$obs_dom,1] <- Y_pop_b+rnorm(sum(framework$obs_dom),0,)
+ 
+  
+  
+  
+   true_indicators <- matrix(
+    nrow = N_dom_pop_tmp,
+    data = unlist(lapply(framework$indicator_list,
+                         function(f, threshold) {
+                           matrix(
+                             nrow = N_dom_pop_tmp,
+                             data =
+                               unlist(mapply(
+                                 y = split(pop_income_vector, pop_domains_vec_tmp),
+                                 pop_weights = split(pop_weights_vec, pop_domains_vec_tmp),
+                                 f,
+                                 threshold = framework$threshold
+                               )),
+                             byrow = TRUE
+                           )
+                         },
+                         threshold = framework$threshold
+    ))  
+   )
+  
+}
+
+
+
+
 # Superpopulation function -----------------------------------------------------
 
 # The model parameter from the nested error linear regression model are
@@ -356,12 +448,6 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
            model_par$sigmau2est)
   )
   
-  if (!is.null(framework$MSE_pop_weights)) { 
-  # scale down variance by MSE_pop_weights to simulate duplicate households 
-  eps <- eps/sqrt(framework$pop_data[,framework$MSE_pop_weights])
-  } # close !is.null(MSE_pop_weights)
-  
-  
   
   # superpopulation random effect
   vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
@@ -381,6 +467,8 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
 
   return(list(pop_income_vector = Y_pop_b, vu_tmp = vu_tmp))
 }
+
+
 
 # Bootstrap function -----------------------------------------------------------
 
