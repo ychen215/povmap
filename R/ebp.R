@@ -353,7 +353,7 @@ ebp <- function(fixed,
     na.rm = na.rm, weights = weights, pop_weights = pop_weights,
     weights_type = weights_type, benchmark = benchmark,
     benchmark_type = benchmark_type, benchmark_level = benchmark_level,
-    benchmark_weights = benchmark_weights
+    benchmark_weights = benchmark_weights,MSE_pop_weights=MSE_pop_weights
   )
 
   # Save function call ---------------------------------------------------------
