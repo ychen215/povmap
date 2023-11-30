@@ -79,9 +79,9 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   }
   
   
-  if (L==0 && !(transformation == "no" || transformation == "arcsin")) {
+  if (L==0 && !(transformation == "no" || transformation == "arcsin" | transformation=="log | transformation=="log.shift"")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "Analytic calculations not supported with transformations other than arcsin at this time"))
+                 "Analytic calculations not supported with transformations other than log, log shift, and arcsin at this time"))
   }
   
   
