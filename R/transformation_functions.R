@@ -153,6 +153,31 @@ back_transformation <- function(y, transformation, lambda, shift,
   return(y = back_transformed)
 } # End back_transform
 
+transformation <- function(y, transformation, lambda, shift,
+                           framework, fixed) {
+  
+  
+  transformed <- if (transformation == "no") {
+    no_transform(y = y)
+  } else if (transformation == "log") {
+    log_transform(y = y, shift = shift)
+  } else if (transformation == "box.cox") {
+    box_cox(y = y, lambda = lambda, shift = shift)
+  } else if (transformation == "dual") {
+    dual(y = y, lambda = lambda, shift = shift)
+  } else if (transformation == "log.shift") {
+    log_shift_opt(y = y, lambda = lambda)
+  } else if (transformation == "arcsin") {
+    arcsin_transform(y = y, shift = shift)
+  } else if (transformation == "ordernorm") {
+    ordernorm(y = y, shift = shift, framework = framework, fixed = fixed)
+  } else if (transformation == "logit") {
+    logit_transform(y = y, shift = shift)
+  } 
+  
+  return(y = transformed)
+} # End transform
+
 
 # Transformation types ---------------------------------------------------------
 

@@ -433,6 +433,14 @@ analytic <- function(transformation,
     pop_domains_vec_tmp <- framework$pop_domains_vec
   }
 
+  if(!is.null(framework$pop_weights)) {
+    pop_weights_vec <- framework$pop_data[[framework$pop_weights]]
+  }else{
+    pop_weights_vec <- rep(1, nrow(framework$pop_data))
+  }
+  
+  
+  
 
 # construct vector for variance of random effect, copied from errors_gen line 568
 sigma2vu <- vector(length = framework$N_pop)
@@ -440,63 +448,46 @@ sigma2vu <- vector(length = framework$N_pop)
 sigma2vu[!framework$obs_dom] <- model_par$sigmau2est
 # variance of random effect for in-sample domains
 sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framework$dist_obs_dom])
+var <- sigma2vu+model_par$sigmae2est
 
-if (transformation=="no") { # no transformation specified 
-gen_model$Head_Count <- pnorm(framework$threshold - gen_model$mu,sd=(sigma2vu+model_par$sigmae2est)^0.5) # formula for head count 
-indicators <- data.frame("Mean" = gen_model$mu,"Head_Count" = gen_model$Head_Count) # take mu as mean and headcount 
-
-
-if (is.null(framework$pop_weights)) {
-  point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)  
-} else {
-  point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=framework$pop_data[,framework$pop_weights])
-}
+# do mean with function 
+indicators <- data.frame(matrix(ncol=length(framework$indicator_names),nrow=framework$n_pop))
 
 
+indicators$Mean <- expected_mean(mu=gen_model$mu,var=var, transformation=transformation,shift=shift) ## function to be written 
+indicators$Head_Count <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,shift=shift,threshold=framework$threshold)
 
-} # close no transformation 
-else if (transformation=="arcsin") { #arcsin transformation 
-  gen_model$Head_Count <- matrix(nrow=framework$N_pop,ncol=1) # set Head_Count to NA 
-  mu <- gen_model$mu
-
-  term1 <- arcsin_transform_back(mu) # y = sin(x)^2,  
-  # dy/dx = 2(sin(x)*cos(x))  
-  dy2dx <- -2*sin(mu)^2+2*cos(mu)^2 # product rule for differentiation, f=2sin(x),g=cos(x),f'=2cos(x),g'=-sin(x),dy2dx=f*g'+g*f'=-2sin(x)^2+2*cos(X)^2   
-  #dy3dx = -4*sin(mu)*cos(m)-4*cos(x)*sin(x)=-8*sin(x)*cos(x)=-4*dy/dyx
-  #dy4/dx <- -4*dy2dx, dy5/dx=-4*dy3dx = 32*sin(x)*cos(x)=16*dydx, dy6/dx <- 16*dy2dx, dy8/dx <- -64*dy2dx
-  s2 <- sigma2vu+model_par$sigmae2est # variance 
-  
-  # expected value of transformation of normal: e[f(x)] = f(mu)+0+0.5*f''(x)*variance(x)
-  gen_model$Mean <- term1+0.5*dy2dx*(s2)-(1/24)*-4*dy2dx*3*(s2^2)+(1/720)*-16*dy2dx*(s2^3)+(1/40320)*-64*dy2dx*(s2^4)  # 9th order Taylor series  
-  indicators <- data.frame("Mean" = gen_model$Mean,"Head_Count" = NA) # take mu as mean and headcount 
-  if (is.null(framework$pop_weights)) {
-  point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)
-  } else {
-    point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=framework$pop_data[,framework$pop_weights]) 
-  }
-  #point_estimates$Mean[point_estimates$Mean>1] <- 1
-  #point_estimates$Mean[point_estimates$Mean<0] <- 0
-} # end arcsin transformation 
-
-else if (transformation=="log" | transformation=="log.shift") {
-  gen_model$Mean <- exp(gen_model$mu+0.5*(sigma2vu+model_par$sigmae2est))-shift 
-  gen_model$Head_Count <- plnorm(q=framework$threshold - shift - gen_model$mu,sdlog =(sigma2vu+model_par$sigmae2est)^0.5) # formula for head count
-  indicators <- data.frame("Mean" = gen_model$Head_Count,"Head_Count" = gen_model$Head_Count) # take mu as mean and headcount 
-  if (is.null(framework$pop_weights)) {
-    point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)  
-  } else {
-    point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=framework$pop_data[,framework$pop_weights])
-  }
-  
-} # close log and log shift transformation 
-
-
-
-# add N/As for other indicators (besides 2 that we calculated)  
-point_estimates <- cbind(point_estimates,data.frame(matrix(ncol=length(framework$indicator_names)-2,nrow=nrow(point_estimates))))
-colnames(point_estimates) <- c("Domain",framework$indicator_names) #Mean and Head_Count are first in indicator_names 
+ 
+point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
+colnames(point_estimates) <- c("Domain",framework$indicator_names)
 return(point_estimates)
 } # end analytic 
+
+expected_mean <- function(mu=mu,var=var,transformation=transformation,shift=shift) {
+  if (transformation=="no") {
+    expected_mean <- mu   
+  }
+  else if (transformation=="arcsin") {
+    term1 <- arcsin_transform_back(mu) # y = sin(x)^2,  
+    # dy/dx = 2(sin(x)*cos(x))  
+    dy2dx <- -2*sin(mu)^2+2*cos(mu)^2 # product rule for differentiation, f=2sin(x),g=cos(x),f'=2cos(x),g'=-sin(x),dy2dx=f*g'+g*f'=-2sin(x)^2+2*cos(X)^2   
+    #dy3dx = -4*sin(mu)*cos(m)-4*cos(x)*sin(x)=-8*sin(x)*cos(x)=-4*dy/dyx
+    #dy4/dx <- -4*dy2dx, dy5/dx=-4*dy3dx = 32*sin(x)*cos(x)=16*dydx, dy6/dx <- 16*dy2dx, dy8/dx <- -64*dy2dx
+    expected_mean <- term1+0.5*dy2dx*(var)-(1/24)*-4*dy2dx*3*(var^2)+(1/720)*-16*dy2dx*(var^3)+(1/40320)*-64*dy2dx*(var^4)  # 9th order Taylor series
+  }
+  else if (transformation=="log" | transformation=="log.shift") {
+    expected_mean <- exp(mu+(0.5*var))-shift
+  }
+    return(expected_mean)
+}
+
+expected_head_count <- function(mu=mu,threshold=threshold,var=var,transformation=transformation,shift=shift) {
+  # do poverty by transforming threshold, then applying normal CDF. 
+  transformed_threshold <- transformation(y=threshold,transformation=transformation,lambda=shift)
+  expected_head_count <- pnorm(transformed_threshold - mu,sd=var^0.5) # formula for head count 
+  return(expected_head_count)
+}
+
 
 
 
