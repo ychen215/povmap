@@ -170,7 +170,7 @@ transformation <- function(y, transformation, lambda, shift,
   } else if (transformation == "arcsin") {
     arcsin_transform(y = y, shift = shift)
   } else if (transformation == "ordernorm") {
-    ordernorm(y = y, shift = shift, framework = framework, fixed = fixed)
+    ordernorm(y = y, shift = shift)
   } else if (transformation == "logit") {
     logit_transform(y = y, shift = shift)
   } 
