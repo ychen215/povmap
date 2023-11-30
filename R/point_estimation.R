@@ -408,7 +408,7 @@ gen_model <- function(fixed,
 aggregate_weighted_mean  <-function(df,by,w) {
   wdf <- cbind(df*w,w)  
   wdf_sum <- aggregate(wdf,by=by, FUN=sum)
-  aggregate_weighted_mean <- cbind(wdf_sum[,1],wdf_sum[,-1]/wdf_sum$w)
+  aggregate_weighted_mean <- cbind(Domain = wdf_sum[,1],wdf_sum[,-1]/wdf_sum$w)
   aggregate_weighted_mean <-within(aggregate_weighted_mean,rm(w))
 }
 
@@ -479,8 +479,16 @@ else if (transformation=="arcsin") { #arcsin transformation
 } # end arcsin transformation 
 
 else if (transformation=="log" | transformation=="log.shift") {
-  browser()
-}
+  gen_model$Mean <- exp(gen_model$mu+0.5*(sigma2vu+model_par$sigmae2est))-shift 
+  gen_model$Head_Count <- plnorm(q=framework$threshold - shift - gen_model$mu,sdlog =(sigma2vu+model_par$sigmae2est)^0.5) # formula for head count
+  indicators <- data.frame("Mean" = gen_model$Head_Count,"Head_Count" = gen_model$Head_Count) # take mu as mean and headcount 
+  if (is.null(framework$pop_weights)) {
+    point_estimates <- aggregate(indicators,by=list("Domain" = pop_domains_vec_tmp), FUN=mean)  
+  } else {
+    point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=framework$pop_data[,framework$pop_weights])
+  }
+  
+} # close log and log shift transformation 
 
 
 
