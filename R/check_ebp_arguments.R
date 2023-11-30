@@ -85,11 +85,11 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   }
   
   
-  if (!is.null(MSE_pop_weights) && !(transformation == "no") {
+  if (!is.null(MSE_pop_weights) && !(transformation == "no")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "MSE population weights are not supported with transformations at this time" 
+                 "MSE population weights are not supported with transformations at this time")) 
   }
-  }
+  
   
   
   if (any(interval != "default") & (!is.vector(interval, mode = "numeric") ||
