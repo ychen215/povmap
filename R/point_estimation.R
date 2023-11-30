@@ -458,12 +458,11 @@ if (is.null(framework$pop_weights)) {
 else if (transformation=="arcsin") { #arcsin transformation 
   gen_model$Head_Count <- matrix(nrow=framework$N_pop,ncol=1) # set Head_Count to NA 
   mu <- gen_model$mu
-  #mu[mu<=0] <- 1e-6 # censoring required for approximation to be defined 
-  #mu[mu>=1] <- 1-1e-6 
+
   term1 <- arcsin_transform_back(mu) # y = sin(x)^2,  
-  # dy/dx= <- 2(sin(x)*cos(x))  
+  # dy/dx = 2(sin(x)*cos(x))  
   dy2dx <- -2*sin(mu)^2+2*cos(mu)^2 # product rule for differentiation, f=2sin(x),g=cos(x),f'=2cos(x),g'=-sin(x),dy2dx=f*g'+g*f'=-2sin(x)^2+2*cos(X)^2   
-  #dy3dx=-4*sin(mu)*cos(m)-4*cos(x)*sin(x)=-8*sin(x)*cos(x)=-4*dy/dyx
+  #dy3dx = -4*sin(mu)*cos(m)-4*cos(x)*sin(x)=-8*sin(x)*cos(x)=-4*dy/dyx
   #dy4/dx <- -4*dy2dx, dy5/dx=-4*dy3dx = 32*sin(x)*cos(x)=16*dydx, dy6/dx <- 16*dy2dx, dy8/dx <- -64*dy2dx
   s2 <- sigma2vu+model_par$sigmae2est # variance 
   
@@ -479,7 +478,9 @@ else if (transformation=="arcsin") { #arcsin transformation
   #point_estimates$Mean[point_estimates$Mean<0] <- 0
 } # end arcsin transformation 
 
-
+else if (transformation=="log" | transformation=="log.shift") {
+  browser()
+}
 
 
 
