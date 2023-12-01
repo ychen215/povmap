@@ -385,7 +385,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
 # Do headcount calculation for population
 # 1. Find poverty probability of each obserbation
     p_pov <- vector(length = framework$N_pop)
-    p_pov <- expected_head_count(mu=Y_pop_mu,threshold=framework$threshold,var=var_eps,transformation=transformation,lambda=lambda)
+    p_pov <- expected_head_count(mu=Y_pop_mu,threshold=framework$threshold,var=var_eps,transformation=transformation,lambda=lambda,shift=shift)
 # draw from binomial distribution, then divide by total number of trials      
     pov <- mapply(FUN=rbinom,n=1,size=framework$pop_data[,framework$MSE_pop_weights],prob=p_pov)
     pov <- as.vector(pov)/framework$pop_data[,framework$MSE_pop_weights]
