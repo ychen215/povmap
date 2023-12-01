@@ -141,7 +141,7 @@ back_transformation <- function(y, transformation, lambda, shift,
   } else if (transformation == "dual") {
     dual_back(y = y, lambda = lambda, shift = shift)
   } else if (transformation == "log.shift") {
-    log_shift_opt_back(y = y, lambda = lambda)
+    log_shift_opt_back(y = y, lambda = lambda,shift=NULL)
   } else if (transformation == "arcsin") {
     arcsin_transform_back(y = y, shift = shift)
   } else if (transformation == "ordernorm") {

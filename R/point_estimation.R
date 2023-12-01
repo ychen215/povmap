@@ -436,7 +436,7 @@ analytic <- function(transformation,
   if(!is.null(framework$pop_weights)) {
     pop_weights_vec <- framework$pop_data[[framework$pop_weights]]
   }else{
-    pop_weights_vec <- rep(1, nrow(framework$pop_data))
+    pop_weights_vec <- rep(1, framework$N_pop)
   }
   
   
@@ -483,7 +483,7 @@ expected_mean <- function(mu=mu,var=var,transformation=transformation,shift=shif
 
 expected_head_count <- function(mu=mu,threshold=threshold,var=var,transformation=transformation,shift=shift) {
   # do poverty by transforming threshold, then applying normal CDF. 
-  transformed_threshold <- transformation(y=threshold,transformation=transformation,lambda=shift)
+  transformed_threshold <- transformation(y=threshold,transformation=transformation,lambda=shift,shift=shift)
   expected_head_count <- pnorm(transformed_threshold - mu,sd=var^0.5) # formula for head count 
   return(expected_head_count)
 }
