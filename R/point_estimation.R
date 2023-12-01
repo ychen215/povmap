@@ -410,7 +410,14 @@ aggregate_weighted_mean  <-function(df,by,w) {
   wdf_sum <- aggregate(wdf,by=by, FUN=sum)
   aggregate_weighted_mean <- cbind(Domain = wdf_sum[,1],wdf_sum[,-1]/wdf_sum$w)
   aggregate_weighted_mean <-within(aggregate_weighted_mean,rm(w))
+  return(aggregate_weighted_mean)
 }
+
+# calculated weighted quantile 
+aggregate_weighted_quantile  <-function(df,by,w,q) {
+   aggregate_weighted_quantile <- mapply(FUN=wtd.quantile,x=split(df,by),weight=split(w,pop_domains_vec_tmp),probs=q)
+}
+  
 
 
 #analytic functions 
@@ -460,13 +467,19 @@ colnames(indicators) <- framework$indicator_names
 
 indicators[,"Mean"] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,lambda=lambda) 
 indicators[,"Head_Count"] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,threshold=framework$threshold)
-indicators[,"Median"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.5)
-indicators[,"Quantile_10"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.1) 
-indicators[,"Quantile_25"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.25) 
-indicators[,"Quantile_75"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.75) 
-indicators[,"Quantile_90"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.9) 
+#indicators[,"Median"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.5)
+#indicators[,"Quantile_10"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.1) 
+#indicators[,"Quantile_25"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.25) 
+#indicators[,"Quantile_75"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.75) 
+#indicators[,"Quantile_90"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.9) 
 
-point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
+
+
+
+
+point_estimates <- (matrix(ncol=1+length(framework$indicator_names),nrow=N_dom_pop_tmp))
+
+point_estimates <- aggregate_weighted_mean(indicators[,c("Mean","Head_Count")],by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
 colnames(point_estimates) <- c("Domain",framework$indicator_names)
 return(point_estimates)
 } # end analytic 
