@@ -482,7 +482,7 @@ expected_transformed_mean <- function(mu=mu,var=var,transformation=transformatio
   else if (transformation=="log") {
     expected_mean <- exp(mu+(0.5*var))
   }
-  else if (transformation=="log.shift")
+  else if (transformation=="log.shift") {
   expected_mean <- exp(mu+(0.5*var))-lambda
   }
   
