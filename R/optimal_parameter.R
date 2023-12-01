@@ -143,9 +143,9 @@ reml <- function(fixed = fixed,
 
   if (is.null(model_REML)) {
     stop(strwrap(prefix = " ", initial = "",
-                 "The likelihood does not converge. One reason could be that
-                 the interval for the estimation of an optimal transformation
-                 parameter is not appropriate. Try another interval. See also
+                 "The likelihood did not converge when estimating an nlme model to select the optimal
+                 transformation parameter. Try adjusting nlme_opt, nlme_maxiter, nlme_tolerance, 
+                 nlme_optimmethod, or nlme_returnobject when calling ebp, or using a non-adapative transformation. See also
                  help(ebp)."))
   } else {
     model_REML <- model_REML

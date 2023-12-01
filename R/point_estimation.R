@@ -458,8 +458,8 @@ var <- sigma2vu+model_par$sigmae2est
 indicators <- matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop)
 
 
-indicators[,1] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,shift=shift) 
-indicators[,2] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,shift=shift,threshold=framework$threshold)
+indicators[,1] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,lambda=lambda) 
+indicators[,2] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,threshold=framework$threshold)
 
  
 point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
@@ -467,7 +467,7 @@ colnames(point_estimates) <- c("Domain",framework$indicator_names)
 return(point_estimates)
 } # end analytic 
 
-expected_transformed_mean <- function(mu=mu,var=var,transformation=transformation,shift=shift) {
+expected_transformed_mean <- function(mu=mu,var=var,transformation=transformation,lambda=lambda) {
   if (transformation=="no") {
     expected_mean <- mu   
   }
@@ -480,14 +480,14 @@ expected_transformed_mean <- function(mu=mu,var=var,transformation=transformatio
     expected_mean <- term1+0.5*dy2dx*(var)-(1/24)*-4*dy2dx*3*(var^2)+(1/720)*-16*dy2dx*(var^3)+(1/40320)*-64*dy2dx*(var^4)  # 9th order Taylor series
   }
   else if (transformation=="log" | transformation=="log.shift") {
-    expected_mean <- exp(mu+(0.5*var))-shift
+    expected_mean <- exp(mu+(0.5*var))-lambda
   }
     return(expected_mean)
 }
 
-expected_head_count <- function(mu=mu,threshold=threshold,var=var,transformation=transformation,shift=shift) {
+expected_head_count <- function(mu=mu,threshold=threshold,var=var,transformation=transformation,lambda=lambda) {
   # do poverty by transforming threshold, then applying normal CDF. 
-  transformed_threshold <- transformation(y=threshold,transformation=transformation,lambda=shift,shift=shift)
+  transformed_threshold <- transformation(y=threshold,transformation=transformation,lambda=lambda)
   expected_head_count <- pnorm(transformed_threshold$y - mu,sd=var^0.5) # formula for head count 
   return(expected_head_count)
 }
