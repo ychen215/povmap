@@ -85,9 +85,9 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   }
   
   
-  if (!is.null(MSE_pop_weights) && !(transformation == "no")) {
+  if (!is.null(MSE_pop_weights) && !(transformation == "no" || transformation == "arcsin" | transformation=="log" | transformation == "log.shift")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "MSE population weights are not supported with transformations at this time")) 
+                 "MSE population weights not supported with transformations other than log, log shift, and arcsin at this time")) 
   }
   
   
