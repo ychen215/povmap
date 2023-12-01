@@ -456,7 +456,7 @@ var <- sigma2vu+model_par$sigmae2est
 
 # do mean with function 
 indicators <- matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop)
-colnames(Indicators) <- framework$indicator_names
+colnames(indicators) <- framework$indicator_names
 
 indicators[,"Mean"] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,lambda=lambda) 
 indicators[,"Head_Count"] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,threshold=framework$threshold)
