@@ -458,7 +458,7 @@ var <- sigma2vu+model_par$sigmae2est
 indicators <- matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop)
 
 
-indicators[,1] <- expected_mean(gen_model$mu,var=var, transformation=transformation,shift=shift) ## function to be written 
+indicators[,1] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,shift=shift) 
 indicators[,2] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,shift=shift,threshold=framework$threshold)
 
  
@@ -467,7 +467,7 @@ colnames(point_estimates) <- c("Domain",framework$indicator_names)
 return(point_estimates)
 } # end analytic 
 
-expected_mean <- function(mu=mu,var=var,transformation=transformation,shift=shift) {
+expected_transformed_mean <- function(mu=mu,var=var,transformation=transformation,shift=shift) {
   if (transformation=="no") {
     expected_mean <- mu   
   }

@@ -343,8 +343,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
   # draw new superpopulation random effect
   vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)
-  #  superpopulation income vector
-  Y_pop_b <- gen_model$mu_fixed + vu_pop
+  
   if(!is.null(framework$aggregate_to_vec)) {
     N_dom_pop_tmp <- framework$N_dom_pop_agg
     pop_domains_vec_tmp <- framework$aggregate_to_vec
@@ -365,28 +364,32 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
   
   
 
-# Do Mean calculation 
-  eps <- vector(length = framework$N_pop)
-  eps[framework$obs_dom] <- rnorm(
-    sum(framework$obs_dom), 0,
-    sqrt(model_par$sigmae2est)
-  )
-  eps[!framework$obs_dom] <- rnorm(
-    sum(!framework$obs_dom), 0,
-    sqrt(model_par$sigmae2est +
-           model_par$sigmau2est)
-  ) 
-  eps <- eps / sqrt(framework$pop_data[,framework$MSE_pop_weights])
-    true_indicators_weighted[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b+eps, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
-      
+ #Do Mean calculation 
+# 1. Draw epsilon 
+  var_eps <- vector(length=framework$N_pop)
+  var_eps[framework$obs_dom] <- (model_par$sigmae2est)
+  var_eps[!framework$obs_dom] <- (model_par$sigmae2est+siogmau2est)
+  eps <- rnorm(framework$N_pop, 0, sqrt(var_eps))
+#2. transform draw   
+  Y_pop_b <- gen_model$mu_fixed + vu_pop + eps
+  Y_pop_b <- back_transformation(y=y_pop_b,transformation=transformation,lambda=lambda,shift=shift,framework=framework)
+#3. Calulate expected value of transformed XB+mu
+  Y_pop_mu <- gen_model$mu_fixed + vu_pop
+  EY_pop_mu <- expected_transformed_mean(Y_pop_mu,var=var_eps,transformation=transformation,shift=shift)
+#4. Scale down implied residual to simulate taking draws over repeated observbations   
+  Y_pop_b <- EY_pop_mu+((Y_pop_b-y_pop_mu)/sqrt(framework$pop_data[,framework$MSE_pop_weights]))
+    true_indicators_weighted[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
+    # Note that for no transformation case, true_indicators Y_pop_b ~ N(XB+mu, var(epsilon)/MSE_pop_weights) 
+    # for log transformation case, draws log normal, calculates the implied residual in levels, and scales that down 
+          
 # Do headcount calculation for population
-   
-    
+# 1. Find poverty probability of each obserbation
     p_pov <- vector(length = framework$N_pop)
-    p_pov[framework$obs_dom] <- pnorm(framework$threshold - as.vector(Y_pop_b[framework$obs_dom]), sd=(model_par$sigmae2est^0.5)) # formula for head count for sampled domains  
-    p_pov[!framework$obs_dom] <- pnorm(framework$threshold - as.vector(Y_pop_b[!framework$obs_dom]), sd=(model_par$sigmau2est + model_par$sigmae2est)^0.5) # formula for head count for non-sampled domains  
+    p_pov <- expected_head_count(y=Y_pop_mu,threshold=framework$threshold,var=var_eps,transformation=transformation,shift=shift)
+# draw from binomial distribution, then divide by total number of trials      
     pov <- mapply(FUN=rbinom,n=1,size=framework$pop_data[,framework$MSE_pop_weights],prob=p_pov)
     pov <- as.vector(pov)/framework$pop_data[,framework$MSE_pop_weights]
+# take weighted mean across target aggregation areas      
     true_indicators_weighted[,2] <- mapply(FUN=weighted.mean, x=split(pov, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
     return(list(true_indicators=true_indicators_weighted,vu_tmp = vu_tmp))
 }
