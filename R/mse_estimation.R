@@ -375,7 +375,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
   Y_pop_b <- back_transformation(y=y_pop_b,transformation=transformation,lambda=lambda,shift=shift,framework=framework)
 #3. Calulate expected value of transformed XB+mu
   Y_pop_mu <- gen_model$mu_fixed + vu_pop
-  EY_pop_mu <- expected_transformed_mean(Y_pop_mu,var=var_eps,transformation=transformation,shift=shift)
+  EY_pop_mu <- expected_transformed_mean(Y_pop_mu,var=var_eps,transformation=transformation,lambda=lambda)
 #4. Scale down implied residual to simulate taking draws over repeated observbations   
   Y_pop_b <- EY_pop_mu+((Y_pop_b-y_pop_mu)/sqrt(framework$pop_data[,framework$MSE_pop_weights]))
     true_indicators_weighted[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
@@ -385,7 +385,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
 # Do headcount calculation for population
 # 1. Find poverty probability of each obserbation
     p_pov <- vector(length = framework$N_pop)
-    p_pov <- expected_head_count(mu=Y_pop_mu,threshold=framework$threshold,var=var_eps,transformation=transformation,shift=shift)
+    p_pov <- expected_head_count(mu=Y_pop_mu,threshold=framework$threshold,var=var_eps,transformation=transformation,lambda=lambda)
 # draw from binomial distribution, then divide by total number of trials      
     pov <- mapply(FUN=rbinom,n=1,size=framework$pop_data[,framework$MSE_pop_weights],prob=p_pov)
     pov <- as.vector(pov)/framework$pop_data[,framework$MSE_pop_weights]
