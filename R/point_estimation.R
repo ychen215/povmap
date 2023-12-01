@@ -442,6 +442,10 @@ analytic <- function(transformation,
   
   
 
+
+  
+  
+
 # construct vector for variance of random effect, copied from errors_gen line 568
 sigma2vu <- vector(length = framework$N_pop)
 # variance of random effect for out-of-sample domains
@@ -451,11 +455,11 @@ sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framewor
 var <- sigma2vu+model_par$sigmae2est
 
 # do mean with function 
-indicators <- data.frame(matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop))
+indicators <- matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop)
 
 
-indicators$Mean <- expected_mean(gen_model$mu,var=var, transformation=transformation,shift=shift) ## function to be written 
-indicators$Head_Count <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,shift=shift,threshold=framework$threshold)
+indicators[,1] <- expected_mean(gen_model$mu,var=var, transformation=transformation,shift=shift) ## function to be written 
+indicators[,2] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,shift=shift,threshold=framework$threshold)
 
  
 point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
