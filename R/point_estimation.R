@@ -451,10 +451,10 @@ sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framewor
 var <- sigma2vu+model_par$sigmae2est
 
 # do mean with function 
-indicators <- data.frame(matrix(ncol=length(framework$indicator_names),nrow=framework$n_pop))
+indicators <- data.frame(matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop))
 
 
-indicators$Mean <- expected_mean(mu=gen_model$mu,var=var, transformation=transformation,shift=shift) ## function to be written 
+indicators$Mean <- expected_mean(gen_model$mu,var=var, transformation=transformation,shift=shift) ## function to be written 
 indicators$Head_Count <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,shift=shift,threshold=framework$threshold)
 
  
