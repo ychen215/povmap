@@ -456,12 +456,16 @@ var <- sigma2vu+model_par$sigmae2est
 
 # do mean with function 
 indicators <- matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop)
+colnames(Indicators) <- framework$indicator_names
 
+indicators[,"Mean"] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,lambda=lambda) 
+indicators[,"Head_Count"] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,threshold=framework$threshold)
+indicators[,"Median"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.5)
+indicators[,"Quantile_10"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.1) 
+indicators[,"Quantile_25"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.25) 
+indicators[,"Quantile_75"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.75) 
+indicators[,"Quantile_90"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.9) 
 
-indicators[,1] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,lambda=lambda) 
-indicators[,2] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,threshold=framework$threshold)
-
- 
 point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
 colnames(point_estimates) <- c("Domain",framework$indicator_names)
 return(point_estimates)
@@ -497,8 +501,11 @@ expected_head_count <- function(mu=mu,threshold=threshold,var=var,transformation
 }
 
 
-
-
+transformed_percentile <- function(mu=mu,threshold=threshold,var=var,transformation=transformation,lambda=lambda,shift=shift,p=p) {
+   mu_percentile <- mu+qnorm(p,0,var)
+   transformed_percentile <- back_transformation(y=mu_percentile,transformation=transformation,lambda=lambda,shift=shift) 
+   return(transformed_percentile) 
+}
 
 # Monte-Carlo approximation ----------------------------------------------------
 
