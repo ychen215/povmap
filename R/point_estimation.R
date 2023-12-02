@@ -201,7 +201,10 @@ model_par <- function(framework,
   sigmau2est <- as.numeric(nlme::VarCorr(mixed_model)[1, 1])
   # Random effect: vector with zeros for all domains, filled with 0
   rand_eff <- rep(0, length(unique(framework$pop_domains_vec)))
-  
+  #Variance of estimated variance components 
+  var_lnsigmau2est <- mixed_model$apVar[1] # variance in log scale 
+  var_lnsigme2est <- mixed_model$apVar[4] # variance in log scale 
+  cov_sigma2est <- mixed_model$apVar[2] # covariance in log scale 
   
   if (is.null(framework$weights)) {
     # random effect for in-sample domains (dist_obs_dom)
@@ -211,7 +214,10 @@ model_par <- function(framework,
       betas = betas,
       sigmae2est = sigmae2est,
       sigmau2est = sigmau2est,
-      rand_eff = rand_eff
+      rand_eff = rand_eff,
+      var_lnsigmau2est,
+      var_lnsigme2est,
+      cov_sigma2est
     ))
 } else if (any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
     rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
@@ -260,7 +266,10 @@ model_par <- function(framework,
       sigmau2est = sigmau2est,
       rand_eff = rand_eff,
       gammaw = gamma_weight,
-      delta2 = delta2
+      delta2 = delta2,
+      var_lnsigmau2est,
+      var_lnsigme2est,
+      cov_sigma2est
     ))
 }
   else {

@@ -443,21 +443,40 @@ superpopulation_wild <- function(framework, model_par, gen_model, lambda,
 superpopulation <- function(framework, model_par, gen_model, lambda, shift,
                             transformation, fixed) {
   
+  
+  sigmau2est <- model_par$sigmau2est 
+  sigmae2est <- model_par$sigmae2est 
+  
+  # implement random_variance option 
+  if (framework$random_variance==TRUE) {
+    # Even though the two error terms are not correlated, their variances are. 
+    # Use an affine transformation of a normal to draw a bivariate normal: If X~N(MuX,s2X) and Y=A(X-MuX)+b, and then Y ~ N(b,A^2*s2X+s2b) and Cov(X,Y)=A 
+    # we have an estimate of Cov(lnsigmau2est)=model_par$cov_sigma2est = A 
+    # If we define lnsigmae2est as Y and lnsigmaeu2est as X, then setting  s2b = s2Y-s2x/A2 will generate 
+    
+    lnsigmau2est<-rnorm(n=1,mu=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
+    lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mu=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est/model_par$cov_sigmae2est^2))
+    sigmau2est <- exp(lnsigmau2est)
+    sigmae2est <- exp(lnsigmae2est)
+  }
+  
+  
+  
   # superpopulation individual errors
   eps <- vector(length = framework$N_pop)
   eps[framework$obs_dom] <- rnorm(
     sum(framework$obs_dom), 0,
-    sqrt(model_par$sigmae2est)
+    sqrt(sigmae2est)
   )
   eps[!framework$obs_dom] <- rnorm(
     sum(!framework$obs_dom), 0,
-    sqrt(model_par$sigmae2est +
-           model_par$sigmau2est)
+    sqrt(sigmae2est +
+           sigmau2est)
   )
   
   
   # superpopulation random effect
-  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
+  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)
   #  superpopulation income vector
   Y_pop_b <- gen_model$mu_fixed + eps + vu_pop
