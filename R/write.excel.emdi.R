@@ -106,9 +106,9 @@ write.excel <- function(object,
 
 
   if (is.null(file) == TRUE) {
-    file <- paste0(tempdir(),"\\", "excel_output.xlsx")
+    file <- file.path(tempdir(), "excel_output.xlsx")
   }
-
+  
   writeexcel_check(
     object = object,
     file = file,

@@ -340,8 +340,27 @@ mse_estim <- function(framework,
 # True_indicators_weighted function ---------------------------------------------
 #This returns "true" superpopulation Mean and Headcount estimated from the population data when MSE_pop_Weight=TRUE 
 true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,transformation,fixed) {
+  
+  # draw variances if necessary 
+  sigmau2est < model_par$sigmau2est 
+  sigmae2est <- model_par$sigmae2est 
+  
+  if (framework$random_variance==TRUE) {
+    # Even though the two error terms are not correlated, their variances are. 
+    # We define X ~N(MuX,s2X) and Y=A(X-MuX)+B, and then Y ~ N(b,A^2*s2X+s2B) 
+    # we have an estimate of Cov(lnsigmau2est)=model_par$cov_sigma2est = A 
+    # If we define lnsigmae2est as Y and lnsigmaeu2est as X, then setting  s2B = s2Y-s2x*A2 will generate s2Y=A^2S2X+S2Y-S2X*A2 
+    
+    lnsigmau2est<-rnorm(n=1,mu=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
+    lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mu=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigmae2est^2))
+                     sigmau2est <- exp(lnsigmau2est)
+                     sigmae2est <- exp(lnsigmae2est)
+  }
+  
+  
   # draw new superpopulation random effect
-  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
+  
+  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)
   
   if(!is.null(framework$aggregate_to_vec)) {
@@ -367,8 +386,8 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
  #Do Mean calculation 
 # 1. Draw epsilon 
   var_eps <- vector(length=framework$N_pop)
-  var_eps[framework$obs_dom] <- (model_par$sigmae2est)
-  var_eps[!framework$obs_dom] <- (model_par$sigmae2est+siogmau2est)
+  var_eps[framework$obs_dom] <- (sigmae2est)
+  var_eps[!framework$obs_dom] <- (sigmae2est+sigmau2est)
   eps <- rnorm(framework$N_pop, 0, sqrt(var_eps))
 #2. transform draw   
   Y_pop_b <- gen_model$mu_fixed + vu_pop + eps
@@ -450,12 +469,12 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
   # implement random_variance option 
   if (framework$random_variance==TRUE) {
     # Even though the two error terms are not correlated, their variances are. 
-    # Use an affine transformation of a normal to draw a bivariate normal: If X~N(MuX,s2X) and Y=A(X-MuX)+b, and then Y ~ N(b,A^2*s2X+s2b) and Cov(X,Y)=A 
+    # We define X ~N(MuX,s2X) and Y=A(X-MuX)+B, and then Y ~ N(b,A^2*s2X+s2B) 
     # we have an estimate of Cov(lnsigmau2est)=model_par$cov_sigma2est = A 
-    # If we define lnsigmae2est as Y and lnsigmaeu2est as X, then setting  s2b = s2Y-s2x/A2 will generate 
+    # If we define lnsigmae2est as Y and lnsigmaeu2est as X, then setting  s2B = s2Y-s2x*A2 will generate s2Y=A^2S2X+S2Y-S2X*A2 
     
     lnsigmau2est<-rnorm(n=1,mu=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
-    lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mu=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est/model_par$cov_sigmae2est^2))
+    lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mu=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigmae2est^2))
     sigmau2est <- exp(lnsigmau2est)
     sigmae2est <- exp(lnsigmae2est)
   }
