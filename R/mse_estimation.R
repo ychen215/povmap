@@ -345,7 +345,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
   sigmau2est < model_par$sigmau2est 
   sigmae2est <- model_par$sigmae2est 
   
-  if (framework$random_variance==TRUE) {
+  if (framework$MSE_random_variance==TRUE) {
     # Even though the two error terms are not correlated, their variances are. 
     # We define X ~N(MuX,s2X) and Y=A(X-MuX)+B, and then Y ~ N(b,A^2*s2X+s2B) 
     # we have an estimate of Cov(lnsigmau2est)=model_par$cov_sigma2est = A 
@@ -467,7 +467,7 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
   sigmae2est <- model_par$sigmae2est 
   
   # implement random_variance option 
-  if (framework$random_variance==TRUE) {
+  if (framework$MSE_random_variance==TRUE) {
     # Even though the two error terms are not correlated, their variances are. 
     # We define X ~N(MuX,s2X) and Y=A(X-MuX)+B, and then Y ~ N(b,A^2*s2X+s2B) 
     # we have an estimate of Cov(lnsigmau2est)=model_par$cov_sigma2est = A 
