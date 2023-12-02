@@ -12,6 +12,7 @@ revdep
 inst\sticker
 
 ^\.github$
+^README\.md$
 
 CONTRIBUTING.md
 
