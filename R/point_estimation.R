@@ -215,9 +215,9 @@ model_par <- function(framework,
       sigmae2est = sigmae2est,
       sigmau2est = sigmau2est,
       rand_eff = rand_eff,
-      var_lnsigmau2est,
-      var_lnsigme2est,
-      cov_sigma2est
+      var_lnsigmau2est = var_lnsigmau2est,
+      var_lnsigme2est = var_lnsigme2est,
+      cov_sigma2est = cov_sigma2est
     ))
 } else if (any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
     rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
@@ -267,9 +267,9 @@ model_par <- function(framework,
       rand_eff = rand_eff,
       gammaw = gamma_weight,
       delta2 = delta2,
-      var_lnsigmau2est,
-      var_lnsigme2est,
-      cov_sigma2est
+      var_lnsigmau2est = var_lnsigmau2est,
+      var_lnsigme2est = var_lnsigme2est,
+      cov_sigma2est = cov_sigma2est
     ))
 }
   else {
@@ -347,9 +347,9 @@ model_par <- function(framework,
       rand_eff = rand_eff,
       gammaw = gamma_weight,
       delta2 = delta2,
-      var_lnsigmau2est,
-      var_lnsigme2est,
-      cov_sigma2est
+      var_lnsigmau2est = var_lnsigmau2est,
+      var_lnsigme2est = var_lnsigme2est,
+      cov_sigma2est = cov_sigma2est
     ))
   }
 } # End model_par
