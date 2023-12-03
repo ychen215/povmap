@@ -346,7 +346,10 @@ model_par <- function(framework,
       sigmau2est = sigmau2est,
       rand_eff = rand_eff,
       gammaw = gamma_weight,
-      delta2 = delta2
+      delta2 = delta2,
+      var_lnsigmau2est,
+      var_lnsigme2est,
+      cov_sigma2est
     ))
   }
 } # End model_par
