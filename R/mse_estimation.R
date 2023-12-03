@@ -352,7 +352,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     # If we define lnsigmae2est as Y and lnsigmaeu2est as X, then setting  s2B = s2Y-s2x*A2 will generate s2Y=A^2S2X+S2Y-S2X*A2 
     
     lnsigmau2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
-    lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigmae2est^2)))
+    lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigma2est^2)))
     sigmau2est <-(lnsigmau2est)
     sigmae2est <- exp(lnsigmae2est)
   }
