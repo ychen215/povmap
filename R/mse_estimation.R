@@ -342,7 +342,7 @@ mse_estim <- function(framework,
 true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,transformation,fixed) {
   
   # draw variances if necessary 
-  sigmau2est < model_par$sigmau2est 
+  sigmau2est <- model_par$sigmau2est 
   sigmae2est <- model_par$sigmae2est 
   
   if (framework$MSE_random_variance==TRUE) {
