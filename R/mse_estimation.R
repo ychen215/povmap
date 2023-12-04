@@ -345,7 +345,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
   sigmau2est <- model_par$sigmau2est 
   sigmae2est <- model_par$sigmae2est 
   
-  #if (framework$MSE_random_variance==TRUE) {
+  if (framework$MSE_random_variance==TRUE) {
     # Even though the two error terms are nindependent, the estimaes of their variances are correlated 
     # We define X ~N(MuX,s2X) and Y=A(X-MuX)+B, and then Y ~ N(b,A^2*s2X+s2B) 
     # so s2b should be equal to s2Y-A^2*s2x 
@@ -362,7 +362,11 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     # now add on noise 
     #sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigmau2))
     #sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigmau2_sigmae2+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigmae2-var_sigmau2*cov_sigmau2_sigmae2^2))
-  #}
+    
+    # method 3 
+      sigmae2est <- exp(log(sigmae2est)+0.5*model_par$var_lnsigmae2est)
+      sigmau2est <- exp(log(sigmau2est)+0.5*model_par$var_lnsigmau2est)
+  }
   
   
   # draw new superpopulation random effect

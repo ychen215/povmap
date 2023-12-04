@@ -206,10 +206,7 @@ model_par <- function(framework,
   var_lnsigmae2est <- mixed_model$apVar[4] # variance in log scale 
   cov_sigma2est <- mixed_model$apVar[2] # covariance in log scale 
   
-  if (framework$MSE_random_variance==TRUE) {
-   sigmae2est <- exp(log(sigmae2est)+0.5*var_lnsigmae2est)
-   sigmau2est <- exp(log(sigmau2est)+0.5*var_lnsigmau2est)
-  }
+
   
   
   if (is.null(framework$weights)) {
