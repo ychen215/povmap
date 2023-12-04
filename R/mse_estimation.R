@@ -356,12 +356,12 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     #sigmau2est <- exp(lnsigmau2est)
     #sigmae2est <- exp(lnsigmae2est)
     # first figure out variance/covariance matrix using delta method 
-    var_sigma2u <- sigmau2est^2*model_par$var_lnsigmau2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
-    var_sigma2e <- sigmae2est^2*model_par$var_lnsigmae2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
-    cov_sigma2u_sigma2e <- sigmau2est*sigmae2est*model_par$cov_sigma2est
+    var_sigmau2 <- sigmau2est^2*model_par$var_lnsigmau2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
+    var_sigmae2 <- sigmae2est^2*model_par$var_lnsigmae2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
+    cov_sigmau2_sigmae2 <- sigmau2est*sigmae2est*model_par$cov_sigma2est
     # now add on noise 
-    sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigma2u))
-    sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigma2u_sigma2e+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigma2e-var_sigmau2est*cov_sigma2u_sigma2e^2))
+    sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigmau2))
+    sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigmau2_sigmae2+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigmae2-var_sigmau2*cov_sigmau2_sigmae2^2))
   }
   
   
@@ -483,12 +483,12 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
     #lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigma2est^2)))
     #sigmau2est <- exp(lnsigmau2est)
     #sigmae2est <- exp(lnsigmae2est)
-    var_sigma2u <- sigmau2est^2*model_par$var_lnsigmau2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
-    var_sigma2e <- sigmae2est^2*model_par$var_lnsigmae2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
-    cov_sigma2u_sigma2e <- sigmau2est*sigmae2est*model_par$cov_sigma2est
+    var_sigmau2 <- sigmau2est^2*model_par$var_lnsigmau2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
+    var_sigmae2 <- sigmae2est^2*model_par$var_lnsigmae2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
+    cov_sigmau2_sigmae2 <- sigmau2est*sigmae2est*model_par$cov_sigma2est
     # now add on noise 
-    sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigma2u))
-    sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigma2u_sigma2e+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigma2e-var_sigmau2est*cov_sigma2u_sigma2e^2))
+    sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigmau2))
+    sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigmau2_sigmae2+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigmae2-var_sigmau2*cov_sigmau2_sigmae2^2))
   }
   
   
