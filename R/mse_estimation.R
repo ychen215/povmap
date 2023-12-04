@@ -351,7 +351,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     # so s2b should be equal to s2Y-A^2*s2x 
     # we have an estimate of Cov(lnsigmau2est)=model_par$cov_sigma2est = A 
     # If we define lnsigmae2est as Y and lnsigmaeu2est as X, then setting  s2B = s2Y-s2x*A2 will generate s2Y=A^2S2X+S2Y-S2X*A2 
-    #lnsigmau2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
+    #lnsigmau2est<-rnorm(n=1,mean=log(sigmau2est),sd=sqrt(model_par$var_lnsigmau2est))
     #lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigma2est^2)))
     #sigmau2est <- exp(lnsigmau2est)
     #sigmae2est <- exp(lnsigmae2est)
@@ -363,9 +363,15 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     #sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigmau2))
     #sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigmau2_sigmae2+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigmae2-var_sigmau2*cov_sigmau2_sigmae2^2))
     
-    # method 3 
-      sigmae2est <- exp(log(sigmae2est)+0.5*model_par$var_lnsigmae2est)
-      sigmau2est <- exp(log(sigmau2est)+0.5*model_par$var_lnsigmau2est)
+    # method 3 - this doesn't change anything 
+      #sigmae2est <- exp(log(sigmae2est)+0.5*model_par$var_lnsigmae2est)
+      #sigmau2est <- exp(log(sigmau2est)+0.5*model_par$var_lnsigmau2est)
+    
+    # method 4 = simple version of method 1 
+    lnsigmau2est<-rnorm(n=1,mean=log(sigmau2est),sd=sqrt(model_par$var_lnsigmau2est))
+    lnsigmae2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est))
+    sigmau2est <- exp(lnsigmau2est)
+    sigmae2est <- exp(lnsigmae2est)
   }
   
   
