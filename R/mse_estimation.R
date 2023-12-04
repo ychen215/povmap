@@ -345,16 +345,16 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
   sigmau2est <- model_par$sigmau2est 
   sigmae2est <- model_par$sigmae2est 
   
-  if (framework$MSE_random_variance==TRUE) {
+  #if (framework$MSE_random_variance==TRUE) {
     # Even though the two error terms are nindependent, the estimaes of their variances are correlated 
     # We define X ~N(MuX,s2X) and Y=A(X-MuX)+B, and then Y ~ N(b,A^2*s2X+s2B) 
     # so s2b should be equal to s2Y-A^2*s2x 
     # we have an estimate of Cov(lnsigmau2est)=model_par$cov_sigma2est = A 
     # If we define lnsigmae2est as Y and lnsigmaeu2est as X, then setting  s2B = s2Y-s2x*A2 will generate s2Y=A^2S2X+S2Y-S2X*A2 
-    lnsigmau2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
-    lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigma2est^2)))
-    sigmau2est <- exp(lnsigmau2est)
-    sigmae2est <- exp(lnsigmae2est)
+    #lnsigmau2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
+    #lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigma2est^2)))
+    #sigmau2est <- exp(lnsigmau2est)
+    #sigmae2est <- exp(lnsigmae2est)
     # first figure out variance/covariance matrix using delta method 
     #var_sigmau2 <- sigmau2est^2*model_par$var_lnsigmau2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
     #var_sigmae2 <- sigmae2est^2*model_par$var_lnsigmae2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
@@ -362,7 +362,7 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
     # now add on noise 
     #sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigmau2))
     #sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigmau2_sigmae2+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigmae2-var_sigmau2*cov_sigmau2_sigmae2^2))
-  }
+  #}
   
   
   # draw new superpopulation random effect
@@ -474,24 +474,28 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
   sigmae2est <- model_par$sigmae2est 
   
   # implement random_variance option 
-  if (framework$MSE_random_variance==TRUE) {
+  #if (framework$MSE_random_variance==TRUE) {
     # Even though the two error terms are not correlated, their variances are. 
     # We define X ~N(MuX,s2X) and Y=A(X-MuX)+B, and then Y ~ N(b,A^2*s2X+s2B) 
     # we have an estimate of Cov(lnsigmau2est)=model_par$cov_sigma2est = A 
     # If we define lnsigmae2est as Y and lnsigmaeu2est as X, then setting  s2B = s2Y-s2x*A2 will generate s2Y=A^2S2X+S2Y-S2X*A2 
-    lnsigmau2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
-    lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigma2est^2)))
-    sigmau2est <- exp(lnsigmau2est)
-    sigmae2est <- exp(lnsigmae2est)
+    # method 1. Draw from log distribution 
+    #lnsigmau2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
+    #lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigma2est^2)))
+    #sigmau2est <- exp(lnsigmau2est)
+    #sigmae2est <- exp(lnsigmae2est)
     
-    
+    #method 2: Approximate variance in levels and draw 
     #var_sigmau2 <- sigmau2est^2*model_par$var_lnsigmau2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
     #var_sigmae2 <- sigmae2est^2*model_par$var_lnsigmae2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
     #cov_sigmau2_sigmae2 <- sigmau2est*sigmae2est*model_par$cov_sigma2est
     # now add on noise 
     #sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigmau2))
     #sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigmau2_sigmae2+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigmae2-var_sigmau2*cov_sigmau2_sigmae2^2))
-  }
+  
+    # we will try doing an adjustment in model_par instead 
+    
+  #}
   
   
   
