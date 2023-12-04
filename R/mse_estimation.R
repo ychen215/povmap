@@ -497,7 +497,11 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
     #sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigmau2))
     #sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigmau2_sigmae2+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigmae2-var_sigmau2*cov_sigmau2_sigmae2^2))
   
-    # we will try doing an adjustment in model_par instead 
+  # method 3 - adjust directly according to expected value 
+  sigmae2est <- exp(log(sigmae2est)+0.5*model_par$var_lnsigmae2est)
+  sigmau2est <- exp(log(sigmau2est)+0.5*model_par$var_lnsigmau2est)
+}
+  
     
   #}
   
