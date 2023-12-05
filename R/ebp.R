@@ -103,8 +103,9 @@
 #' the super-population in the parametric bootstrap. This option is useful when 
 #' substituting one observation for many identical observations in the population
 #' data. It can only be used for Mean and Head_count. Defaults to \code{NULL}. 
-#' @param MSE_random_variance if \code{TRUE}, draws the variance components from
-#' their estimated distribution when constructing superpopulations for the 
+#' @param MSE_cluster a character string containing the name of a variable to  
+#' cluster MSE estimation on. If \code boot_type = 'wild', implements a wild cluster 
+#' bootstrap. If boot_type = 'parametric', adjusts MSE for cluster correlations  
 #' parametric bootstrap. This can generate more accurate MSE estimates. 
 #' Defaults to \code{FALSE}
 #' @param aggregate_to a character string containing the name of a variable from
@@ -325,7 +326,7 @@ ebp <- function(fixed,
                 weights = NULL,
                 pop_weights = NULL,
                 MSE_pop_weights = NULL, 
-                MSE_random_variance = FALSE,  
+                MSE_cluster = NULL,  
                 aggregate_to = NULL,
                 weights_type = "Guadarrama",
                 benchmark = NULL,
