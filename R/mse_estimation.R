@@ -491,7 +491,7 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
   #}
   
   #superpopulation cluster effect 
-  if is.null(framework$MSE_cluster) {
+  if (is.null(framework$MSE_cluster)) {
     # superpopulation individual errors
     eps <- vector(length = framework$N_pop)
     eps[framework$obs_dom] <- rnorm(
@@ -505,7 +505,7 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
     )  
   }
   else {
-     
+     browser()
     
     
   }
