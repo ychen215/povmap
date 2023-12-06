@@ -189,11 +189,11 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  "Weighted ebp with weights_type == 'Guadarrama' can only be
                  used without transformation or the log-transformation."))
   }
-  if (!is.null(weights) && isTRUE(MSE) && boot_type == "wild") {
-    stop(strwrap(prefix = " ", initial = "",
-                 "The weighted version of ebp is only available with the
-                 ''parametric'' bootstrap."))
-  }
+  #if (!is.null(weights) && isTRUE(MSE) && boot_type == "wild") {
+  #  stop(strwrap(prefix = " ", initial = "",
+  #               "The weighted version of ebp is only available with the
+  #               ''parametric'' bootstrap."))
+  #}
 
   if (is.null(weights) &&
       (weights_type == "nlme" || weights_type == "nlme_lambda")) {

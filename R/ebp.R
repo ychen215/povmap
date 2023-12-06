@@ -303,6 +303,7 @@
 #' @importFrom stats as.formula dnorm lm median model.matrix na.omit optimize
 #' qnorm quantile residuals rnorm sd fitted ave
 #' @importFrom utils flush.console write.table write.csv
+#' @importFrom FNN knnx.index
 
 ebp <- function(fixed,
                 pop_data,
