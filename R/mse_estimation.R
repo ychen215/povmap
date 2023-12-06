@@ -150,7 +150,7 @@ mse_estim <- function(framework,
       fitted_s = fitted_s,
       fixed = fixed
     )
-  } else {
+  } else if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {
     superpop <- superpopulation(
       framework = framework,
       model_par = model_par,
@@ -160,7 +160,18 @@ mse_estim <- function(framework,
       transformation = transformation,
       fixed = fixed
     )
+  } else {
+    superpop <- superpopulation_2f(
+      framework = framework,
+      model_par = model_par,
+      gen_model = gen_model,
+      lambda = lambda,
+      shift = shift,
+      transformation = transformation,
+      fixed = fixed
+    )
   }
+    
   pop_income_vector <- superpop$pop_income_vector
 
   if (inherits(framework$threshold, "function")) {
@@ -488,38 +499,24 @@ superpopulation_wild <- function(framework, model_par, gen_model, lambda,
 
 superpopulation <- function(framework, model_par, gen_model, lambda, shift,
                             transformation, fixed) {
-  #}
-  
   #superpopulation cluster effect 
-  if (is.null(framework$MSE_cluster)) {
+ 
     # superpopulation individual errors
     eps <- vector(length = framework$N_pop)
     eps[framework$obs_dom] <- rnorm(
       sum(framework$obs_dom), 0,
-      sqrt(model_parsigmae2est)
+      sqrt(model_par$sigmae2est)
     )
     eps[!framework$obs_dom] <- rnorm(
       sum(!framework$obs_dom), 0,
       sqrt(model_par$sigmae2est +
-             model_par$sigmau2est)
+             model_par$sigmau2e)
     )  
-  }
-  else {
-     browser()
-    
-    
-  }
-  
-  
-  
-  
+ 
   
   # superpopulation random effect
   vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)
-  
-  
-  
   
   #  superpopulation income vector
   Y_pop_b <- gen_model$mu_fixed + eps + vu_pop
@@ -535,6 +532,54 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
   Y_pop_b[!is.finite(Y_pop_b)] <- 0
 
   return(list(pop_income_vector = Y_pop_b, vu_tmp = vu_tmp))
+}
+
+
+superpopulation_2f <- function(framework, model_par, gen_model, lambda, shift,
+                            transformation, fixed) {
+  
+  # superpopulation area random effect
+  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigma2u2f))
+  vu_pop <- rep(vu_tmp, framework$n_pop)
+  
+  # superpoulation subarea random effect 
+  eta_tmp <- rnorm(framework$N_subdom_pop, 0, sqrt(model_par$sigma2h2f))
+  eta_pop <- rep(vu_tmp, framework$n_pop_subdom)
+  
+  # need N_subdom_pop (Number of subdomains in population) and n_pop_subdom (# of units in each subdomain)
+  # superpopulation individual errors
+  eps <- vector(length = framework$N_pop)
+  eps[framework$obs_dom & framework_obs_subdom] <- rnorm(
+    sum(framework$obs_dom), 0,
+    sqrt(model_par$sigma2e2f)
+  )
+  eps[framework$obs_dom & !framework_obs_subdom] <- rnorm(
+    sum(framework$obs_dom), 0,
+    sqrt(model_par$sigma2e2f+model_par$sigma2h2f)
+  )
+  eps[!framework$obs_dom] <- rnorm(
+    sum(!framework$obs_dom), 0,
+    sqrt(model_par$sigma2e2f +
+           model_par$sigma2h2f + 
+           model_par$sigma2u2f)
+  )  
+  
+  
+  
+  #  superpopulation income vector
+  Y_pop_b <- gen_model$mu_fixed + eps + eta_pop + vu_pop
+  
+  Y_pop_b <- back_transformation(
+    y = Y_pop_b,
+    transformation = transformation,
+    lambda = lambda,
+    shift = shift,
+    framework = framework,
+    fixed = fixed
+  )
+  Y_pop_b[!is.finite(Y_pop_b)] <- 0
+  
+  return(list(pop_income_vector = Y_pop_b, vu_tmp = vu_tmp, eta_tmp=eta_tmp))
 }
 
 

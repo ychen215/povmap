@@ -76,6 +76,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   pop_data[[pop_domains]] <- factor(pop_data[[pop_domains]],
                                     levels = levels_tmp)
   pop_domains_vec <- pop_data[[pop_domains]]
+  
 
   smp_data[[smp_domains]] <- factor(smp_data[[smp_domains]],
                                     levels = levels_tmp)
@@ -96,7 +97,17 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
 
   smp_domains_vec <- smp_data[[smp_domains]]
   smp_domains_vec <- droplevels(smp_domains_vec)
-
+  
+  smp_subdomains_vec <- NULL 
+  pop_subdomains_vec <- NULL 
+  if (!is.null(smp_subdomains) && !is.null(pop_subdomains)) {
+    smp_subdomains_vec <- smp_data[[smp_subdomains]]
+    smp_subdomains_vec <- droplevels(smp_subdomains_vec)
+    pop_subdomains_vec <- pop_data[[pop_subdomains]]
+  }
+  
+  
+  
 
   fw_check2(
     pop_domains = pop_domains, pop_domains_vec = pop_domains_vec,
@@ -113,6 +124,8 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   N_unobs <- N_pop - N_smp
   # Number of domains in the population
   N_dom_pop <- length(unique(pop_domains_vec))
+  # Number of subdomains in the population 
+  N_subdom_pop <- length(unique(pop_subdomains_vec))
   # Number of domains in the population on aggregated level
   N_dom_pop_agg <- length(unique(aggregate_to_vec))
   # Number of domains in the sample
@@ -121,14 +134,22 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   N_dom_unobs <- N_dom_pop - N_dom_smp
   # Number of households in population per domain
   n_pop <- as.vector(table(pop_domains_vec))
+  # NUmber of households in population per subdomain 
+  n_pop_subdom <- as.vector(table(pop_subdomains_vec))
   # Number of households in sample per domain
   smp_domains_vec_tmp <- as.numeric(smp_domains_vec)
   n_smp <- as.vector(table(smp_domains_vec_tmp))
 
+  
+  
+  
   # Indicator variables that indicate if domain is in- or out-of-sample
   obs_dom <- pop_domains_vec %in% unique(smp_domains_vec)
   dist_obs_dom <- unique(pop_domains_vec) %in% unique(smp_domains_vec)
-
+  obs_subdom <- pop_subdomains_vec %in% unique(smp_subdomains_vec)
+  
+  
+  
   fw_check3(
     obs_dom = obs_dom, dist_obs_dom = dist_obs_dom, pop_domains = pop_domains,
     smp_domains = smp_domains
@@ -225,11 +246,14 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
     N_unobs = N_unobs,
     N_dom_pop = N_dom_pop,
     N_dom_pop_agg = N_dom_pop_agg,
+    N_subdom_pop = N_subdom_pop, 
     N_dom_smp = N_dom_smp,
     N_dom_unobs = N_dom_unobs,
     n_pop = n_pop,
     n_smp = n_smp,
+    n_pop_subdom = n_pop_subdom, 
     obs_dom = obs_dom,
+    obs_subdom = obs_subdom, 
     dist_obs_dom = dist_obs_dom,
     indicator_list = indicator_list,
     indicator_names = indicator_names,

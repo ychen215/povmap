@@ -120,7 +120,7 @@ point_estim <- function(framework,
         weights = quiet(cat(weights_arg))
       )
       est_par$sigma2u2f <- as.numeric(VarCorr(mixed_model2f)[2])
-      est_par$sigma2v2f <- as.numeric(VarCorr(mixed_model2f)[4])
+      est_par$sigma2h2f <- as.numeric(VarCorr(mixed_model2f)[4])
       est_par$sigma2e2f <- mixed_model2f$sigma^2 
     } 
     
