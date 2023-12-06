@@ -104,8 +104,8 @@
 #' substituting one observation for many identical observations in the population
 #' data. It can only be used for Mean and Head_count. Defaults to \code{NULL}. 
 #' @param MSE_cluster a character string containing the name of a variable to  
-#' cluster MSE estimation on. If \code boot_type = wild, implements a wild cluster 
-#' bootstrap. If boot_type = parametric, adjusts MSE to account for within-cluster
+#' cluster MSE estimation on. If \code{boot_type = wild}, implements a wild cluster 
+#' bootstrap. If \code{boot_type = 'parametric'}, adjusts MSE to account for within-cluster
 #' correlation in the parametric bootstrap procedure 
 #' Defaults to \code{NULL}
 #' @param aggregate_to a character string containing the name of a variable from
