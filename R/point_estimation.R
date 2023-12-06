@@ -65,9 +65,11 @@ point_estim <- function(framework,
   }   
   
   random_arg <- NULL   
-  random_arg <- list(framework$smp_domains=as.formula(~1))
+  random_arg[framework$smp_domains] <- list(as.formula(~1))
+  names(random_arg) <- c(framework$smp_domains)
   if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
-    random_arg <- list(framework$smp_domains,as.formula(~1)),as.formula(paste0(framework$smp_subdomains,"=~1")))
+    random_arg <- list(as.formula(~1),as.formula(~1))
+    names(random_arg) <- c(framework$smp_domains,framework$smp_subdomains)
   } 
   
    
@@ -75,7 +77,7 @@ point_estim <- function(framework,
     mixed_model <- nlme::lme(
       fixed = fixed,
       data = transformation_par$transformed_data,
-      random = list(mun=~1), 
+      random = random_arg, 
       method = framework$nlme_method,
       control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
                                  tolerance = framework$nlme_tolerance,
