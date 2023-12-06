@@ -56,7 +56,46 @@ point_estim <- function(framework,
     transformation_par$transformed_data$weights_scaled <-
       framework$smp_data[,framework$weights] /
         mean(framework$smp_data[,framework$weights], na.rm = TRUE)
+
     
+    weights_opt <- "varComb(
+          varIdent(as.formula(
+            paste0("~ 1 | as.factor(", framework$smp_domains, ")")
+          )),
+          varFixed(as.formula(paste0("~1/", "weights_scaled")))
+        )"
+    
+  }   
+    
+    
+        
+#    mixed_model <- nlme::lme(
+#      fixed = fixed,
+#      data = transformation_par$transformed_data,
+#      random =
+#        as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
+#      method = framework$nlme_method,
+#      control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
+#                                 tolerance = framework$nlme_tolerance,
+#                                 opt = framework$nlme_opt,
+#                                 optimMethod = framework$nlme_optimmethod, 
+#                                 msMaxIter=framework$nlme_msmaxiter,
+#                                 msTol=framework$nlme_mstol,
+#                                 returnObject = framework$nlme_returnobject 
+#                                 ),
+#      keep.data = keep_data,
+#      weights =
+#        varComb(
+#         varIdent(as.formula(
+#            paste0("~ 1 | as.factor(", framework$smp_domains, ")")
+#          )),
+#          varFixed(as.formula(paste0("~1/", "weights_scaled")))
+#        )
+#    )
+    
+  
+    
+  
     mixed_model <- nlme::lme(
       fixed = fixed,
       data = transformation_par$transformed_data,
@@ -72,33 +111,7 @@ point_estim <- function(framework,
                                  returnObject = framework$nlme_returnobject 
                                  ),
       keep.data = keep_data,
-      weights =
-        varComb(
-          varIdent(as.formula(
-            paste0("~ 1 | as.factor(", framework$smp_domains, ")")
-          )),
-          varFixed(as.formula(paste0("~1/", "weights_scaled")))
-        )
-    )
-    
-  
-    
-  } else {
-    mixed_model <- nlme::lme(
-      fixed = fixed,
-      data = transformation_par$transformed_data,
-      random =
-        as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
-      method = framework$nlme_method,
-      control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
-                                 tolerance = framework$nlme_tolerance,
-                                 opt = framework$nlme_opt,
-                                 optimMethod = framework$nlme_optimmethod, 
-                                 msMaxIter=framework$nlme_msmaxiter,
-                                 msTol=framework$nlme_mstol,
-                                 returnObject = framework$nlme_returnobject 
-                                 ),
-      keep.data = keep_data
+      weights = weights_opt
     )
   }
 
