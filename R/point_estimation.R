@@ -1,5 +1,11 @@
 # Internal documentation -------------------------------------------------------
 
+quiet <- function(x) { 
+  sink(tempfile()) 
+  on.exit(sink()) 
+  invisible(force(x)) 
+} 
+
 # Point estimation function
 
 # This function implements the transformation of data, estimation of the nested
@@ -49,51 +55,15 @@ point_estim <- function(framework,
   # Estimation of the nested error linear regression model
   # See Molina and Rao (2010) p. 374
   # lme function is included in the nlme package which is imported.
-
+  weights_arg <- NULL 
   if(!is.null(framework$weights) &&
      any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
-
     transformation_par$transformed_data$weights_scaled <-
       framework$smp_data[,framework$weights] /
         mean(framework$smp_data[,framework$weights], na.rm = TRUE)
-
-    
-    weights_opt <- "varComb(
-          varIdent(as.formula(
-            paste0("~ 1 | as.factor(", framework$smp_domains, ")")
-          )),
-          varFixed(as.formula(paste0("~1/", "weights_scaled")))
-        )"
-    
+    weights_arg <- paste0("varComb(varIdent(as.formula(~ 1 | as.factor(", framework$smp_domains, "))),varFixed(as.formula(~1/weights_scaled)))")
   }   
     
-    
-        
-#    mixed_model <- nlme::lme(
-#      fixed = fixed,
-#      data = transformation_par$transformed_data,
-#      random =
-#        as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
-#      method = framework$nlme_method,
-#      control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
-#                                 tolerance = framework$nlme_tolerance,
-#                                 opt = framework$nlme_opt,
-#                                 optimMethod = framework$nlme_optimmethod, 
-#                                 msMaxIter=framework$nlme_msmaxiter,
-#                                 msTol=framework$nlme_mstol,
-#                                 returnObject = framework$nlme_returnobject 
-#                                 ),
-#      keep.data = keep_data,
-#      weights =
-#        varComb(
-#         varIdent(as.formula(
-#            paste0("~ 1 | as.factor(", framework$smp_domains, ")")
-#          )),
-#          varFixed(as.formula(paste0("~1/", "weights_scaled")))
-#        )
-#    )
-    
-  
     
   
     mixed_model <- nlme::lme(
@@ -111,26 +81,52 @@ point_estim <- function(framework,
                                  returnObject = framework$nlme_returnobject 
                                  ),
       keep.data = keep_data,
-      weights = weights_opt
+      weights = quiet(cat(weights_arg))
     )
-  }
+    
+    # Function model_par extracts the needed parameters theta from the nested
+    # error linear regression model. It returns the beta coefficients (betas),
+    # sigmae2est, sigmau2est and the random effect (rand_eff).
+    
+    est_par <- model_par(
+      mixed_model = mixed_model,
+      framework = framework,
+      fixed = fixed,
+      transformation_par = transformation_par
+    )
+    
+        
+    # if MSE_cluster != NULL, estimate a two-fold nested error model and save the results in estpar 
+    
+    mixed_model2 <- NULL 
+    if (!is.null(framework$MSE_cluster)) {
+      random_arg <- list(as.formula(paste0(framework$smp_domains,"~1")),as.formula(paste0(framework$MSE_cluster,"~1")))
+      mixed_model2 <- nlme::lme(
+        fixed = fixed,
+        data = transformation_par$transformed_data,
+        random = list(mun = ~1, psu_id = ~1),  
+        method = framework$nlme_method,
+        control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
+                                   tolerance = framework$nlme_tolerance,
+                                   opt = framework$nlme_opt,
+                                   optimMethod = framework$nlme_optimmethod, 
+                                   msMaxIter=framework$nlme_msmaxiter,
+                                   msTol=framework$nlme_mstol,
+                                   returnObject = framework$nlme_returnobject 
+        ),
+        keep.data = keep_data,
+        weights = quiet(cat(weights_arg))
+      )
+      est_par$var2fold <- VarCorr(mixed_model2)
+    }
 
- 
+
+
 
   
-  
+
   
 
-  # Function model_par extracts the needed parameters theta from the nested
-  # error linear regression model. It returns the beta coefficients (betas),
-  # sigmae2est, sigmau2est and the random effect (rand_eff).
-
-  est_par <- model_par(
-    mixed_model = mixed_model,
-    framework = framework,
-    fixed = fixed,
-    transformation_par = transformation_par
-  )
 
   # Function gen_model calculates the parameters in the generating model.
   # See Molina and Rao (2010) p. 375 (20)
@@ -141,6 +137,11 @@ point_estim <- function(framework,
     framework = framework
   )
 
+  
+  
+  
+  
+  
   # Monte-Carlo approximation --------------------------------------------------
   if (inherits(framework$threshold, "function")) {
     framework$threshold <-
