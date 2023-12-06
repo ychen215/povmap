@@ -105,9 +105,9 @@
 #' data. It can only be used for Mean and Head_count. Defaults to \code{NULL}. 
 #' @param MSE_cluster a character string containing the name of a variable to  
 #' cluster MSE estimation on. If \code boot_type = wild, implements a wild cluster 
-#' bootstrap. If boot_type = parametric, adjusts MSE for cluster correlations  
-#' parametric bootstrap. This can generate more accurate MSE estimates. 
-#' Defaults to \code{FALSE}
+#' bootstrap. If boot_type = parametric, adjusts MSE to account for within-cluster
+#' correlation in the parametric bootstrap procedure 
+#' Defaults to \code{NULL}
 #' @param aggregate_to a character string containing the name of a variable from
 #' population data that indicates the target domain level for which the
 #' results are to be displayed. The variable can be numeric or a factor.
