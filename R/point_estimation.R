@@ -64,14 +64,10 @@ point_estim <- function(framework,
     weights_arg <- paste0("varComb(varIdent(as.formula(~ 1 | as.factor(", framework$smp_domains, "))),varFixed(as.formula(~1/weights_scaled)))")
   }   
   
-  random_arg <- NULL   
+  # Do one-fold model 
+  random_arg <- NULL 
   random_arg[framework$smp_domains] <- list(as.formula(~1))
   names(random_arg) <- c(framework$smp_domains)
-  if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
-    random_arg <- list(as.formula(~1),as.formula(~1))
-    names(random_arg) <- c(framework$smp_domains,framework$smp_subdomains)
-  } 
-  
    
   
     mixed_model <- nlme::lme(
@@ -94,13 +90,39 @@ point_estim <- function(framework,
     # Function model_par extracts the needed parameters theta from the nested
     # error linear regression model. It returns the beta coefficients (betas),
     # sigmae2est, sigmau2est and the random effect (rand_eff).
-    
     est_par <- model_par(
       mixed_model = mixed_model,
       framework = framework,
       fixed = fixed,
       transformation_par = transformation_par
     )
+    
+  
+  
+    if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
+      # Do two fold model 
+      random_arg <- list(as.formula(~1),as.formula(~1))
+      names(random_arg) <- c(framework$smp_domains,framework$smp_subdomains)
+      mixed_model2f <- nlme::lme(
+        fixed = fixed,
+        data = transformation_par$transformed_data,
+        random = random_arg, 
+        method = framework$nlme_method,
+        control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
+                                   tolerance = framework$nlme_tolerance,
+                                   opt = framework$nlme_opt,
+                                   optimMethod = framework$nlme_optimmethod, 
+                                   msMaxIter=framework$nlme_msmaxiter,
+                                   msTol=framework$nlme_mstol,
+                                   returnObject = framework$nlme_returnobject 
+        ),
+        keep.data = keep_data,
+        weights = quiet(cat(weights_arg))
+      )
+      est_par$sigma2u2f <- as.numeric(VarCorr(mixed_model2f)[2])
+      est_par$sigma2v2f <- as.numeric(VarCorr(mixed_model2f)[4])
+      est_par$sigma2e2f <- mixed_model2f$sigma^2 
+    } 
     
         
     
@@ -200,7 +222,7 @@ model_par <- function(framework,
                       fixed,
                       transformation_par) {
 
-  # fixed parametersn
+  # fixed parameters
   betas <- nlme::fixed.effects(mixed_model)
   # Estimated error variance
   sigmae2est <- mixed_model$sigma^2
