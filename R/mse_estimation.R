@@ -463,14 +463,12 @@ superpopulation_wild <- function(framework, model_par, gen_model, lambda,
   
   # superpopulation individual errors
   eps <- res_s[indexer]
-  if (is.null(framework$MSE_cluster)) {
+  #if (is.null(framework$MSE_cluster)) {
   wu <- sample(c(-1, 1), size = length(eps), replace = TRUE)
   eps <- abs(eps) * wu
-  } 
-  else {
-  browser()  
-    
-  }
+  #} 
+  #else {
+  #}
 
   #  superpopulation income vector
   Y_pop_b <- Y_pop_b + eps
@@ -490,57 +488,39 @@ superpopulation_wild <- function(framework, model_par, gen_model, lambda,
 
 superpopulation <- function(framework, model_par, gen_model, lambda, shift,
                             transformation, fixed) {
-  
-  
-  sigmau2est <- model_par$sigmau2est 
-  sigmae2est <- model_par$sigmae2est 
-  
-  # implement random_variance option 
-  if (framework$MSE_random_variance==TRUE) {
-    # Even though the two error terms are not correlated, their variances are. 
-    # We define X ~N(MuX,s2X) and Y=A(X-MuX)+B, and then Y ~ N(b,A^2*s2X+s2B) 
-    # we have an estimate of Cov(lnsigmau2est)=model_par$cov_sigma2est = A 
-    # If we define lnsigmae2est as Y and lnsigmaeu2est as X, then setting  s2B = s2Y-s2x*A2 will generate s2Y=A^2S2X+S2Y-S2X*A2 
-    # method 1. Draw from log distribution 
-    #lnsigmau2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmau2est))
-    #lnsigmae2est <- (lnsigmau2est-log(sigmae2est)*model_par$cov_sigma2est+rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est-model_par$var_lnsigmau2est*model_par$cov_sigma2est^2)))
-    #sigmau2est <- exp(lnsigmau2est)
-    #sigmae2est <- exp(lnsigmae2est)
-    
-    #method 2: Approximate variance in levels and draw 
-    #var_sigmau2 <- sigmau2est^2*model_par$var_lnsigmau2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
-    #var_sigmae2 <- sigmae2est^2*model_par$var_lnsigmae2est  # = exp(lnsigmau2est)^2*var(lnsigmau2est)
-    #cov_sigmau2_sigmae2 <- sigmau2est*sigmae2est*model_par$cov_sigma2est
-    # now add on noise 
-    #sigmau2est <- rnorm(n=1,mean=sigmau2est,sd=sqrt(var_sigmau2))
-    #sigmae2est  <- (sigmau2est-model_par$sigmau2est)*cov_sigmau2_sigmae2+rnorm(n=1,mean=sigmae2est,sd=sqrt(var_sigmae2-var_sigmau2*cov_sigmau2_sigmae2^2))
-  
-  # method 3 - adjust directly according to expected value 
-  sigmae2est <- exp(log(sigmae2est)+0.5*model_par$var_lnsigmae2est)
-  sigmau2est <- exp(log(sigmau2est)+0.5*model_par$var_lnsigmau2est)
-}
-  
-    
   #}
   
+  #superpopulation cluster effect 
+  if is.null(framework$MSE_cluster) {
+    # superpopulation individual errors
+    eps <- vector(length = framework$N_pop)
+    eps[framework$obs_dom] <- rnorm(
+      sum(framework$obs_dom), 0,
+      sqrt(model_parsigmae2est)
+    )
+    eps[!framework$obs_dom] <- rnorm(
+      sum(!framework$obs_dom), 0,
+      sqrt(model_par$sigmae2est +
+             model_par$sigmau2est)
+    )  
+  }
+  else {
+     
+    
+    
+  }
   
   
-  # superpopulation individual errors
-  eps <- vector(length = framework$N_pop)
-  eps[framework$obs_dom] <- rnorm(
-    sum(framework$obs_dom), 0,
-    sqrt(sigmae2est)
-  )
-  eps[!framework$obs_dom] <- rnorm(
-    sum(!framework$obs_dom), 0,
-    sqrt(sigmae2est +
-           sigmau2est)
-  )
+  
   
   
   # superpopulation random effect
-  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(sigmau2est))
+  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)
+  
+  
+  
+  
   #  superpopulation income vector
   Y_pop_b <- gen_model$mu_fixed + eps + vu_pop
 
