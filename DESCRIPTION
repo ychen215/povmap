@@ -43,7 +43,8 @@ Imports:
     spdep,
     bestNormalize,
     survey,
-    sf
+    sf,
+    FNN
 Suggests:
     testthat,
     R.rsp,
