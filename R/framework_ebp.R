@@ -19,7 +19,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   mod_vars <- all.vars(fixed)
   mod_vars <- mod_vars[mod_vars != as.character(fixed[2])]
 
-  if (!is.null(weights) && weights == benchmark_weights) {
+  if (!is.null(weights) && benchmark_weights==weights) {
     smp_vars <- c(as.character(fixed[2]), mod_vars, smp_domains, smp_subdomains, weights,
                   benchmark_level)
   } else {
