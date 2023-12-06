@@ -63,14 +63,19 @@ point_estim <- function(framework,
         mean(framework$smp_data[,framework$weights], na.rm = TRUE)
     weights_arg <- paste0("varComb(varIdent(as.formula(~ 1 | as.factor(", framework$smp_domains, "))),varFixed(as.formula(~1/weights_scaled)))")
   }   
-    
-    
+  
+  random_arg <- NULL   
+  random_arg <- list(framework$smp_domains=as.formula(~1))
+  if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
+    random_arg <- list(framework$smp_domains,as.formula(~1)),as.formula(paste0(framework$smp_subdomains,"=~1")))
+  } 
+  
+   
   
     mixed_model <- nlme::lme(
       fixed = fixed,
       data = transformation_par$transformed_data,
-      random =
-        as.formula(paste0("~ 1 | as.factor(",framework$smp_domains, ")")),
+      random = list(mun=~1), 
       method = framework$nlme_method,
       control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
                                  tolerance = framework$nlme_tolerance,
@@ -96,29 +101,9 @@ point_estim <- function(framework,
     )
     
         
-    # if MSE_cluster != NULL, estimate a two-fold nested error model and save the results in estpar 
     
-    mixed_model2 <- NULL 
-    if (!is.null(framework$MSE_cluster)) {
-      random_arg <- list(as.formula(paste0(framework$smp_domains,"~1")),as.formula(paste0(framework$MSE_cluster,"~1")))
-      mixed_model2 <- nlme::lme(
-        fixed = fixed,
-        data = transformation_par$transformed_data,
-        random = list(mun = ~1, psu_id = ~1),  
-        method = framework$nlme_method,
-        control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
-                                   tolerance = framework$nlme_tolerance,
-                                   opt = framework$nlme_opt,
-                                   optimMethod = framework$nlme_optimmethod, 
-                                   msMaxIter=framework$nlme_msmaxiter,
-                                   msTol=framework$nlme_mstol,
-                                   returnObject = framework$nlme_returnobject 
-        ),
-        keep.data = keep_data,
-        weights = quiet(cat(weights_arg))
-      )
-      est_par$var2fold <- VarCorr(mixed_model2)
-    }
+   
+   
 
 
 
@@ -229,6 +214,15 @@ model_par <- function(framework,
   if (is.null(framework$weights)) {
     # random effect for in-sample domains (dist_obs_dom)
     rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
+    
+    
+    # if subdomains specified, estimate a two-fold nested error model and save the results in estpar 
+    if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
+      est_par$var2fold <- VarCorr(mixed_model)
+    } 
+ 
+    
+    
     
     return(list(
       betas = betas,

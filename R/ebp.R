@@ -26,12 +26,18 @@
 #' indicates domains in the population data. The variable can be numeric or
 #' a factor but needs to be of the same class as the variable named in
 #' \code{smp_domains}.
+#' @param pop_subdomains a character string containing the name of a variable that 
+#' indicates sub-domains in the population data. When this option is specified, a 
+#' two-fold nested error model is used. Defaults to \code{NULL}
 #' @param smp_data a data frame that needs to comprise all variables named in
 #' \code{fixed} and \code{smp_domains}.
 #' @param smp_domains a character string containing the name of a variable
 #' that indicates domains in the sample data. The variable can be numeric or a
 #' factor but needs to be of the same class as the variable named in
 #' \code{pop_domains}.
+#' #' @param smp_subdomains a character string containing the name of a variable that 
+#' indicates sub-domains in the sample data. When this option is specified, a 
+#' two-fold nested error model is used. Defaults to \code{NULL}
 #' @param threshold a number defining a threshold. Alternatively, a threshold
 #' may be defined as a \code{function} of \code{y} returning a numeric value.
 #' Such a function will be evaluated once for the point estimation and in each
@@ -103,11 +109,6 @@
 #' the super-population in the parametric bootstrap. This option is useful when 
 #' substituting one observation for many identical observations in the population
 #' data. It can only be used for Mean and Head_count. Defaults to \code{NULL}. 
-#' @param MSE_cluster a character string containing the name of a variable to  
-#' cluster MSE estimation on. If \code{boot_type = wild}, implements a wild cluster 
-#' bootstrap. If \code{boot_type = 'parametric'}, adjusts MSE to account for within-cluster
-#' correlation in the parametric bootstrap procedure 
-#' Defaults to \code{NULL}
 #' @param aggregate_to a character string containing the name of a variable from
 #' population data that indicates the target domain level for which the
 #' results are to be displayed. The variable can be numeric or a factor.
@@ -308,8 +309,10 @@
 ebp <- function(fixed,
                 pop_data,
                 pop_domains,
+                pop_subdomains = NULL, 
                 smp_data,
                 smp_domains,
+                smp_subdomains = NULL, 
                 L = 50,
                 threshold = NULL,
                 transformation = "box.cox",
@@ -327,7 +330,6 @@ ebp <- function(fixed,
                 weights = NULL,
                 pop_weights = NULL,
                 MSE_pop_weights = NULL, 
-                MSE_cluster = NULL,  
                 aggregate_to = NULL,
                 weights_type = "Guadarrama",
                 benchmark = NULL,
@@ -387,8 +389,10 @@ ebp <- function(fixed,
   framework <- framework_ebp(
     pop_data = pop_data,
     pop_domains = pop_domains,
+    pop_subdomains = pop_subdomains, 
     smp_data = smp_data,
     smp_domains = smp_domains,
+    smp_subdomains = smp_subdomains, 
     aggregate_to = aggregate_to,
     custom_indicator = custom_indicator,
     fixed = fixed,
@@ -397,7 +401,6 @@ ebp <- function(fixed,
     weights = weights,
     pop_weights = pop_weights,
     MSE_pop_weights = MSE_pop_weights, 
-    MSE_cluster = MSE_cluster, 
     weights_type = weights_type,
     benchmark_level = benchmark_level,
     benchmark_weights = benchmark_weights,
