@@ -550,11 +550,11 @@ superpopulation_2f <- function(framework, model_par, gen_model, lambda, shift,
   # superpopulation individual errors
   eps <- vector(length = framework$N_pop)
   eps[framework$obs_dom & framework$obs_subdom] <- rnorm(
-    sum(framework$obs_dom), 0,
+    sum(framework$obs_dom & framework$obs_subdom), 0,
     sqrt(model_par$sigma2e2f)
   )
   eps[framework$obs_dom & !framework$obs_subdom] <- rnorm(
-    sum(framework$obs_dom), 0,
+    sum(framework$obs_dom & !framework$obs_subdom), 0,
     sqrt(model_par$sigma2e2f+model_par$sigma2h2f)
   )
   eps[!framework$obs_dom] <- rnorm(
