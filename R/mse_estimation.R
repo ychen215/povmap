@@ -160,7 +160,7 @@ mse_estim <- function(framework,
       transformation = transformation,
       fixed = fixed
     )
-  } else {
+  } else { # two fold model 
     superpop <- superpopulation_2f(
       framework = framework,
       model_par = model_par,
@@ -214,6 +214,8 @@ mse_estim <- function(framework,
     ))
   )
   vu_tmp <- superpop$vu_tmp 
+  eta_tmp <- superpop$eta_tmp 
+  
 } # close if no MSE pop weighting 
   
   else {
@@ -301,6 +303,7 @@ mse_estim <- function(framework,
       fitted_s = fitted_s
     )
   } else {
+    if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains))
     bootstrap_sample <- bootstrap_par(
       fixed = fixed,
       transformation = transformation,
@@ -310,6 +313,17 @@ mse_estim <- function(framework,
       shift = shift,
       vu_tmp = vu_tmp
     )
+    else {
+      bootstrap_sample <- bootstrap_par_2f(
+        fixed = fixed,
+        transformation = transformation,
+        framework = framework,
+        model_par = model_par,
+        lambda = lambda,
+        shift = shift,
+        vu_tmp = vu_tmp,
+        eta_tmp = eta_tmp 
+    }
   }
 
   framework$smp_data <- bootstrap_sample
@@ -615,6 +629,40 @@ bootstrap_par <- function(fixed, transformation, framework, model_par, lambda,
 
   return(bootstrap_sample = bootstrap_smp)
 }
+
+bootstrap_par2f <- function(fixed, transformation, framework, model_par, lambda,
+                          shift, vu_tmp, eta_tmp) {
+  # Bootstrap sample individual error term
+  eps <- rnorm(framework$N_smp, 0, sqrt(model_par$sigma2e2f))
+  # Bootstrap sample random effects
+  vu_smp <- rep(vu_tmp[framework$dist_obs_dom], framework$n_smp)
+  eta_smp <-rep(eta_tmp[framework$obs_subdom], framework$n_smp)
+  
+  # Extraction of design matrix
+  X_smp <- model.matrix(fixed, framework$smp_data)
+  # Constant part of income vector for bootstrap sample
+  mu_smp <- X_smp %*% model_par$betas
+  # Transformed bootstrap income vector
+  Y_smp_b <- mu_smp + eps + vu_smp + eta_smp 
+  # Back transformation of bootstrap income vector
+  Y_smp_b <- back_transformation(
+    y = Y_smp_b,
+    transformation = transformation,
+    lambda = lambda,
+    shift = shift,
+    framework = framework,
+    fixed = fixed
+  )
+  Y_smp_b[!is.finite(Y_smp_b)] <- 0
+  
+  # Inclusion of bootstrap income vector into sample data
+  bootstrap_smp <- framework$smp_data
+  bootstrap_smp[paste(fixed[2])] <- Y_smp_b
+  
+  return(bootstrap_sample = bootstrap_smp)
+}
+
+
 
 bootstrap_par_wild <- function(fixed, transformation, framework, model_par,
                                lambda, shift, vu_tmp, res_s, fitted_s) {

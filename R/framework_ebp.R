@@ -139,7 +139,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   # Number of households in sample per domain
   smp_domains_vec_tmp <- as.numeric(smp_domains_vec)
   n_smp <- as.vector(table(smp_domains_vec_tmp))
-
+  n_smp_subdom <- as.vector(table(smp_subdomains_vec_tmp))
   
   
   
