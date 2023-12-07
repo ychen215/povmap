@@ -544,7 +544,7 @@ superpopulation_2f <- function(framework, model_par, gen_model, lambda, shift,
   
   # superpoulation subarea random effect 
   eta_tmp <- rnorm(framework$N_subdom_pop, 0, sqrt(model_par$sigma2h2f))
-  eta_pop <- rep(vu_tmp, framework$n_pop_subdom)
+  eta_pop <- rep(eta_tmp, framework$n_pop_subdom)
   
   # need N_subdom_pop (Number of subdomains in population) and n_pop_subdom (# of units in each subdomain)
   # superpopulation individual errors
