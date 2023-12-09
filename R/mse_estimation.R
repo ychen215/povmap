@@ -367,11 +367,20 @@ mse_estim <- function(framework,
 #This returns "true" superpopulation Mean and Headcount estimated from the population data when MSE_pop_Weight=TRUE 
 true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,transformation,fixed) {
   
-  # draw variances if necessary 
+if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  # one fold model 
   sigmau2est <- model_par$sigmau2est 
   sigmae2est <- model_par$sigmae2est 
+  sigmah2est <- 0 
+} 
+  else { # 2 fold model 
+    sigmau2est <- model_par$sigma2u2f 
+    sigmae2est <- model_par$sigma2e2f
+    sigmah2est <- model_par$sigma2h2f 
+  }
   
-  if (framework$MSE_random_variance==TRUE) {
+  
+  
+  #if (framework$MSE_random_variance==TRUE) {
     # Even though the two error terms are nindependent, the estimaes of their variances are correlated 
     # We define X ~N(MuX,s2X) and Y=A(X-MuX)+B, and then Y ~ N(b,A^2*s2X+s2B) 
     # so s2b should be equal to s2Y-A^2*s2x 
@@ -393,18 +402,23 @@ true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,
       #sigmae2est <- exp(log(sigmae2est)+0.5*model_par$var_lnsigmae2est)
       #sigmau2est <- exp(log(sigmau2est)+0.5*model_par$var_lnsigmau2est)
     
-    # method 4 = simple version of method 1 
-    lnsigmau2est<-rnorm(n=1,mean=log(sigmau2est),sd=sqrt(model_par$var_lnsigmau2est))
-    lnsigmae2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est))
-    sigmau2est <- exp(lnsigmau2est)
-    sigmae2est <- exp(lnsigmae2est)
-  }
+    # method 4 = simple version of method 1, with no covariance  
+    #lnsigmau2est<-rnorm(n=1,mean=log(sigmau2est),sd=sqrt(model_par$var_lnsigmau2est))
+    #lnsigmae2est<-rnorm(n=1,mean=log(sigmae2est),sd=sqrt(model_par$var_lnsigmae2est))
+    #sigmau2est <- exp(lnsigmau2est)
+    #sigmae2est <- exp(lnsigmae2est)
+  #}
   
   
   # draw new superpopulation random effect
   
   vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)
+  
+  if !(is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  # twofold model 
+    eta_tmp <- 
+  } 
+  
   
   if(!is.null(framework$aggregate_to_vec)) {
     N_dom_pop_tmp <- framework$N_dom_pop_agg
