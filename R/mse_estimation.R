@@ -412,13 +412,12 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   
   # draw new superpopulation random effect
   
-  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(sigmau2est))
-  vu_pop <- rep(vu_tmp, framework$n_pop)
-  
-  if !(is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  # twofold model 
-    eta_tmp <- 
-  } 
-  
+
+    vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(sigmau2est))
+    vu_pop <- rep(vu_tmp, framework$n_pop)
+    eta_tmp <- rnorm(framework$N_subdom_pop,0,sqrt(sigmah2est)) # will be zero for one fold model 
+    eta_pop <- rep(vu_tmp, framework$n_subpop)
+ 
   
   if(!is.null(framework$aggregate_to_vec)) {
     N_dom_pop_tmp <- framework$N_dom_pop_agg
@@ -442,15 +441,17 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
 
  #Do Mean calculation 
 # 1. Draw epsilon 
-  var_eps <- vector(length=framework$N_pop)
-  var_eps[framework$obs_dom] <- (sigmae2est)
-  var_eps[!framework$obs_dom] <- (sigmae2est+sigmau2est)
+    var_eps <- vector(length=framework$N_pop)
+    var_eps[framework$obs_dom && framework$obs_subdom] <- (sigmae2est)
+    var_eps[framework$obs_dom && !framework$obs_subdom] <- (sigmae2est+sigmah2est)
+    var_eps[!framework$obs_dom] <- (sigmae2est+sigmah2est+sigmau2est)
+  
   eps <- rnorm(framework$N_pop, 0, sqrt(var_eps))
 #2. transform draw   
-  Y_pop_b <- gen_model$mu_fixed + vu_pop + eps
+  Y_pop_b <- gen_model$mu_fixed + vu_pop + eta_pop + eps
   Y_pop_b <- back_transformation(y=y_pop_b,transformation=transformation,lambda=lambda,shift=shift,framework=framework)
 #3. Calulate expected value of transformed XB+mu
-  Y_pop_mu <- gen_model$mu_fixed + vu_pop
+  Y_pop_mu <- gen_model$mu_fixed + vu_pop + eta_pop 
   EY_pop_mu <- expected_transformed_mean(Y_pop_mu,var=var_eps,transformation=transformation,lambda=lambda)
 #4. Scale down implied residual to simulate taking draws over repeated observbations   
   Y_pop_b <- EY_pop_mu+((Y_pop_b-y_pop_mu)/sqrt(framework$pop_data[,framework$MSE_pop_weights]))
