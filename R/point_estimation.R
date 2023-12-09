@@ -240,13 +240,11 @@ model_par <- function(framework,
     rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
     
     
-    # if subdomains specified, estimate a two-fold nested error model and save the results in estpar 
+    # if subdomains specified, save the results in sigmae2est, sigmah2est, and sigmau2est 
     if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
-      est_par$var2fold <- VarCorr(mixed_model)
+      var2fold <- VarCorr(mixed_model)
     } 
  
-    
-    
     
     return(list(
       betas = betas,
@@ -305,8 +303,6 @@ model_par <- function(framework,
     ))
 }
   else {
-
-
     # Calculations needed for pseudo EB
 
     weight_sum <- rep(0, framework$N_dom_smp)
@@ -378,10 +374,7 @@ model_par <- function(framework,
       sigmau2est = sigmau2est,
       rand_eff = rand_eff,
       gammaw = gamma_weight,
-      delta2 = delta2,
-      var_lnsigmau2est = var_lnsigmau2est,
-      var_lnsigmae2est = var_lnsigmae2est,
-      cov_sigma2est = cov_sigma2est
+      delta2 = delta2
     ))
   }
 } # End model_par

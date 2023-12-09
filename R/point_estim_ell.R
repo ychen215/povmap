@@ -47,11 +47,7 @@ point_estim <- function(framework,
   # Estimation of the nested error linear regression model
   # See Molina and Rao (2010) p. 374
   # lme function is included in the nlme package which is imported.
-  weights_arg <- NULL 
-  if(!is.null(framework$weights) 
-    weights_arg <- something to get the random effect model 
-  }   
-  
+
   # Do an unconditional random effect model 
   random_arg <- NULL 
   random_arg[framework$smp_domains] <- list(as.formula(~1))
@@ -61,16 +57,8 @@ point_estim <- function(framework,
   re_model <- plm(
     formula = fixed,
     data = transformation_par$transformed_data,
-    weights = framework$weights 
+    weights = framework$weights, 
     model = "random"
-    method = framework$nlme_method,
-    control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
-                               tolerance = framework$nlme_tolerance,
-                               opt = framework$nlme_opt,
-                               optimMethod = framework$nlme_optimmethod, 
-                               msMaxIter=framework$nlme_msmaxiter,
-                               msTol=framework$nlme_mstol,
-                               returnObject = framework$nlme_returnobject 
   )
   
     
@@ -78,7 +66,7 @@ point_estim <- function(framework,
   # Function model_par extracts the needed parameters theta from the nested
   # error linear regression model. It returns the beta coefficients (betas),
   # sigmae2est, sigmau2est and the random effect (rand_eff).
-  est_par <- model_par(
+  est_par <- model_par_ell (
     mixed_model = mixed_model,
     framework = framework,
     fixed = fixed,

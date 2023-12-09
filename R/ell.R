@@ -305,7 +305,7 @@ ell <- function(fixed,
       benchmark_type = benchmark_type,
       benchmark_level = benchmark_level
     )
-    
+  
     
     
     ebp_out <- list(
@@ -371,3 +371,4 @@ ell <- function(fixed,
   }
   class(ebp_out) <- c("ebp", "emdi")
   return(ebp_out)
+}
