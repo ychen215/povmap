@@ -415,8 +415,10 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
 
     vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(sigmau2est))
     vu_pop <- rep(vu_tmp, framework$n_pop)
+   
+    
     eta_tmp <- rnorm(framework$N_subdom_pop,0,sqrt(sigmah2est)) # will be zero for one fold model 
-    eta_pop <- rep(vu_tmp, framework$n_pop_subdom)
+    eta_pop <- rep(eta_tmp, framework$n_pop_subdom)
  
   
   if(!is.null(framework$aggregate_to_vec)) {

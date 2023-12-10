@@ -194,15 +194,8 @@ ell <- function(fixed,
     call$fixed <- fixed
   }
   # Data manipulation and notational framework ---------------------------------
-  if (!is.null(seed)) {
-    if (cpus > 1 && parallel_mode != "socket") {
-      RNG_kind <- RNGkind()
-      set.seed(seed, kind = "L'Ecuyer")
-    } else {
-      set.seed(seed)
-    }
-  }
-  
+  set.seed(seed)
+
   if (is.null(benchmark_weights) & !is.null(weights)) {
     benchmark_weights <- weights
   }
