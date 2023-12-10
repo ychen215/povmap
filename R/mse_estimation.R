@@ -371,11 +371,15 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   sigmau2est <- model_par$sigmau2est 
   sigmae2est <- model_par$sigmae2est 
   sigmah2est <- 0 
+  eta_pop <- rep(0,framework$N_pop)
 } 
   else { # 2 fold model 
     sigmau2est <- model_par$sigma2u2f 
     sigmae2est <- model_par$sigma2e2f
     sigmah2est <- model_par$sigma2h2f 
+    eta_tmp <- rnorm(framework$N_subdom_pop,0,sqrt(sigmah2est)) # will be zero for one fold model 
+    eta_pop <- rep(eta_tmp, framework$n_pop_subdom)
+    
   }
   
   
@@ -417,8 +421,7 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
     vu_pop <- rep(vu_tmp, framework$n_pop)
    
     
-    eta_tmp <- rnorm(framework$N_subdom_pop,0,sqrt(sigmah2est)) # will be zero for one fold model 
-    eta_pop <- rep(eta_tmp, framework$n_pop_subdom)
+
  
   
   if(!is.null(framework$aggregate_to_vec)) {
@@ -432,7 +435,7 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   if(!is.null(framework$pop_weights)) {
     pop_weights_vec <- framework$pop_data[[framework$pop_weights]]
   }else{
-    pop_weights_vec <- rep(1, nrow(framework$pop_data))
+    pop_weights_vec <- rep(1, framework$N_pop)
   }
   
   
