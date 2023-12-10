@@ -14,7 +14,6 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
                           nlme_opt, nlme_optimmethod, nlme_method, nlme_mstol, 
                           nlme_returnobject, nlme_msmaxiter, rescale_weights) {
 
-
   # Reduction of number of variables
   mod_vars <- all.vars(fixed)
   mod_vars <- mod_vars[mod_vars != as.character(fixed[2])]
