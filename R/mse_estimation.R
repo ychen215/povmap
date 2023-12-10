@@ -448,8 +448,8 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
  #Do Mean calculation 
 # 1. Draw epsilon 
     var_eps <- vector(length=framework$N_pop)
-    var_eps[framework$obs_dom && framework$obs_subdom] <- (sigmae2est)
-    var_eps[framework$obs_dom && !framework$obs_subdom] <- (sigmae2est+sigmah2est)
+    var_eps[(framework$obs_dom & framework$obs_subdom)] <- (sigmae2est)
+    var_eps[(framework$obs_dom & !framework$obs_subdom)] <- (sigmae2est+sigmah2est)
     var_eps[!framework$obs_dom] <- (sigmae2est+sigmah2est+sigmau2est)
   
   eps <- rnorm(framework$N_pop, 0, sqrt(var_eps))
