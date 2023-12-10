@@ -460,7 +460,7 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   Y_pop_mu <- gen_model$mu_fixed + vu_pop + eta_pop 
   EY_pop_mu <- expected_transformed_mean(Y_pop_mu,var=var_eps,transformation=transformation,lambda=lambda)
 #4. Scale down implied residual to simulate taking draws over repeated observbations   
-  Y_pop_b <- EY_pop_mu+((Y_pop_b-y_pop_mu)/sqrt(framework$pop_data[,framework$MSE_pop_weights]))
+  Y_pop_b <- EY_pop_mu+((Y_pop_b-Y_pop_mu)/sqrt(framework$pop_data[,framework$MSE_pop_weights]))
     true_indicators_weighted[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
     # Note that for no transformation case, true_indicators Y_pop_b ~ N(XB+mu, var(epsilon)/MSE_pop_weights) 
     # for log transformation case, draws log normal, calculates the implied residual in levels, and scales that down 
