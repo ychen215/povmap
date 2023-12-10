@@ -372,6 +372,7 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   sigmae2est <- model_par$sigmae2est 
   sigmah2est <- 0 
   eta_pop <- rep(0,framework$N_pop)
+  framework$obs_subdom <- rep(0,framework$N_pop)
 } 
   else { # 2 fold model 
     sigmau2est <- model_par$sigma2u2f 
