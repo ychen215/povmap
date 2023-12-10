@@ -455,7 +455,7 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   eps <- rnorm(framework$N_pop, 0, sqrt(var_eps))
 #2. transform draw   
   Y_pop_b <- gen_model$mu_fixed + vu_pop + eta_pop + eps
-  Y_pop_b <- back_transformation(y=y_pop_b,transformation=transformation,lambda=lambda,shift=shift,framework=framework)
+  Y_pop_b <- back_transformation(y=Y_pop_b,transformation=transformation,lambda=lambda,shift=shift,framework=framework)
 #3. Calulate expected value of transformed XB+mu
   Y_pop_mu <- gen_model$mu_fixed + vu_pop + eta_pop 
   EY_pop_mu <- expected_transformed_mean(Y_pop_mu,var=var_eps,transformation=transformation,lambda=lambda)
