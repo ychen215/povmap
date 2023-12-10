@@ -8,7 +8,7 @@
 # corresponding functions below.
 
 
-point_estim <- function(framework,
+point_estim_ell <- function(framework,
                         fixed,
                         transformation,
                         interval,
@@ -52,13 +52,16 @@ point_estim <- function(framework,
   random_arg <- NULL 
   random_arg[framework$smp_domains] <- list(as.formula(~1))
   names(random_arg) <- c(framework$smp_domains)
+  weights_vec <- transformation_par$transformed_data[,framework$weights]
   browser()
   
   re_model <- plm(
     formula = fixed,
+    #formula = pchinc ~ wall_improved, 
     data = transformation_par$transformed_data,
-    weights = framework$weights, 
-    model = "random"
+    weights = "FACTOR", 
+    model = "random",
+    index = framework$smp_domains
   )
   
     

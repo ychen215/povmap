@@ -25,7 +25,7 @@ framework_ell <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   }
 
   pop_vars <- c(mod_vars, pop_domains, pop_subdomains, aggregate_to, pop_weights,
-                benchmark_level,MSE_pop_weights)
+                benchmark_level)
   smp_data <- smp_data[, smp_vars]
   weights <- weights
   pop_weights <- pop_weights

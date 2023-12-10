@@ -293,7 +293,7 @@ ell <- function(fixed,
       B = B,
       boot_type = boot_type,
       parallel_mode = parallel_mode,
-      cpus = cpus,
+      cpus = 1,
       benchmark = benchmark,
       benchmark_type = benchmark_type,
       benchmark_level = benchmark_level
@@ -359,9 +359,7 @@ ell <- function(fixed,
   end.time <- Sys.time()
   print(round(end.time - start.time,2))
   
-  if (cpus > 1 && parallel_mode != "socket") {
-    RNGkind(RNG_kind[1]) # restoring RNG type
-  }
+  
   class(ebp_out) <- c("ebp", "emdi")
   return(ebp_out)
 }
