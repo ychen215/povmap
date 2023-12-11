@@ -1,10 +1,10 @@
 # Internal documentation -------------------------------------------------------
 
-quiet <- function(x) { 
-  sink(tempfile()) 
-  on.exit(sink()) 
-  invisible(force(x)) 
-} 
+#quiet <- function(x) { 
+#  sink(tempfile()) 
+#  on.exit(sink()) 
+#  invisible(force(x)) 
+#} 
 
 # Point estimation function
 
@@ -69,23 +69,23 @@ point_estim <- function(framework,
   random_arg[framework$smp_domains] <- list(as.formula(~1))
   names(random_arg) <- c(framework$smp_domains)
    
+  args <- list(fixed=fixed,
+               data = transformation_par$transformed_data,
+               random = random_arg,
+               method = framework$nlme_method,
+               control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
+                                          tolerance = framework$nlme_tolerance,
+                                          opt = framework$nlme_opt,
+                                          optimMethod = framework$nlme_optimmethod, 
+                                          msMaxIter=framework$nlme_msmaxiter,
+                                          msTol=framework$nlme_mstol,
+                                          returnObject = framework$nlme_returnobject 
+               ),
+               keep.data = keep_data,
+               weights = weights_arg)
+  do.call(nlme:::lme,args)
+               
   
-    mixed_model <- nlme::lme(
-      fixed = fixed,
-      data = transformation_par$transformed_data,
-      random = random_arg, 
-      method = framework$nlme_method,
-      control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
-                                 tolerance = framework$nlme_tolerance,
-                                 opt = framework$nlme_opt,
-                                 optimMethod = framework$nlme_optimmethod, 
-                                 msMaxIter=framework$nlme_msmaxiter,
-                                 msTol=framework$nlme_mstol,
-                                 returnObject = framework$nlme_returnobject 
-                                 ),
-      keep.data = keep_data,
-      weights = quiet(cat(weights_arg))
-    )
     
     # Function model_par extracts the needed parameters theta from the nested
     # error linear regression model. It returns the beta coefficients (betas),

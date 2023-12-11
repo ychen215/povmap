@@ -52,17 +52,16 @@ point_estim_ell <- function(framework,
   random_arg <- NULL 
   random_arg[framework$smp_domains] <- list(as.formula(~1))
   names(random_arg) <- c(framework$smp_domains)
-  weights_vec <- transformation_par$transformed_data[,framework$weights]
-  browser()
-  
-  re_model <- plm(
-    formula = fixed,
-    #formula = pchinc ~ wall_improved, 
-    data = transformation_par$transformed_data,
-    weights = "FACTOR", 
-    model = "random",
-    index = framework$smp_domains
-  )
+ 
+  # Using do.call passes the name of the weight vector from framework to the plm function 
+ args <- list(formula=fixed, 
+           data = transformation_par$transformed_data, 
+           weights = get(framework$weights),
+           model="random",
+           index = framework$smp_domains)
+ 
+ re_model <- do.call(plm, args)
+ 
   
     
     
@@ -70,7 +69,7 @@ point_estim_ell <- function(framework,
   # error linear regression model. It returns the beta coefficients (betas),
   # sigmae2est, sigmau2est and the random effect (rand_eff).
   est_par <- model_par_ell (
-    mixed_model = mixed_model,
+    re_model = re_model,
     framework = framework,
     fixed = fixed,
     transformation_par = transformation_par
@@ -186,3 +185,42 @@ point_estim_ell <- function(framework,
     model = mixed_model
   ))
 } # End point estimation function
+
+
+
+
+
+# All following functions are only internal ------------------------------------
+
+# Functions to extract and calculate model parameter----------------------------
+
+# Function model_par extracts the needed parameters theta from the nested
+# error linear regression model. It returns the beta coefficients (betas),
+# sigmae2est, sigmau2est and the random effect (rand_eff).
+
+model_par_ell <- function(framework,
+                      re_model,
+                      fixed,
+                      transformation_par) {
+  
+  # fixed parameters
+  betas <- re_model$coefficients 
+  # Estimated error variance
+  sigmae2est <- re_model$ercomp$sigma2[1]
+  # VarCorr(fit2) is the estimated random error variance
+  sigmau2est <- re_model$erocomp$sigma2[2]
+  # Random effect: vector with zeros for all domains, filled with 0
+  rand_eff <- rep(0, length(unique(framework$pop_domains_vec)))
+  #Variance of cluster components 
+  
+
+    
+    return(list(
+      betas = betas,
+      sigmae2est = sigmae2est,
+      sigmau2est = sigmau2est,
+      rand_eff = rand_eff
+    ))
+  } 
+
+
