@@ -276,10 +276,11 @@ parameters_gen <- function(framework, model_par, gen_model) {
   
 
     #betas <- mvrnorm(n=1, mu=model_par$betas,Sigma=as.matrix(model_par$vcov))
+    # This is equivalent and needs no package   
     R <- chol(model_par$vcov)   
-    betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R))+model_par$betas
+    betas_offset <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas 
     
-  return(list(epsilon = epsilon, vu = vu, betas=betas))
+  return(list(epsilon = epsilon, vu = vu, betas_offset=betas_offset))
 } # End parameters_gen
 
 # The function prediction_y returns a predicted income vector which can be used
@@ -292,11 +293,12 @@ prediction_y <- function(transformation,
                          parameters_gen,
                          framework,
                          fixed) {
-
-  
+  # construct vector of Xes by starting with intercept and binding it to the population
+  # dataframe constructed from all the coefficient names except the 
+  Xes <- cbind(rep(1,framework$N_pop),framework$pop_data[rownames(parameters_gen$betas)[-1]]) 
   
   # predicted population income vector
-  y_pred <- gen_model$mu + parameters_gen$epsilon + parameters_gen$vu
+  y_pred <- as.matrix(Xes) %*% (parameters_gen$betas) + parameters_gen$epsilon + parameters_gen$vu
   
   # back-transformation of predicted population income vector
   y_pred <- back_transformation(
