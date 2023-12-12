@@ -278,9 +278,9 @@ parameters_gen <- function(framework, model_par, gen_model) {
     #betas <- mvrnorm(n=1, mu=model_par$betas,Sigma=as.matrix(model_par$vcov))
     # This is equivalent and needs no package   
     R <- chol(model_par$vcov)   
-    betas_offset <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas 
+    betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas 
     
-  return(list(epsilon = epsilon, vu = vu, betas_offset=betas_offset))
+  return(list(epsilon = epsilon, vu = vu, betas=betas))
 } # End parameters_gen
 
 # The function prediction_y returns a predicted income vector which can be used
