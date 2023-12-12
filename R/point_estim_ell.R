@@ -139,10 +139,9 @@ model_par_ell <- function(framework,
   # Estimated error variance
   sigmae2est <- re_model$ercomp$sigma2[1]
   # VarCorr(fit2) is the estimated random error variance
-  sigmau2est <- re_model$erocomp$sigma2[2]
-  # Random effect: vector with zeros for all domains, filled with 0
-  rand_eff <- rep(0, length(unique(framework$pop_domains_vec)))
-  #Variance of cluster components 
+  sigmau2est <- re_model$ercomp$sigma2[2]
+  vcov <- re_model$vcov
+  
   
 
     
@@ -150,7 +149,7 @@ model_par_ell <- function(framework,
       betas = betas,
       sigmae2est = sigmae2est,
       sigmau2est = sigmau2est,
-      rand_eff = rand_eff
+      vcov = vcov
     ))
   } 
 
@@ -181,8 +180,8 @@ monte_carlo_ell <- function(transformation,
   
   
   if (!is.null(Ydump)) {
-    Ydumpdf <- data.frame(matrix(ncol = 6, nrow = 0))
-    colnames(Ydumpdf) <- c("L","Domain","Simulated_Y","XBetahat","eta","epsilon")
+    Ydumpdf <- data.frame(matrix(ncol = 8+length(model_par$betas), nrow = 0))
+    colnames(Ydumpdf) <- c("L","Domain","Simulated_Y","XBetahat","eta","epsilon","sigma2eta","sigma2eps",colnames(model_par$betas))
     write.csv(Ydumpdf,Ydump,row.names = FALSE)
   }
   
@@ -197,11 +196,14 @@ monte_carlo_ell <- function(transformation,
     
     # Errors in generating model: individual error term and random effect
     # See below for function errors_gen.
-    errors <- errors_gen(
+    parameters <- parameters_gen(
       framework = framework,
       model_par = model_par,
       gen_model = gen_model
     )
+    
+    browser()
+    # generate gen_model$mu here based parameters$beta, if you have the data conveniently around 
     
     # Prediction of population vector y
     # See below for function prediction_y.
@@ -210,7 +212,7 @@ monte_carlo_ell <- function(transformation,
       lambda = lambda,
       shift = shift,
       gen_model = gen_model,
-      errors_gen = errors,
+      parameters_gen = parameters,
       framework = framework,
       fixed = fixed
     )
@@ -259,33 +261,53 @@ monte_carlo_ell <- function(transformation,
 } # End Monte-Carlo
 
 
-# The function errors_gen returns error terms of the generating model.
+# The function parameters_gen returns error terms of the generating model.
+# and draws betas 
 # See Molina and Rao (2010) p. 375 (20)
 
-errors_gen <- function(framework, model_par, gen_model) {
+parameters_gen <- function(framework, model_par, gen_model) {
   epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
   
   # empty vector for new random effect in generating model
   vu <- vector(length = framework$N_pop)
-  # new random effect for out-of-sample domains
-  vu[!framework$obs_dom] <- rep(
-    rnorm(
-      framework$N_dom_unobs,
-      0,
-      sqrt(model_par$sigmau2est)
-    ),
-    framework$n_pop[!framework$dist_obs_dom]
-  )
-  # new random effect for in-sample-domains
-  vu[framework$obs_dom] <- rep(
-    rnorm(
-      rep(1, framework$N_dom_smp),
-      0,
-      sqrt(gen_model$sigmav2est)
-    ),
-    framework$n_pop[framework$dist_obs_dom]
-  )
-  # individual error term in generating model epsilon
+  # draw random effect
+  vu <- rep(rnorm(framework$N_dom_pop,0,sqrt(model_par$sigmau2est)
+    ),framework$n_pop)
   
-  return(list(epsilon = epsilon, vu = vu))
-} # End errors_gen
+
+    #betas <- mvrnorm(n=1, mu=model_par$betas,Sigma=as.matrix(model_par$vcov))
+    R <- chol(model_par$vcov)   
+    betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R))+model_par$betas
+    
+  return(list(epsilon = epsilon, vu = vu, betas=betas))
+} # End parameters_gen
+
+# The function prediction_y returns a predicted income vector which can be used
+# to calculate indicators. Note that a whole income vector is predicted without
+# distinction between in- and out-of-sample domains.
+prediction_y <- function(transformation,
+                         lambda,
+                         shift,
+                         gen_model,
+                         parameters_gen,
+                         framework,
+                         fixed) {
+
+  
+  
+  # predicted population income vector
+  y_pred <- gen_model$mu + parameters_gen$epsilon + parameters_gen$vu
+  
+  # back-transformation of predicted population income vector
+  y_pred <- back_transformation(
+    y = y_pred,
+    transformation = transformation,
+    lambda = lambda,
+    shift = shift,
+    framework = framework,
+    fixed = fixed
+  )
+  y_pred[!is.finite(y_pred)] <- 0
+  
+  return(y_pred)
+} # End prediction_y
