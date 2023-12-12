@@ -57,7 +57,7 @@ point_estim_ell <- function(framework,
   # if weight is NULL, that is appropriately passed to PLM 
  args <- list(formula=fixed, 
            data = transformation_par$transformed_data, 
-           weights = get(framework$weights),
+           weights = framework$smp_data[,framework$weights],
            model="random",
            index = framework$smp_domains)
  
