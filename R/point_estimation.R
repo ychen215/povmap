@@ -61,8 +61,11 @@ point_estim <- function(framework,
     transformation_par$transformed_data$weights_scaled <-
       framework$smp_data[,framework$weights] /
         mean(framework$smp_data[,framework$weights], na.rm = TRUE)
-    weights_arg <- paste0("nlme:::varComb(nlme:::varIdent(as.formula(~ 1 | as.factor(", framework$smp_domains, "))),nlme:::varFixed(as.formula(~1/weights_scaled)))")
+    weights_arg <- nlme:::varComb(nlme::varIdent(~ 1 | as.factor(framework$smp_domains)),nlme::varFixed(~1/weights_scaled))
   }   
+  
+  
+
   
   # Do one-fold model 
   random_arg <- NULL 
@@ -83,9 +86,10 @@ point_estim <- function(framework,
                ),
                keep.data = keep_data,
                weights = weights_arg)
-  do.call(nlme:::lme,args)
-               
   
+  mixed_model <- do.call(nlme:::lme,args)
+               
+ 
     
     # Function model_par extracts the needed parameters theta from the nested
     # error linear regression model. It returns the beta coefficients (betas),
