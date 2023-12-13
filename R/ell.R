@@ -234,6 +234,9 @@ ell <- function(fixed,
     Ydump = Ydump
   )
   
+  browser()
+  
+  
   # benchmarking
   if (!is.null(benchmark)) {
     if (is.null(benchmark_level)) {

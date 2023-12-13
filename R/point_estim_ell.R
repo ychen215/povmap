@@ -61,7 +61,7 @@ point_estim_ell <- function(framework,
            model="random",
            index = framework$smp_domains)
  
- re_model <- do.call(plm, args)
+ re_model <- do.call(plm:::plm, args)
  
   # Function model_par extracts the needed parameters theta from the random
   # effects linear regression model. It returns the beta coefficients (betas),
@@ -202,17 +202,16 @@ monte_carlo_ell <- function(transformation,
       gen_model = gen_model
     )
     
-    browser()
     # generate gen_model$mu here based parameters$beta, if you have the data conveniently around 
     
     # Prediction of population vector y
     # See below for function prediction_y.
-    population_vector <- prediction_y(
+    population_vector <- prediction_y_ell(
       transformation = transformation,
       lambda = lambda,
       shift = shift,
       gen_model = gen_model,
-      parameters_gen = parameters,
+      parameters = parameters,
       framework = framework,
       fixed = fixed
     )
@@ -223,7 +222,7 @@ monte_carlo_ell <- function(transformation,
       pop_weights_vec <- rep(1, nrow(framework$pop_data))
     }
     if (!is.null(Ydump)){
-      Ydumpdf <- data.frame(rep(l,nrow(framework$pop_data)), framework$pop_domains_vec,population_vector,gen_model$mu,errors$vu,errors$epsilon)
+      Ydumpdf <- data.frame(rep(l,framework$N_pop), framework$pop_domains_vec,population_vector,gen_model$mu,parameters$vu,parameters$epsilon,parameters$betas)
       #write.csv(Ydumpdf,Ydump,row.names = FALSE,append=TRUE)
       write.table(Ydumpdf,file=Ydump,row.names = FALSE,append=TRUE,col.names=F, sep=",") 
     }
@@ -286,19 +285,19 @@ parameters_gen <- function(framework, model_par, gen_model) {
 # The function prediction_y returns a predicted income vector which can be used
 # to calculate indicators. Note that a whole income vector is predicted without
 # distinction between in- and out-of-sample domains.
-prediction_y <- function(transformation,
+prediction_y_ell <- function(transformation,
                          lambda,
                          shift,
                          gen_model,
-                         parameters_gen,
+                         parameters,
                          framework,
                          fixed) {
   # construct vector of Xes by starting with intercept and binding it to the population
   # dataframe constructed from all the coefficient names except the 
-  Xes <- cbind(rep(1,framework$N_pop),framework$pop_data[rownames(parameters_gen$betas)[-1]]) 
+  Xes <- cbind(rep(1,framework$N_pop),framework$pop_data[rownames(parameters$betas)[-1]]) 
   
   # predicted population income vector
-  y_pred <- as.matrix(Xes) %*% (parameters_gen$betas) + parameters_gen$epsilon + parameters_gen$vu
+  y_pred <- as.matrix(Xes) %*% (parameters$betas) + parameters$epsilon + parameters$vu
   
   # back-transformation of predicted population income vector
   y_pred <- back_transformation(
@@ -312,4 +311,4 @@ prediction_y <- function(transformation,
   y_pred[!is.finite(y_pred)] <- 0
   
   return(y_pred)
-} # End prediction_y
+} # End prediction_y_ell
