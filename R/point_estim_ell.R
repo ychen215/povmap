@@ -153,6 +153,13 @@ model_par_ell <- function(framework,
     ))
   } 
 
+
+# function rowvar 
+# calcluate the variance of a row 
+rowvar <- function(x) {
+  rowvar <-apply(x,1,var)
+}
+
 # Monte-Carlo approximation ----------------------------------------------------
 
 # The function approximates the expected value (Molina and Rao (2010)
@@ -193,6 +200,7 @@ monte_carlo_ell <- function(transformation,
   ))
   
   message("\r", "Bootstrap started                                            ")
+  start_time <- Sys.time()
   for (l in seq_len(L)) {
     
     # Errors in generating model: individual error term and random effect
@@ -249,7 +257,7 @@ monte_carlo_ell <- function(transformation,
       )
     
     
-    if (l %% 25 == 0) {
+    if (l %% 20 == 0) {
       if (l != L) {
         delta <- difftime(Sys.time(), start_time, units = "secs")
         remaining <- (delta / i) * (B - i)
@@ -264,13 +272,13 @@ monte_carlo_ell <- function(transformation,
         
         message("\r", l, " of ", L, " Bootstrap iterations completed \t
               Approximately ", remaining, " remaining \n")
-        if (.Platform$OS.type == "windows") flush.console()
+        #if (.Platform$OS.type == "windows") flush.console()
       }
     }
     
   } # End for loop
   
-  
+  browser()
   # Point estimations of indicators by taking the mean
   
   point_estimates <- data.frame(
@@ -278,7 +286,18 @@ monte_carlo_ell <- function(transformation,
     apply(ests_mcmc, c(3), rowMeans)
   )
   colnames(point_estimates) <- c("Domain", framework$indicator_names)
-  return(point_estimates)
+  
+  
+  
+  
+  var_estimates <- data.frame(Domain=unique(pop_domains_vec_tmp),
+                    apply(ests_mcmc,3,rowvar))
+                              
+  
+  colnames(point_estimates) <- c("Domain", framework$indicator_names)
+  
+  
+  return(list(point_estimates=point_estimates,var_estimates=var_estimates))
 } # End Monte-Carlo
 
 
