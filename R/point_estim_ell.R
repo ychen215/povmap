@@ -10,6 +10,7 @@
 
 point_estim_ell <- function(framework,
                         fixed,
+                        alpha, 
                         transformation,
                         interval,
                         L,
@@ -72,6 +73,16 @@ point_estim_ell <- function(framework,
     fixed = fixed,
     transformation_par = transformation_par
   )
+  
+  browser()
+  
+  
+  if (!is.null(alpha)) {
+    alpha_model(re_model = re_model)
+    
+    
+    
+  }
   
   
   

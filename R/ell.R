@@ -12,6 +12,8 @@
 #' linear regression model with the dependent variable on the left of a ~ operator 
 #' and the explanatory variables on the right, separated by + operators. The argument corresponds
 #' to the argument \code{fixed} in function \code{\link[nlme]{lme}}.
+#' @param alpha a one-sides linear formula describing the independent variables used to predict 
+#' variance in the "alpha" model 
 #' @param pop_data a data frame that needs to comprise the variables
 #' named on the right of the ~ operator in \code{fixed}, i.e. the explanatory
 #' variables, and \code{pop_domains}.
@@ -146,6 +148,7 @@
 #' the population size, the closer are the results to the proposed approach by
 
 ell <- function(fixed,
+                alpha = NULL, 
                 pop_data,
                 pop_domains,
                 pop_subdomains = NULL, 
@@ -211,6 +214,7 @@ ell <- function(fixed,
     aggregate_to = aggregate_to,
     custom_indicator = custom_indicator,
     fixed = fixed,
+    alpha = alpha, 
     threshold = threshold,
     na.rm = na.rm,
     weights = weights,
@@ -227,6 +231,7 @@ ell <- function(fixed,
   point_estim <- point_estim_ell(
     framework = framework,
     fixed = fixed,
+    alpha = alpha, 
     transformation = transformation,
     interval = interval,
     L = L,
@@ -281,56 +286,8 @@ ell <- function(fixed,
   
   
   
-  # MSE Estimation -------------------------------------------------------------
-  
-  if (MSE == TRUE) {
-    
-    # The function parametric_bootstrap can be found in script mse_estimation.R
-    mse_estimates <- parametric_bootstrap(
-      framework = framework,
-      point_estim = point_estim,
-      fixed = fixed,
-      transformation = transformation,
-      interval = interval,
-      L = L,
-      B = B,
-      boot_type = boot_type,
-      parallel_mode = parallel_mode,
-      cpus = 1,
-      benchmark = benchmark,
-      benchmark_type = benchmark_type,
-      benchmark_level = benchmark_level
-    )
-  
-    
-    
-    ebp_out <- list(
-      ind = point_estim$ind,
-      MSE = mse_estimates,
-      transform_param = point_estim[c(
-        "optimal_lambda",
-        "shift_par"
-      )],
-      model = point_estim$model,
-      model_par = point_estim$model_par,
-      framework = framework[c(
-        "N_dom_unobs",
-        "N_dom_smp",
-        "N_smp",
-        "N_pop",
-        "smp_domains",
-        "smp_data",
-        "smp_domains_vec",
-        "pop_domains_vec"
-      )],
-      transformation = transformation,
-      method = "reml",
-      fixed = fixed,
-      call = call,
-      successful_bootstraps = NULL
-    )
-  } else {
-    ebp_out <- list(
+
+    ell_out <- list(
       ind = point_estim$ind,
       MSE = NULL,
       transform_param = point_estim[c(
@@ -356,13 +313,13 @@ ell <- function(fixed,
       call = call,
       successful_bootstraps = NULL
     )
-  }
+  
   
   
   end.time <- Sys.time()
   print(round(end.time - start.time,2))
   
   
-  class(ebp_out) <- c("ebp", "emdi")
-  return(ebp_out)
+  class(ell_out) <- c("ebp", "emdi")
+  return(ell_out)
 }

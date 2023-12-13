@@ -61,7 +61,7 @@ point_estim <- function(framework,
     transformation_par$transformed_data$weights_scaled <-
       framework$smp_data[,framework$weights] /
         mean(framework$smp_data[,framework$weights], na.rm = TRUE)
-    weights_arg <- paste0("varComb(varIdent(as.formula(~ 1 | as.factor(", framework$smp_domains, "))),varFixed(as.formula(~1/weights_scaled)))")
+    weights_arg <- paste0("nlme:::varComb(nlme:::varIdent(as.formula(~ 1 | as.factor(", framework$smp_domains, "))),nlme:::varFixed(as.formula(~1/weights_scaled)))")
   }   
   
   # Do one-fold model 

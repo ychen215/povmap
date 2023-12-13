@@ -6,7 +6,7 @@
 # see Molina and Rao (2003) p.370-371
 
 
-framework_ell <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data, smp_domains,
+framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, smp_data, smp_domains,
                           smp_subdomains, threshold, custom_indicator = NULL, na.rm,
                           aggregate_to = NULL, weights, pop_weights, 
                           benchmark_level, benchmark_weights, rescale_weights) {
