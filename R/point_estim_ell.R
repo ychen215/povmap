@@ -112,7 +112,7 @@ point_estim_ell <- function(framework,
     optimal_lambda = optimal_lambda,
     shift_par = shift_par,
     model_par = est_par,
-    gen_model = gen_par,
+    gen_model = gen_model,
     model = re_model
   ))
 } # End point estimation function
@@ -192,6 +192,7 @@ monte_carlo_ell <- function(transformation,
     length(framework$indicator_names)
   ))
   
+  message("\r", "Bootstrap started                                            ")
   for (l in seq_len(L)) {
     
     # Errors in generating model: individual error term and random effect
@@ -246,6 +247,27 @@ monte_carlo_ell <- function(transformation,
                              threshold = framework$threshold
         ))
       )
+    
+    
+    if (l %% 25 == 0) {
+      if (l != L) {
+        delta <- difftime(Sys.time(), start_time, units = "secs")
+        remaining <- (delta / i) * (B - i)
+        remaining <- unclass(remaining)
+        remaining <- sprintf(
+          "%02d:%02d:%02d:%02d",
+          remaining %/% 86400, # days
+          remaining %% 86400 %/% 3600, # hours
+          remaining %% 3600 %/% 60, # minutes
+          remaining %% 60 %/% 1
+        ) # seconds)
+        
+        message("\r", l, " of ", L, " Bootstrap iterations completed \t
+              Approximately ", remaining, " remaining \n")
+        if (.Platform$OS.type == "windows") flush.console()
+      }
+    }
+    
   } # End for loop
   
   
