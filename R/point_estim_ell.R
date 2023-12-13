@@ -278,7 +278,6 @@ monte_carlo_ell <- function(transformation,
     
   } # End for loop
   
-  browser()
   # Point estimations of indicators by taking the mean
   
   point_estimates <- data.frame(
@@ -286,10 +285,7 @@ monte_carlo_ell <- function(transformation,
     apply(ests_mcmc, c(3), rowMeans)
   )
   colnames(point_estimates) <- c("Domain", framework$indicator_names)
-  
-  
-  
-  
+
   var_estimates <- data.frame(Domain=unique(pop_domains_vec_tmp),
                     apply(ests_mcmc,3,rowvar))
                               
