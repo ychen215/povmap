@@ -291,7 +291,7 @@ monte_carlo_ell <- function(transformation,
                              threshold = framework$threshold
         ))
       )
-    
+  
     
     if (l %% 20 == 0) {
       if (l != L) {
@@ -320,16 +320,17 @@ monte_carlo_ell <- function(transformation,
     Domain = unique(pop_domains_vec_tmp),
     apply(ests_mcmc, c(3), rowMeans)
   )
+  var_estimates <- data.frame(
+    Domain=unique(pop_domains_vec_tmp),
+    apply(ests_mcmc,3,rowvar))
+  
+  
   colnames(point_estimates) <- c("Domain", framework$indicator_names)
+  colnames(var_estimates) <- c("Domain", framework$indicator_names)
+  
 
-  var_estimates <- data.frame(Domain=unique(pop_domains_vec_tmp),
-                    apply(ests_mcmc,3,rowvar))
-                              
   
-  colnames(point_estimates) <- c("Domain", framework$indicator_names)
-  
-  
-  return(list(point_estimates=point_estimates,var_estimates=var_estimates))
+  return(list(point_estimates = point_estimates, var_estimates = var_estimates))
 } # End Monte-Carlo
 
 

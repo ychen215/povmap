@@ -239,7 +239,6 @@ ell <- function(fixed,
     Ydump = Ydump
   )
   
-  browser()
   
   
   # benchmarking
@@ -289,12 +288,13 @@ ell <- function(fixed,
 
     ell_out <- list(
       ind = point_estim$ind,
-      MSE = NULL,
+      var = point_estim$var,
       transform_param = point_estim[c(
         "optimal_lambda",
         "shift_par"
       )],
       model = point_estim$model,
+      alpha_model = point_estim$alpha_model, 
       model_par = point_estim$model_par,
       framework = framework[c(
         "N_dom_unobs",
@@ -310,6 +310,7 @@ ell <- function(fixed,
       transformation = transformation,
       method = "reml",
       fixed = fixed,
+      alpha = alpha, 
       call = call,
       successful_bootstraps = NULL
     )
