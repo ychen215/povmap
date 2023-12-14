@@ -13,7 +13,7 @@ framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, s
 
 
   # Reduction of number of variables
-  mod_vars <- all.vars(fixed)
+  mod_vars <- all.vars(fixed, alpha)
   mod_vars <- mod_vars[mod_vars != as.character(fixed[2])]
 
   if (!is.null(weights) && benchmark_weights==weights) {

@@ -64,6 +64,8 @@ point_estim_ell <- function(framework,
  
  re_model <- do.call(plm:::plm, args)
  
+ 
+ 
   # Function model_par extracts the needed parameters theta from the random
   # effects linear regression model. It returns the beta coefficients (betas),
   # sigmae2est, and sigmau2est.
@@ -74,14 +76,11 @@ point_estim_ell <- function(framework,
     transformation_par = transformation_par
   )
   
-  browser()
   
   
   if (!is.null(alpha)) {
-    alpha_model(re_model = re_model)
-    
-    
-    
+    alpha_model <- alpha_model(re_model = re_model,
+                    alpha = alpha)
   }
   
   
@@ -109,22 +108,25 @@ point_estim_ell <- function(framework,
       model_par = est_par,
       gen_model = gen_par,
       fixed = fixed,
-      Ydump = Ydump 
+      Ydump = Ydump,
+      alpha_model = alpha_model
     )
   }
   else {
       stop(strwrap(prefix = " ", initial = "",
                    "L must be positive when using ELL estimation"))
     }
-        
   
   return(list(
-    ind = indicator_prediction,
+    ind = indicator_prediction$point_estimates,
+    var = indicator_prediction$var_estimates, 
     optimal_lambda = optimal_lambda,
     shift_par = shift_par,
     model_par = est_par,
     gen_model = gen_model,
-    model = re_model
+    model = re_model,
+    alpha_model = alpha_model$alpha_model
+    
   ))
 } # End point estimation function
 
@@ -171,11 +173,32 @@ rowvar <- function(x) {
   rowvar <-apply(x,1,var)
 }
 
+
+#Alpha model function
+# This function estimates the alpha model, as described in Zhao and Lanjouw's reference guide to povmap 
+# it returns the alpha model and the expected value of the variance 
+alpha_model <- function(re_model, alpha) {
+  # 1. Decopmose the residuals into an average cluster effect and a residual 
+  residuals <- re_model$model[,1]-predict(re_model)
+  residuals <- as.data.frame(cbind(residuals,attr(re_model$residuals,"index")[,1]))
+  colnames(residuals) <- c("residuals","index")
+    mean_residuals <- ave(residuals$residuals,residuals$index)
+    eps_squared <- (residuals[,1]-mean_residuals)^2 
+    A <- 1.05*max(eps_squared)
+    re_model$model$transformed_eps_squared <- log(eps_squared/(A-eps_squared))
+    re_model$model$transformed_eps_squared[eps_squared==0] <- 0
+     model <- as.formula(paste0("transformed_eps_squared ~ ",alpha))
+    alphamodel<-lm(model,data=re_model$model)
+    B <- exp(predict(alphamodel))
+    var_r <- summary(alphamodel)$sigma^2
+    sigmae2est <- A * B / (1+B) + 0.5*var_r*(A*B*(1-B)/(1+B)^3)
+    return(list(alpha_model=alphamodel,sigmae2est = sigmae2est))
+    }
+
+
 # Monte-Carlo approximation ----------------------------------------------------
 
-# The function approximates the expected value (Molina and Rao (2010)
-# p.372 (6)). For description of monte-carlo simulation see Molina and
-# Rao (2010) p. 373 (13) and p. 374-375
+# This function conducts bootstraps 
 monte_carlo_ell <- function(transformation,
                         L,
                         framework,
@@ -184,7 +207,8 @@ monte_carlo_ell <- function(transformation,
                         model_par,
                         gen_model,
                         fixed,
-                        Ydump) {
+                        Ydump,
+                        alpha_model) {
   
   # Preparing matrices for indicators for the Monte-Carlo simulation
   
@@ -219,7 +243,8 @@ monte_carlo_ell <- function(transformation,
     parameters <- parameters_gen(
       framework = framework,
       model_par = model_par,
-      gen_model = gen_model
+      gen_model = gen_model,
+      alpha_model = alpha_model
     )
     
     # generate gen_model$mu here based parameters$beta, if you have the data conveniently around 
@@ -312,9 +337,13 @@ monte_carlo_ell <- function(transformation,
 # and draws betas 
 # See Molina and Rao (2010) p. 375 (20)
 
-parameters_gen <- function(framework, model_par, gen_model) {
-  epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
-  
+parameters_gen <- function(framework, model_par, gen_model, alpha_model) {
+  if (is.null(alpha_model)) {
+    epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
+  } 
+  else {
+    epsilon <- rnorm(framework$N_pop, 0, sqrt(alpha_model$sigmae2est))
+  }
   # empty vector for new random effect in generating model
   vu <- vector(length = framework$N_pop)
   # draw random effect
