@@ -8,8 +8,10 @@ ebp(
   fixed,
   pop_data,
   pop_domains,
+  pop_subdomains = NULL,
   smp_data,
   smp_domains,
+  smp_subdomains = NULL,
   L = 50,
   threshold = NULL,
   transformation = "box.cox",
@@ -25,7 +27,6 @@ ebp(
   weights = NULL,
   pop_weights = NULL,
   MSE_pop_weights = NULL,
-  MSE_cluster = NULL,
   aggregate_to = NULL,
   weights_type = "Guadarrama",
   benchmark = NULL,
@@ -60,13 +61,20 @@ indicates domains in the population data. The variable can be numeric or
 a factor but needs to be of the same class as the variable named in
 \code{smp_domains}.}
 
+\item{pop_subdomains}{a character string containing the name of a variable that 
+indicates sub-domains in the population data. When this option is specified, a 
+two-fold nested error model is used. Defaults to \code{NULL}}
+
 \item{smp_data}{a data frame that needs to comprise all variables named in
 \code{fixed} and \code{smp_domains}.}
 
 \item{smp_domains}{a character string containing the name of a variable
 that indicates domains in the sample data. The variable can be numeric or a
 factor but needs to be of the same class as the variable named in
-\code{pop_domains}.}
+\code{pop_domains}.
+#' @param smp_subdomains a character string containing the name of a variable that 
+indicates sub-domains in the sample data. When this option is specified, a 
+two-fold nested error model is used. Defaults to \code{NULL}}
 
 \item{L}{a number determining the number of Monte-Carlo simulations that
 must be at least 1. Defaults to 50. For practical applications, values
@@ -153,12 +161,6 @@ that indicates population weights to be used for MSE estimation. When constructi
 the super-population in the parametric bootstrap. This option is useful when 
 substituting one observation for many identical observations in the population
 data. It can only be used for Mean and Head_count. Defaults to \code{NULL}.}
-
-\item{MSE_cluster}{a character string containing the name of a variable to
-cluster MSE estimation on. If \code{boot_type = wild}, implements a wild cluster 
-bootstrap. If \code{boot_type = 'parametric'}, adjusts MSE to account for within-cluster
-correlation in the parametric bootstrap procedure 
-Defaults to \code{NULL}}
 
 \item{aggregate_to}{a character string containing the name of a variable from
 population data that indicates the target domain level for which the

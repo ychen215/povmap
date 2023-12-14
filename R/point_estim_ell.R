@@ -296,7 +296,7 @@ monte_carlo_ell <- function(transformation,
     if (l %% 20 == 0) {
       if (l != L) {
         delta <- difftime(Sys.time(), start_time, units = "secs")
-        remaining <- (delta / i) * (B - i)
+        remaining <- (delta / l) * (L - l)
         remaining <- unclass(remaining)
         remaining <- sprintf(
           "%02d:%02d:%02d:%02d",

@@ -44,7 +44,8 @@ Imports:
     bestNormalize,
     survey,
     sf,
-    FNN
+    FNN,
+    plm
 Suggests:
     testthat,
     R.rsp,
