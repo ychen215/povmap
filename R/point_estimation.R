@@ -119,9 +119,10 @@ point_estim <- function(framework,
 
 
 
-  
 
-  
+    dep_var <- transformation_par$transformed_data[[
+      as.character(mixed_model$terms[[2]])]]
+       # this is needed for guadarrama weights calculation in gen_model 
 
 
   # Function gen_model calculates the parameters in the generating model.
@@ -130,7 +131,8 @@ point_estim <- function(framework,
   gen_par <- gen_model(
     model_par = est_par,
     fixed = fixed,
-    framework = framework
+    framework = framework,
+    dep_var = dep_var 
   )
 
   
@@ -215,31 +217,38 @@ model_par <- function(framework,
   sigmae2est <- mixed_model$sigma^2
   # VarCorr(fit2) is the estimated random error variance
   # if subdomains specified, save the results in sigmae2est, sigmah2est, and sigmau2est 
+  # Random effect: vector with zeros for all domains, filled with 0
+  rand_eff <- rep(0, framework$N_dom_pop)  
+  rand_eff_h <- rep(0, framework$N_subdom_pop)  
   if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
     sigmau2est <- VarCorr(mixed_model)[2,1]
     sigmah2est <- VarCorr(mixed_model)[4,1]
-    # Random sub-area effect for all subdomains 
-    rand_eff_h <- rep(0, framework$N_subdom_pop)
+    # Random sub-area effect for sample subdomains 
+    rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
+    # Random area-effect 
     rand_eff_h[framework$obs_subdom] <- (random.effects(mixed_model)[[2]])
   } 
   else {
     sigmau2est <- as.numeric(nlme::VarCorr(mixed_model)[1, 1])  
     sigmah2est <- 0 
+    # random area effect 
+    rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
   }
   
   
   
-  # Random effect: vector with zeros for all domains, filled with 0
-  rand_eff <- rep(0, framework$N_dom_pop)
+  
+ 
   #Variance of cluster components 
     # random effect for in-sample domains (dist_obs_dom)
-    rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
+  
+  
     
     
     return(list(
       betas = betas,
       sigmae2est = sigmae2est,
-      sigmah2est = signmah2est, 
+      sigmah2est = sigmah2est, 
       sigmau2est = sigmau2est,
       rand_eff = rand_eff,
       rand_eff_h = rand_eff_h
@@ -256,32 +265,28 @@ model_par <- function(framework,
 # See Molina and Rao (2010) p. 375 (20)
 gen_model <- function(fixed,
                       framework,
-                      model_par) {
+                      model_par,
+                      dep_var) {
 
-  weight_smp <- transformation_par$transformed_data[[as.character(framework$weights)]]
+  weight_smp <- framework$smp_data[[as.character(framework$weights)]]
   if (is.null(framework$weights)) {
-    weights_smp <- rep(1,framework$N_pop)  
+    weights_smp <- rep(1,framework$N_smp)  
   } 
   
   
   # calculate gamma 
   if (any(framework$weights_type %in% c("nlme", "nlme_lambda")) | is.null(framework$weights)) {
-    rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
-    
+    rand_eff <- model_par$rand_eff
     
   weight_sum <- rep(0, framework$N_dom_smp)
-  mean_dep <- rep(0, framework$N_dom_smp)
-  mean_indep <- matrix(0, nrow = framework$N_dom_smp, ncol = length(betas))
   delta2 <- rep(0, framework$N_dom_smp)
-  weight_smp <- transformation_par$transformed_data[[as.character(framework$weights)]]
-  weight_sum <- ave(weight_smp, framework$smp_domains_vec,FUN=sum)
-  weightsq_sum <- ave(weight_smp^2,framework$smp_domains_vec,FUN=sum)
-  delta2 <- weightsq_sum / weight_sum^2
-  gamma <- sigmau2est / (sigmau2est + (sigmae2est * delta2))
+  sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
+  delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum 
+  gamma <- model_par$sigmau2est / (model_par$sigmau2est + (model_par$sigmae2est * delta2))
   } 
   else {
-      # Calculations needed for pseudo EB
-      
+      # Calculations needed for pseudo EB for Guadarrama option 
+    betas <- model_par$betas
       weight_sum <- rep(0, framework$N_dom_smp)
       mean_dep <- rep(0, framework$N_dom_smp)
       mean_indep <- matrix(0, nrow = framework$N_dom_smp, ncol = length(betas))
@@ -291,22 +296,26 @@ gen_model <- function(fixed,
       den <- matrix(0, nrow = length(betas), ncol = length(betas))
       
       for (d in 1:framework$N_dom_smp) {
+        #cat(d)
         domain <- names(table(framework$smp_domains_vec)[d])
-        
-        # Domain means of of the dependent variable
-        dep_smp <- transformation_par$transformed_data[[
-          as.character(mixed_model$terms[[2]])]][
+        dep_smp <- dep_var[
             framework$smp_domains_vec == domain
           ]
-        weight_smp <- transformation_par$transformed_data[[
+        # Domain means of of the dependent variable
+        dep_smp <- dep_var[framework$smp_domains_vec == domain]
+        
+        
+        
+        
+        weight_smp <- framework$smp_data[[
           as.character(framework$weights)]][framework$smp_domains_vec == domain]
         weight_sum[d] <- sum(weight_smp)
         
-        indep_smp <- if(length(weight_smp) == 1) {
-          matrix(model.matrix(fixed, framework$smp_data)[framework$smp_domains_vec == domain,]
-                 , ncol = length(betas), nrow = 1)
+         if(length(weight_smp) == 1) {
+           indep_smp <- matrix(model.matrix(fixed, framework$smp_data)[framework$smp_domains_vec == domain,]
+                               , ncol = length(betas), nrow = 1)
         } else {
-          model.matrix(fixed, framework$smp_data)[framework$smp_domains_vec == domain,]
+          indep_smp <- model.matrix(fixed, framework$smp_data)[framework$smp_domains_vec == domain,]
         }
         
         # weighted mean of the dependent variable
@@ -318,12 +327,12 @@ gen_model <- function(fixed,
         }
         
         delta2[d] <- sum(weight_smp^2) / (weight_sum[d]^2)
-        gamma[d] <- sigmau2est / (sigmau2est + sigmae2est * delta2[d])
-        weight_smp_diag <- diag(weight_smp)
-        dep_var_ast <- dep_smp - gamma_weight[d] * mean_dep[d]
+        gamma[d] <- model_par$sigmau2est / (model_par$sigmau2est + model_par$sigmae2est * delta2[d])
+        weight_smp_diag <- diag(x=weight_smp,nrow=length(weight_smp), ncol=length(weight_smp))
+        dep_var_ast <- dep_smp - gamma[d] * mean_dep[d]
         indep_weight <- t(indep_smp) %*% weight_smp_diag
         indep_var_ast <- indep_smp - matrix(rep(
-          gamma_weight[d] *
+          gamma[d] *
             mean_indep[d, ],
           framework$n_smp[d]
         ),
@@ -341,7 +350,8 @@ gen_model <- function(fixed,
       betas <- solve(den) %*% num
       
       # random effect for in-sample domains (dist_obs_dom)
-      rand_eff[framework$dist_obs_dom] <- gamma_weight * (mean_dep -
+      rand_eff <- rep(0, framework$N_dom_pop)  
+      rand_eff[framework$dist_obs_dom] <- gamma * (mean_dep -
                                                             mean_indep %*% betas)
       
     
@@ -362,7 +372,7 @@ gen_model <- function(fixed,
     # Constant part of predicted y
     mu_fixed <- X_pop %*% model_par$betas
     mu <- mu_fixed + rand_eff_pop
-    return(list(sigmav2est = sigmav2est, mu = mu, mu_fixed = mu_fixed))
+    return(list(sigmav2est = sigmav2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
 } # End gen_model
 
 
@@ -421,6 +431,7 @@ sigma2vu <- vector(length = framework$N_pop)
 sigma2vu[!framework$obs_dom] <- model_par$sigmau2est
 # variance of random effect for in-sample domains
 sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framework$dist_obs_dom])
+#sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framework$dist_obs_dom])
 var <- sigma2vu+model_par$sigmae2est
 
 # do mean with function 
