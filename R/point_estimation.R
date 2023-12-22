@@ -62,18 +62,20 @@ point_estim <- function(framework,
       framework$smp_data[,framework$weights] /
         mean(framework$smp_data[,framework$weights], na.rm = TRUE)
     weights_arg <- nlme:::varComb(nlme::varIdent(~ 1 | as.factor(framework$smp_domains)),nlme::varFixed(~1/weights_scaled))
+    #weights_arg <- ~ I(1/weights_scaled)
   }   
   
   random_arg <- NULL 
   if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
     # Do two fold model 
     random_arg <- list(as.formula(~1),as.formula(~1))
-  }
+    names(random_arg) <- c(framework$smp_domains,framework$smp_subdomains)  
+    
+      }
   else {
   # Do one-fold model 
   random_arg[framework$smp_domains] <- list(as.formula(~1))
   } 
-  names(random_arg) <- c(framework$smp_domains,framework$smp_subdomains)  
   
   
   args <- list(fixed=fixed,
@@ -221,12 +223,12 @@ model_par <- function(framework,
   rand_eff <- rep(0, framework$N_dom_pop)  
   rand_eff_h <- rep(0, framework$N_subdom_pop)  
   if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
-    sigmau2est <- VarCorr(mixed_model)[2,1]
-    sigmah2est <- VarCorr(mixed_model)[4,1]
-    # Random sub-area effect for sample subdomains 
-    rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
+    sigmau2est <- as.numeric(VarCorr(mixed_model)[2,1])
+    sigmah2est <- as.numeric(VarCorr(mixed_model)[4,1])
+    # Random sub-area effect for sample subdomains
+    rand_eff[framework$dist_obs_dom] <- random.effects(mixed_model,level=1)$"(Intercept)"[framework$dist_obs_smp_dom]
     # Random area-effect 
-    rand_eff_h[framework$obs_subdom] <- (random.effects(mixed_model)[[2]])
+    rand_eff_h[framework$dist_obs_subdom] <- random.effects(mixed_model,level=2)$"(Intercept)"[framework$dist_obs_smp_subdom]
   } 
   else {
     sigmau2est <- as.numeric(nlme::VarCorr(mixed_model)[1, 1])  
@@ -278,11 +280,18 @@ gen_model <- function(fixed,
   if (any(framework$weights_type %in% c("nlme", "nlme_lambda")) | is.null(framework$weights)) {
     rand_eff <- model_par$rand_eff
     
+    
   weight_sum <- rep(0, framework$N_dom_smp)
-  delta2 <- rep(0, framework$N_dom_smp)
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
   delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum 
-  gamma <- model_par$sigmau2est / (model_par$sigmau2est + (model_par$sigmae2est * delta2))
+  gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
+  if (model_par$sigmah2est>0) {
+    sums_sub <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_subdomains_vec),FUN=sum)
+    delta2_sub <- sums[,3] / sums[,2]^2
+    gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
+  }
+  
+  
   } 
   else {
       # Calculations needed for pseudo EB for Guadarrama option 
@@ -291,6 +300,7 @@ gen_model <- function(fixed,
       mean_dep <- rep(0, framework$N_dom_smp)
       mean_indep <- matrix(0, nrow = framework$N_dom_smp, ncol = length(betas))
       delta2 <- rep(0, framework$N_dom_smp)
+      
       gamma <- rep(0, framework$N_dom_smp)
       num <- matrix(0, nrow = length(betas), ncol = 1)
       den <- matrix(0, nrow = length(betas), ncol = length(betas))
@@ -371,6 +381,7 @@ gen_model <- function(fixed,
     
     # Constant part of predicted y
     mu_fixed <- X_pop %*% model_par$betas
+    
     mu <- mu_fixed + rand_eff_pop
     return(list(sigmav2est = sigmav2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
 } # End gen_model

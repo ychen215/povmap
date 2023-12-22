@@ -51,8 +51,6 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   }
   
   
-  
-  
   # Deletion of NA
   if (na.rm == TRUE) {
     pop_data <- na.omit(pop_data)
@@ -62,7 +60,10 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
                  "EBP does not work with missing values. Set na.rm = TRUE in
                  function ebp."))
   }
-
+  
+  
+  
+  
   # rescale weights such that mean is equal to one within each domain 
   if (isTRUE(rescale_weights) && !is.null(weights)) {
     smp_data[,weights] <- smp_data[,weights] / ave(smp_data[,weights], smp_data[,smp_domains])
@@ -80,7 +81,22 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   smp_data[[smp_domains]] <- factor(smp_data[[smp_domains]],
                                     levels = levels_tmp)
 
-
+ 
+  #This keeps common subdomains in sample, which is causing several NAs.  
+ if (!is.null(pop_subdomains)) {
+pop_data <- pop_data[order(pop_data[[pop_subdomains]]), ]
+levels_subdom_tmp <- unique(pop_data[[pop_subdomains]])
+pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
+                                    levels = levels_subdom_tmp)
+  pop_subdomains_vec <- pop_data[[pop_subdomains]]
+  # levels option is intentionally omitted to not restrict subdomains to set of population values 
+  smp_data[[smp_subdomains]] <- factor(smp_data[[smp_subdomains]])
+  }
+  
+  
+  
+  
+  
   if (is.null(aggregate_to)) {
     aggregate_to_vec <- NULL
   } else {
@@ -100,8 +116,9 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   smp_subdomains_vec <- NULL 
   pop_subdomains_vec <- NULL 
   if (!is.null(smp_subdomains) && !is.null(pop_subdomains)) {
+    
     smp_subdomains_vec <- smp_data[[smp_subdomains]]
-    smp_subdomains_vec <- droplevels(as.factor(smp_subdomains_vec))
+    smp_subdomains_vec <- droplevels(smp_subdomains_vec)
     pop_subdomains_vec <- pop_data[[pop_subdomains]]
   }
   
@@ -147,8 +164,13 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   obs_dom <- pop_domains_vec %in% unique(smp_domains_vec)
   dist_obs_dom <- unique(pop_domains_vec) %in% unique(smp_domains_vec)
   obs_subdom <- pop_subdomains_vec %in% unique(smp_subdomains_vec)
+  dist_obs_subdom <- unique(pop_subdomains_vec) %in% unique(smp_subdomains_vec)
   
+  obs_smp_dom <- smp_domains_vec %in% unique(pop_domains_vec)
+  dist_obs_smp_dom <- unique(smp_domains_vec) %in% unique(pop_domains_vec)
   
+  obs_smp_subdom <- smp_subdomains_vec %in% unique(pop_subdomains_vec)
+  dist_obs_smp_subdom <- unique(smp_subdomains_vec) %in% unique(pop_subdomains_vec)
   
   fw_check3(
     obs_dom = obs_dom, dist_obs_dom = dist_obs_dom, pop_domains = pop_domains,
@@ -257,6 +279,11 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
     obs_dom = obs_dom,
     obs_subdom = obs_subdom, 
     dist_obs_dom = dist_obs_dom,
+    dist_obs_subdom = dist_obs_subdom,
+    obs_smp_dom = obs_smp_dom,
+    dist_obs_smp_dom = dist_obs_smp_dom,
+    obs_smp_subdom = obs_smp_subdom,
+    dist_obs_smp_subdom = dist_obs_smp_subdom,
     indicator_list = indicator_list,
     indicator_names = indicator_names,
     threshold = threshold,
