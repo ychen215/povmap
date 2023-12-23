@@ -270,11 +270,13 @@ gen_model <- function(fixed,
                       model_par,
                       dep_var) {
 
-  weight_smp <- framework$smp_data[[as.character(framework$weights)]]
   if (is.null(framework$weights)) {
-    weights_smp <- rep(1,framework$N_smp)  
+    weight_smp <- rep(1,framework$N_smp)  
   } 
-  
+  else {
+    weight_smp <- framework$smp_data[[as.character(framework$weights)]]
+  }
+    
   
   # calculate gamma 
   if (any(framework$weights_type %in% c("nlme", "nlme_lambda")) | is.null(framework$weights)) {
