@@ -303,7 +303,6 @@ mse_estim <- function(framework,
       fitted_s = fitted_s
     )
   } else {
-    if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains))
     bootstrap_sample <- bootstrap_par(
       fixed = fixed,
       transformation = transformation,
@@ -313,18 +312,6 @@ mse_estim <- function(framework,
       shift = shift,
       vu_tmp = vu_tmp
     )
-    else {
-      bootstrap_sample <- bootstrap_par_2f(
-        fixed = fixed,
-        transformation = transformation,
-        framework = framework,
-        model_par = model_par,
-        lambda = lambda,
-        shift = shift,
-        vu_tmp = vu_tmp,
-        eta_tmp = eta_tmp 
-      )
-    }
   }
 
   framework$smp_data <- bootstrap_sample
@@ -375,12 +362,11 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   framework$obs_subdom <- rep(0,framework$N_pop)
 } 
   else { # 2 fold model 
-    sigmau2est <- model_par$sigma2u2f 
-    sigmae2est <- model_par$sigma2e2f
-    sigmah2est <- model_par$sigma2h2f 
-    eta_tmp <- rnorm(framework$N_subdom_pop,0,sqrt(sigmah2est)) # will be zero for one fold model 
+    #sigmau2est <- model_par$sigmau2est 
+    #sigmae2est <- model_par$sigmae2est
+    #sigmah2est <- model_par$sigmah2est 
+    eta_tmp <- rnorm(framework$N_subdom_pop,0,sqrt(model_par$sigmah2est)) # will be zero for one fold model 
     eta_pop <- rep(eta_tmp, framework$n_pop_subdom)
-    
   }
   
   
@@ -418,7 +404,7 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   # draw new superpopulation random effect
   
 
-    vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(sigmau2est))
+    vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
     vu_pop <- rep(vu_tmp, framework$n_pop)
    
     
@@ -448,9 +434,9 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
  #Do Mean calculation 
 # 1. Draw epsilon 
     var_eps <- vector(length=framework$N_pop)
-    var_eps[(framework$obs_dom & framework$obs_subdom)] <- (sigmae2est)
-    var_eps[(framework$obs_dom & !framework$obs_subdom)] <- (sigmae2est+sigmah2est)
-    var_eps[!framework$obs_dom] <- (sigmae2est+sigmah2est+sigmau2est)
+    var_eps[(framework$obs_dom & framework$obs_subdom)] <- (model_par$sigmae2est)
+    var_eps[(framework$obs_dom & !framework$obs_subdom)] <- (model_par$sigmae2est+model_par$sigmah2est)
+    var_eps[!framework$obs_dom] <- (model_par$sigmae2est+model_par$sigmah2est+model_par$sigmau2est)
   
   eps <- rnorm(framework$N_pop, 0, sqrt(var_eps))
 #2. transform draw   
@@ -459,7 +445,7 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
 #3. Calulate expected value of transformed XB+mu
   Y_pop_mu <- gen_model$mu_fixed + vu_pop + eta_pop 
   EY_pop_mu <- expected_transformed_mean(Y_pop_mu,var=var_eps,transformation=transformation,lambda=lambda)
-#4. Scale down implied residual to simulate taking draws over repeated observbations   
+#4. Scale down implied residual to simulate taking draws over repeated observations   
   Y_pop_b <- EY_pop_mu+((Y_pop_b-Y_pop_mu)/sqrt(framework$pop_data[,framework$MSE_pop_weights]))
     true_indicators_weighted[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
     # Note that for no transformation case, true_indicators Y_pop_b ~ N(XB+mu, var(epsilon)/MSE_pop_weights) 
@@ -546,7 +532,7 @@ superpopulation <- function(framework, model_par, gen_model, lambda, shift,
     eps[!framework$obs_dom] <- rnorm(
       sum(!framework$obs_dom), 0,
       sqrt(model_par$sigmae2est +
-             model_par$sigmau2e)
+             model_par$sigmau2est)
     )  
  
   
@@ -575,11 +561,11 @@ superpopulation_2f <- function(framework, model_par, gen_model, lambda, shift,
                             transformation, fixed) {
   
   # superpopulation area random effect
-  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigma2u2f))
+  vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)
   
   # superpoulation subarea random effect 
-  eta_tmp <- rnorm(framework$N_subdom_pop, 0, sqrt(model_par$sigma2h2f))
+  eta_tmp <- rnorm(framework$N_subdom_pop, 0, sqrt(model_par$sigmah2est))
   eta_pop <- rep(eta_tmp, framework$n_pop_subdom)
   
   # need N_subdom_pop (Number of subdomains in population) and n_pop_subdom (# of units in each subdomain)
@@ -587,17 +573,17 @@ superpopulation_2f <- function(framework, model_par, gen_model, lambda, shift,
   eps <- vector(length = framework$N_pop)
   eps[framework$obs_dom & framework$obs_subdom] <- rnorm(
     sum(framework$obs_dom & framework$obs_subdom), 0,
-    sqrt(model_par$sigma2e2f)
+    sqrt(model_par$sigmae2est)
   )
   eps[framework$obs_dom & !framework$obs_subdom] <- rnorm(
     sum(framework$obs_dom & !framework$obs_subdom), 0,
-    sqrt(model_par$sigma2e2f+model_par$sigma2h2f)
+    sqrt(model_par$sigmae2est+model_par$sigmah2est)
   )
   eps[!framework$obs_dom] <- rnorm(
     sum(!framework$obs_dom), 0,
-    sqrt(model_par$sigma2e2f +
-           model_par$sigma2h2f + 
-           model_par$sigma2u2f)
+    sqrt(model_par$sigmae2est +
+           model_par$sigmah2est + 
+           model_par$sigmau2est)
   )  
   
   
@@ -652,37 +638,6 @@ bootstrap_par <- function(fixed, transformation, framework, model_par, lambda,
   return(bootstrap_sample = bootstrap_smp)
 }
 
-bootstrap_par2f <- function(fixed, transformation, framework, model_par, lambda,
-                          shift, vu_tmp, eta_tmp) {
-  # Bootstrap sample individual error term
-  eps <- rnorm(framework$N_smp, 0, sqrt(model_par$sigma2e2f))
-  # Bootstrap sample random effects
-  vu_smp <- rep(vu_tmp[framework$dist_obs_dom], framework$n_smp)
-  eta_smp <-rep(eta_tmp[framework$obs_subdom], framework$n_smp)
-  
-  # Extraction of design matrix
-  X_smp <- model.matrix(fixed, framework$smp_data)
-  # Constant part of income vector for bootstrap sample
-  mu_smp <- X_smp %*% model_par$betas
-  # Transformed bootstrap income vector
-  Y_smp_b <- mu_smp + eps + vu_smp + eta_smp 
-  # Back transformation of bootstrap income vector
-  Y_smp_b <- back_transformation(
-    y = Y_smp_b,
-    transformation = transformation,
-    lambda = lambda,
-    shift = shift,
-    framework = framework,
-    fixed = fixed
-  )
-  Y_smp_b[!is.finite(Y_smp_b)] <- 0
-  
-  # Inclusion of bootstrap income vector into sample data
-  bootstrap_smp <- framework$smp_data
-  bootstrap_smp[paste(fixed[2])] <- Y_smp_b
-  
-  return(bootstrap_sample = bootstrap_smp)
-}
 
 
 
