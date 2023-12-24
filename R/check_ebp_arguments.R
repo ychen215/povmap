@@ -206,7 +206,7 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   if (!weights_type %in% c("nlme", "Guadarrama", "nlme_lambda")) {
     stop(strwrap(prefix = " ", initial = "",
                  "The three options for types of survey weights are
-                 ''Guadarrama'', ''nlme'', ''nlme_lambda''."))
+                 ''Guadarrama'', ''nlme'', and ''nlme_lambda''"))
   }
   if (transformation %in% c("no", "log", "ordernorm") &&
       weights_type == "nlme_lambda") {

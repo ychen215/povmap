@@ -305,6 +305,7 @@
 #' qnorm quantile residuals rnorm sd fitted ave
 #' @importFrom utils flush.console write.table write.csv
 #' @importFrom FNN knnx.index
+#' @importFrom plm 
 
 ebp <- function(fixed,
                 pop_data,
