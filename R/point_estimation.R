@@ -61,8 +61,9 @@ point_estim <- function(framework,
     #transformation_par$transformed_data$weights_scaled <-
     #  framework$smp_data[,framework$weights] /
     #    mean(framework$smp_data[,framework$weights], na.rm = TRUE)
-    transformation_par$transformed_data$weights_temp <- framework$smp_data[,framework$weights]
-    weights_arg <- nlme:::varComb(nlme:::varFixed(~1/weights_temp))
+    transformation_par$transformed_data$weights_temp <- 1/framework$smp_data[,framework$weights]
+    #weights_arg <- nlme:::varComb(nlme:::varIdent(form = ~1),nlme:::varFixed(~1/weights_temp))
+    weights_arg <- "weights_temp"
   }   
   
   random_arg <- NULL 
