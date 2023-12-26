@@ -9,7 +9,7 @@ reestimate_lmer <- function(object=object) {
   if (!object$model$call$random[2]=="NULL") {
     formula <- paste0(formula," + (1 | ",names(object$model$call$random[2]),")")
   }
-  args=list(formula=formula,data=data,weights=object$framework$smp_data[,object$framework$weight])
+  args=list(formula=formula,data=data,weights=object$model$data[,object$framework$weight])
   
   lme <- do.call(lme4:::lmer,args)
   return(lme)
