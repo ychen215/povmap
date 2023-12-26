@@ -3,6 +3,7 @@
 #' @export
 #' @importFrom moments skewness kurtosis
 #' @importFrom MuMIn r.squaredGLMM
+#' @importFrom nlme predict 
 #' @rdname emdi_summaries
 
 summary.ebp <- function(object, ...) {
@@ -125,11 +126,28 @@ summary.ebp <- function(object, ...) {
   }
   icc_mixed <- icc(object$model)
 
+  groups=tempMod$data[,object$framework$smp_domains]
+  
+  y_yhat <- data.frame("Y" = tempMod$data[,1],"marginal" = tempMod$fitted[,1], "conditional"=tempMod$fitted[,2],weights=object$model$data[,object$framework$weights])
+  y_yhat_bar <- aggregate_weighted_mean(y_yhat,by=list(groups),w=object$model$data[,object$framework$weights])[,-c(1,5)]
+  
+  r2_area <- cor(y_yhat_bar[])[2:3,1]^2
+  r_marginal_area <- r2_area[1]
+  r_conditional_area <- r2_area[2]
+  
+  
+  
+  
   coeff_det <- data.frame(
     Marginal_R2    = r_marginal,
     Conditional_R2 = r_conditional,
+    Marginal_Area_R2 = r_marginal_area,
+    Conditional_Area_R2 = r_conditional_area, 
     row.names      = ""
   )
+  
+  
+  
 
   sum_emdi <- list(
     out_of_smp = N_dom_unobs,

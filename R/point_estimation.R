@@ -58,11 +58,11 @@ point_estim <- function(framework,
   weights_arg <- NULL 
   if(!is.null(framework$weights) &&
      any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
-    transformation_par$transformed_data$weights_scaled <-
-      framework$smp_data[,framework$weights] /
-        mean(framework$smp_data[,framework$weights], na.rm = TRUE)
-    weights_arg <- nlme:::varComb(nlme::varIdent(~ 1 | as.factor(framework$smp_domains)),nlme::varFixed(~1/weights_scaled))
-    #weights_arg <- ~ I(1/weights_scaled)
+    #transformation_par$transformed_data$weights_scaled <-
+    #  framework$smp_data[,framework$weights] /
+    #    mean(framework$smp_data[,framework$weights], na.rm = TRUE)
+    transformation_par$transformed_data$weights_temp <- transformation_par$transformed_data[framework$weight]
+    weights_arg <- nlme:::varComb(nlme:::varFixed(~1/weights_temp))
   }   
   
   random_arg <- NULL 
@@ -93,8 +93,9 @@ point_estim <- function(framework,
                keep.data = keep_data,
                weights = weights_arg)
   
+  #ptm <- proc.time()
   mixed_model <- do.call(nlme:::lme,args)
-       
+  #proc.time() - ptm     
  
     
     # Function model_par extracts the needed parameters theta from the nested
