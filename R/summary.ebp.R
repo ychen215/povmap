@@ -75,7 +75,22 @@ summary.ebp <- function(object, ...) {
     level = 0,
     type = "pearson"
   ))
-
+  if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains))
+  { # two fold model
+   skewness_ran <- skewness(ranef(object$model)[[object$framework$smp_domains]]) 
+   kurtosis_ran <- kurtosis(ranef(object$model)[[object$framework$smp_domains]])
+   skewness_ran_sub <- skewness(ranef(object$model)[[object$framework$smp_subdomains]])
+   kurtosis_ran_sub <- kurtosis(ranef(object$model)[[object$framework$smp_domains]])
+   
+   norm <- data.frame(
+   Skewness = c(skewness_res, skewness_ran,skewness_ran_sub), 
+   Kurtosis = c(kurtosis_res, kurtosis_ran,kurtosis_ran_sub),
+   Shapiro_W = c(NA, NA, NA),
+   Shapiro_p = c(NA, NA, NA),
+   row.names = c("Error", paste0(framework$smp_domains," random effect"),paste0(framework$smp_subdomains," random effect"))
+   ) 
+  } # close two fold model 
+  else {
   skewness_ran <- skewness(ranef(object$model)$"(Intercept)")
   kurtosis_ran <- kurtosis(ranef(object$model)$"(Intercept)")
 
@@ -114,6 +129,7 @@ summary.ebp <- function(object, ...) {
     Shapiro_p = c(shapiro_p_res, shapiro_p_ran),
     row.names = c("Error", "Random_effect")
   )
+  } # close one fold model  
   tempMod <- object$model
   tempMod$call$fixed <- object$fixed
   r_squared <- suppressWarnings(r.squaredGLMM(tempMod))
