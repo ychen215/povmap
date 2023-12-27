@@ -148,6 +148,10 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   N_dom_smp <- length(unique(smp_domains_vec))
   # Number of out-of-sample domains
   N_dom_unobs <- N_dom_pop - N_dom_smp
+  # Number of subdomains in sample 
+  N_subdom_smp <- length(unique(smp_subdomains_vec))
+  # Number of out-of-sample subdomains
+  N_subdom_unobs <- N_subdom_pop - N_subdom_smp
   # Number of households in population per domain
   n_pop <- as.vector(table(pop_domains_vec))
   # NUmber of households in population per subdomain 

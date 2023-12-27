@@ -14,6 +14,9 @@ summary.ebp <- function(object, ...) {
   N_dom_unobs <- object$framework$N_dom_unobs
   N_dom_smp <- object$framework$N_dom_smp
 
+  N_subdom_unobs <-   object$framework$N_subdom_unobs
+  N_subdom_smp <- object$framework$N_subdom_smp
+  
   smp_size <- object$framework$N_smp
   pop_size <- object$framework$N_pop
 
@@ -168,6 +171,8 @@ summary.ebp <- function(object, ...) {
   sum_emdi <- list(
     out_of_smp = N_dom_unobs,
     in_smp = N_dom_smp,
+    out_of_smp_sub = N_subdom_unobs, 
+    in_smp_sub = N_subdom_smp, 
     size_smp = smp_size,
     size_pop = pop_size,
     size_dom = sizedom_smp_pop,
@@ -194,6 +199,10 @@ print.summary.ebp <- function(x, ...) {
   cat("\n")
   cat("Out-of-sample domains: ", x$out_of_smp, "\n")
   cat("In-sample domains: ", x$in_smp, "\n")
+  if (!is.null(x$out_of_smp_sub)) {
+  cat("Out-of-sample subdomains: ", x$out_of_smp_sub, "\n")
+  cat("In-sample subdomains: ", x$in_smp_sub, "\n")  
+  }
   cat("\n")
   cat("Sample sizes:\n")
   cat("Units in sample: ", x$size_smp, "\n")
