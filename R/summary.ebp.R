@@ -87,7 +87,7 @@ summary.ebp <- function(object, ...) {
    Kurtosis = c(kurtosis_res, kurtosis_ran,kurtosis_ran_sub),
    Shapiro_W = c(NA, NA, NA),
    Shapiro_p = c(NA, NA, NA),
-   row.names = c("Error", paste0(framework$smp_domains," random effect"),paste0(framework$smp_subdomains," random effect"))
+   row.names = c("Error", paste0(object$framework$smp_domains," random effect"),paste0(object$framework$smp_subdomains," random effect"))
    ) 
   } # close two fold model 
   else {
