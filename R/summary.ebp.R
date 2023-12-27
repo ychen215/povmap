@@ -199,7 +199,7 @@ print.summary.ebp <- function(x, ...) {
   cat("\n")
   cat("Out-of-sample domains: ", x$out_of_smp, "\n")
   cat("In-sample domains: ", x$in_smp, "\n")
-  if (!is.null(x$out_of_smp_sub)) {
+  if (!is.null(x$in_smp_sub)) {
   cat("Out-of-sample subdomains: ", x$out_of_smp_sub, "\n")
   cat("In-sample subdomains: ", x$in_smp_sub, "\n")  
   }
