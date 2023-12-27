@@ -83,7 +83,7 @@ summary.ebp <- function(object, ...) {
    skewness_ran <- skewness(ranef(object$model)[[object$framework$smp_domains]]) 
    kurtosis_ran <- kurtosis(ranef(object$model)[[object$framework$smp_domains]])
    skewness_ran_sub <- skewness(ranef(object$model)[[object$framework$smp_subdomains]])
-   kurtosis_ran_sub <- kurtosis(ranef(object$model)[[object$framework$smp_domains]])
+   kurtosis_ran_sub <- kurtosis(ranef(object$model)[[object$framework$smp_subdomains]])
    
    norm <- data.frame(
    Skewness = c(skewness_res, skewness_ran,skewness_ran_sub), 
