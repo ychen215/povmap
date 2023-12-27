@@ -75,7 +75,7 @@ summary.ebp <- function(object, ...) {
     level = 0,
     type = "pearson"
   ))
-  if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains))
+  if (!is.null(object$framework$smp_subdomains) && !is.null(object$framework$pop_subdomains))
   { # two fold model
    skewness_ran <- skewness(ranef(object$model)[[object$framework$smp_domains]]) 
    kurtosis_ran <- kurtosis(ranef(object$model)[[object$framework$smp_domains]])
