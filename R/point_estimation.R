@@ -278,19 +278,21 @@ gen_model <- function(fixed,
   else {
     weight_smp <- framework$smp_data[[as.character(framework$weights)]]
   }
+    
+  
   # calculate gamma 
   if (any(framework$weights_type %in% c("nlme", "nlme_lambda")) | is.null(framework$weights)) {
     rand_eff <- model_par$rand_eff
+    
+    
   weight_sum <- rep(0, framework$N_dom_smp)
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
   delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum 
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
-
   if (model_par$sigmah2est>0) {
     sums_sub <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_subdomains_vec),FUN=sum)
     delta2_sub <- sums[,3] / sums[,2]^2
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
-    rand_eff_h <- model_par$rand_eff_h 
   }
   
   
@@ -369,7 +371,7 @@ gen_model <- function(fixed,
     
     
     
-  } # end Guadaramma weights 
+  }
  
 
    
@@ -378,16 +380,13 @@ gen_model <- function(fixed,
    
     sigmav2est <- model_par$sigmau2est * (1 - gamma)
     rand_eff_pop <- rep(rand_eff, framework$n_pop)
-    sigma2iest <- model_par$sigmah2est * (1-gamma_sub)
-    rand_eff_h_pop <- rep(rand_eff_h,framework$n_subpop)
-    
     framework$pop_data[[paste0(fixed[2])]] <- seq_len(nrow(framework$pop_data))
     X_pop <- model.matrix(fixed, framework$pop_data)
     
     # Constant part of predicted y
     mu_fixed <- X_pop %*% model_par$betas
     
-    mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop
+    mu <- mu_fixed + rand_eff_pop
     return(list(sigmav2est = sigmav2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
 } # End gen_model
 
@@ -409,7 +408,7 @@ aggregate_weighted_quantile  <-function(df,by,w,q) {
 
 
 #analytic functions 
-# This function calculates the expected value of the mean and the headcount based on estimated parameters 
+# This function calculates the expected value, intially in the case of no transformation 
 analytic <- function(transformation,
                      framework,
                      lambda,  
