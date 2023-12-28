@@ -172,8 +172,8 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   # Indicator variables that indicate if domain is in- or out-of-sample
   obs_dom <- pop_domains_vec %in% unique(smp_domains_vec)
   dist_obs_dom <- unique(pop_domains_vec) %in% unique(smp_domains_vec)
-  obs_subdom <- pop_subdomains_vec %in% unique(smp_subdomains_vec)
-  dist_obs_subdom <- unique(pop_subdomains_vec) %in% unique(smp_subdomains_vec)
+  obs_subdom <- pop_subdomains_vec %in% unique(smp_subdomains_vec_both)
+  dist_obs_subdom <- unique(pop_subdomains_vec) %in% unique(smp_subdomains_vec_both)
   
   obs_smp_dom <- smp_domains_vec %in% unique(pop_domains_vec)
   dist_obs_smp_dom <- unique(smp_domains_vec) %in% unique(pop_domains_vec)
