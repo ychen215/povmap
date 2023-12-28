@@ -90,7 +90,9 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
                                     levels = levels_subdom_tmp)
   pop_subdomains_vec <- pop_data[[pop_subdomains]]
   # levels option is intentionally omitted to not restrict subdomains to set of population values 
-  smp_data[[smp_subdomains]] <- factor(smp_data[[smp_subdomains]],levels=levels_subdom_tmp)
+  # If we only take observations with matching population agebs it will create several 
+  # missing values which will mess up model estimation 
+  smp_data[[smp_subdomains]] <- factor(smp_data[[smp_subdomains]])
   }
   
   
