@@ -152,9 +152,9 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   # Number of subdomains in sample 
   N_subdom_smp <- length(unique(smp_subdomains_vec))
   # Number of in-sample subdomains common to pop 
-  N_subdom_both <- length(unique(smp_subdomains_vec_both))
+  #N_subdom_both <- length(unique(smp_subdomains_vec_both))
   # Number of out-of-sample subdomains
-  N_subdom_unobs <- N_subdom_pop - N_subdom_both
+  N_subdom_unobs <- N_subdom_pop - N_subdom_smp
   # Number of households in population per domain
   n_pop <- as.vector(table(pop_domains_vec))
   # NUmber of households in population per subdomain 
@@ -170,8 +170,8 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   # Indicator variables that indicate if domain is in- or out-of-sample
   obs_dom <- pop_domains_vec %in% unique(smp_domains_vec)
   dist_obs_dom <- unique(pop_domains_vec) %in% unique(smp_domains_vec)
-  obs_subdom <- pop_subdomains_vec %in% unique(smp_subdomains_vec_both)
-  dist_obs_subdom <- unique(pop_subdomains_vec) %in% unique(smp_subdomains_vec_both)
+  obs_subdom <- pop_subdomains_vec %in% unique(smp_subdomains_vec)
+  dist_obs_subdom <- unique(pop_subdomains_vec) %in% unique(smp_subdomains_vec)
   
   obs_smp_dom <- smp_domains_vec %in% unique(pop_domains_vec)
   dist_obs_smp_dom <- unique(smp_domains_vec) %in% unique(pop_domains_vec)
@@ -270,7 +270,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     smp_domains = smp_domains,
     smp_subdomains = smp_subdomains,
     smp_subdomains_vec = smp_subdomains_vec, 
-    smp_subdomains_vec_both = smp_subdomains_vec_both, 
+    #smp_subdomains_vec_both = smp_subdomains_vec_both, 
     aggregate_to = aggregate_to,
     aggregate_to_vec = aggregate_to_vec,
     N_pop = N_pop,
