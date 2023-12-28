@@ -122,6 +122,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     smp_subdomains_vec <- smp_data[[smp_subdomains]]
     smp_subdomains_vec <- droplevels(smp_subdomains_vec)
     pop_subdomains_vec <- pop_data[[pop_subdomains]]
+    smp_subdomains_vec_both <- smp_subdomains_vec[smp_subdomains_vec %in% pop_subdomains_vec]
   }
   
   
@@ -152,8 +153,10 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   N_dom_unobs <- N_dom_pop - N_dom_smp
   # Number of subdomains in sample 
   N_subdom_smp <- length(unique(smp_subdomains_vec))
+  # Number of in-sample subdomains common to pop 
+  N_subdom_both <- length(unique(smp_subdomains_both))
   # Number of out-of-sample subdomains
-  N_subdom_unobs <- N_subdom_pop - N_subdom_smp
+  N_subdom_unobs <- N_subdom_pop - N_subdom_both
   # Number of households in population per domain
   n_pop <- as.vector(table(pop_domains_vec))
   # NUmber of households in population per subdomain 
@@ -268,7 +271,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     smp_domains_vec = smp_domains_vec,
     smp_domains = smp_domains,
     smp_subdomains = smp_subdomains,
-    smp_subdomains_vec = smp_subdomains_vec, 
+    smp_subdomains_vec = smp_subdomains_vec_both, 
     aggregate_to = aggregate_to,
     aggregate_to_vec = aggregate_to_vec,
     N_pop = N_pop,
