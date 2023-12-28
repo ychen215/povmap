@@ -89,9 +89,9 @@ levels_subdom_tmp <- unique(pop_data[[pop_subdomains]])
 pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
                                     levels = levels_subdom_tmp)
   pop_subdomains_vec <- pop_data[[pop_subdomains]]
-  # levels option is intentionally omitted to not restrict subdomains to set of population values 
-  # If we only take observations with matching population agebs it will create several 
-  # missing values which will mess up model estimation 
+  # levels option in smp_data is intentionally omitted to not restrict subdomains to set of population values 
+  # If we only take observations with matching population agebs it will create  
+  # missing values in the subdomain id variable which will mess up model estimation 
   smp_data[[smp_subdomains]] <- factor(smp_data[[smp_subdomains]])
   }
   
@@ -120,7 +120,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   if (!is.null(smp_subdomains) && !is.null(pop_subdomains)) {
     pop_subdomains_vec <- pop_data[[pop_subdomains]]
     smp_subdomains_vec <- smp_data[[smp_subdomains]]
-    smp_subdomains_vec <- smp_subdomains_vec %in% pop_subdomains_vec
+    both_subdomains_vec <- smp_subdomains_vec[smp_subdomains_vec %in% pop_subdomains_vec]
   }
   
   
@@ -150,9 +150,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   # Number of out-of-sample domains
   N_dom_unobs <- N_dom_pop - N_dom_smp
   # Number of subdomains in sample 
-  N_subdom_smp <- length(unique(smp_subdomains_vec))
-  # Number of in-sample subdomains common to pop 
-  #N_subdom_both <- length(unique(smp_subdomains_vec_both))
+  N_subdom_smp <- length(unique(both_subdomains_vec))
   # Number of out-of-sample subdomains
   N_subdom_unobs <- N_subdom_pop - N_subdom_smp
   # Number of households in population per domain
