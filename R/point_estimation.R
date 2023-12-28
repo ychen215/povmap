@@ -283,7 +283,7 @@ gen_model <- function(fixed,
   # calculate gamma 
   if (any(framework$weights_type %in% c("nlme", "nlme_lambda")) | is.null(framework$weights)) {
     rand_eff <- model_par$rand_eff
-    
+    rand_eff_h <- model_par$rand_eff_h 
     
   weight_sum <- rep(0, framework$N_dom_smp)
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
@@ -391,7 +391,7 @@ gen_model <- function(fixed,
   }
   else {
     sigmai2est <- model_par$sigmah2est * (1-gamma_sub)
-    rand_eff_h_pop <- rep(rand_eff_h,framework$n_subpop)
+    rand_eff_h_pop <- rep(rand_eff_h,framework$n_pop_subdom)
     mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop 
   }
   
