@@ -460,6 +460,7 @@ sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framewor
 
 if (model_par$sigmah2est==0) {
   sigma2eta <-0 
+} 
   else {
     sigma2eta <- vector(length=framework$N_pop)
     # variance of subarea random effect for out-of-sample domains    
