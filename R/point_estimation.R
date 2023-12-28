@@ -291,7 +291,7 @@ gen_model <- function(fixed,
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
   if (model_par$sigmah2est>0) {
     sums_sub <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_subdomains_vec),FUN=sum)
-    delta2_sub <- sums[,3] / sums[,2]^2
+    delta2_sub <- sums_sub[,3] / sums_sub[,2]^2
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
   
@@ -465,7 +465,7 @@ if (model_par$sigmah2est==0) {
     sigma2eta <- vector(length=framework$N_pop)
     # variance of subarea random effect for out-of-sample domains    
     sigma2eta[!framework$obs_subdom] <- model_par$sigmah2est 
-    sigma2eta[framework$obs_subdom] <- rep(gen_model$sigmai2est,framework$n_pop_sub[framework$dist_obs_subdom])
+    sigma2eta[framework$obs_subdom] <- rep(gen_model$sigmai2est,framework$n_pop_subdom[framework$dist_obs_subdom])
   }
 
 
