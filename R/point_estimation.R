@@ -290,7 +290,7 @@ gen_model <- function(fixed,
   delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum 
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
   if (model_par$sigmah2est>0) {
-    sums_sub <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_subdomains_vec),FUN=sum)
+    sums_sub <- aggregate(data.frame(weight_smp, weight_smp^2)[framework$smp_subdomains_vec_both,], by = list(framework$smp_subdomains_vec_both), FUN = sum)
     delta2_sub <- sums_sub[,3] / sums_sub[,2]^2
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
