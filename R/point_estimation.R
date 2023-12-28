@@ -374,20 +374,30 @@ gen_model <- function(fixed,
   }
  
 
+  
+  framework$pop_data[[paste0(fixed[2])]] <- seq_len(nrow(framework$pop_data))
+  X_pop <- model.matrix(fixed, framework$pop_data)
+  
+  # Constant part of predicted y
+  mu_fixed <- X_pop %*% model_par$betas
+  sigmav2est <- model_par$sigmau2est * (1 - gamma)
+  rand_eff_pop <- rep(rand_eff, framework$n_pop)
+  
    
    
-   
-   
-    sigmav2est <- model_par$sigmau2est * (1 - gamma)
-    rand_eff_pop <- rep(rand_eff, framework$n_pop)
-    framework$pop_data[[paste0(fixed[2])]] <- seq_len(nrow(framework$pop_data))
-    X_pop <- model.matrix(fixed, framework$pop_data)
-    
-    # Constant part of predicted y
-    mu_fixed <- X_pop %*% model_par$betas
-    
+  if (model_par$sigmah2est==0) {
     mu <- mu_fixed + rand_eff_pop
-    return(list(sigmav2est = sigmav2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
+    sigmai2est <- 0 
+  }
+  else {
+    sigmai2est <- model_par$sigmah2est * (1-gamma_sub)
+    rand_eff_h_pop <- rep(rand_eff_h,framework$n_subpop)
+    mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop 
+  }
+  
+    
+    
+    return(list(sigmav2est = sigmav2est, sigmai2est = sigmai2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
 } # End gen_model
 
 
@@ -447,7 +457,20 @@ sigma2vu[!framework$obs_dom] <- model_par$sigmau2est
 # variance of random effect for in-sample domains
 sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framework$dist_obs_dom])
 #sigma2vu[framework$obs_dom] <- rep(gen_model$sigmav2est,framework$n_pop[framework$dist_obs_dom])
-var <- sigma2vu+model_par$sigmae2est
+
+if (model_par$sigmah2est==0) {
+  sigma2eta <-0 
+  else {
+    sigma2eta <- vector(length=framework$N_pop)
+    # variance of subarea random effect for out-of-sample domains    
+    sigma2eta[!framework$obs_subdom] <- model_par$sigmah2est 
+    sigma2eta[framework$obs_subdom] <- rep(gen_model$sigmai2est,framework$n_pop_sub[framework$dist_obs_subdom])
+  }
+
+
+var <- sigma2vu+sigma2eta+model_par$sigmae2est
+
+
 
 # do mean with function 
 indicators <- matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop)
