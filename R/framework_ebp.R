@@ -21,13 +21,13 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   if (!is.null(weights) && benchmark_weights==weights) {
     smp_vars <- c(as.character(fixed[2]), mod_vars, smp_domains, smp_subdomains, weights,
                   benchmark_level)
-    if !is.null(smp_subdomains) {
+    if (!is.null(smp_subdomains)) {
       smp_vars <- c(smp_vars,smp_subdomains)
     }
   } else {
     smp_vars <- c(as.character(fixed[2]), mod_vars, smp_domains, weights,
                   benchmark_level, benchmark_weights)
-    if !is.null(smp_subdomains) {
+    if (!is.null(smp_subdomains)) {
       smp_vars <- c(smp_vars,smp_subdomains)
     }
   }
