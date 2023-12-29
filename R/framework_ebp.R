@@ -126,6 +126,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   
   smp_subdomains_vec <- NULL 
   pop_subdomains_vec <- NULL 
+  both_subdomains_vec <- NULL 
   if (!is.null(smp_subdomains) && !is.null(pop_subdomains)) {
     pop_subdomains_vec <- pop_data[[pop_subdomains]]
     smp_subdomains_vec <- smp_data[[smp_subdomains]]
