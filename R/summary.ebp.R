@@ -92,9 +92,10 @@ summary.ebp <- function(object, ...) {
    Kurtosis = c(kurtosis_res, kurtosis_ran,kurtosis_ran_sub),
    Shapiro_W = c(NA, NA, NA),
    Shapiro_p = c(NA, NA, NA),
-   Variance = c(variance_res,variance_ran,variance_ran_sub), 
    row.names = c("Error", paste0(object$framework$smp_domains," random effect"),paste0(object$framework$smp_subdomains," random effect"))
    ) 
+   var <- data.frame(Variance = c(variance_res,variance_ran,variance_ran_sub),
+                     row.names = c("Error", paste0(object$framework$smp_domains," random effect"),paste0(object$framework$smp_subdomains," random effect"))         
   } # close two fold model 
   else {
   skewness_ran <- skewness(ranef(object$model)$"(Intercept)")
@@ -132,9 +133,11 @@ summary.ebp <- function(object, ...) {
     Kurtosis = c(kurtosis_res, kurtosis_ran),
     Shapiro_W = c(shapiro_W_res, shapiro_W_ran),
     Shapiro_p = c(shapiro_p_res, shapiro_p_ran),
-    Variance = c(variance_res, variance_ran), 
     row.names = c("Error", "Random_effect")
   )
+  var <- data.frame(Variance = c(variance_res,variance_ran),
+                    row.names = c("Error", "Random_effect")
+                    )
   } # close one fold model  
   tempMod <- object$model
   tempMod$call$fixed <- object$fixed
@@ -182,6 +185,7 @@ summary.ebp <- function(object, ...) {
     smp_size_tab = NULL,
     transform = transform_method,
     normality = norm,
+    variance = var, 
     icc = icc_mixed,
     coeff_determ = coeff_det,
     call = call_emdi
@@ -225,6 +229,9 @@ print.summary.ebp <- function(x, ...) {
     cat("Residual diagnostics for the mixed model:\n")
   }
   print(x$normality)
+  cat("\n")
+  cat("Estimated variance of random effects")
+  print(x$variance)
   cat("\n")
   cat("ICC: ", x$icc, "\n")
   cat("\n")
