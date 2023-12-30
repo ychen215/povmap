@@ -150,7 +150,7 @@ summary.ebp <- function(object, ...) {
     r_marginal <- r_squared[1]
     r_conditional <- r_squared[2]
   }
-  icc_mixed <- icc(object$model)
+  icc_mixed <- icc(object)
 
   groups=tempMod$data[,object$framework$smp_domains]
   
@@ -231,7 +231,7 @@ print.summary.ebp <- function(x, ...) {
   }
   print(x$normality)
   cat("\n")
-  cat("Estimated variance of random effects")
+  cat("Estimated variance of random effects:\n")
   print(x$variance)
   cat("\n")
   cat("ICC: ", x$icc, "\n")
@@ -247,8 +247,8 @@ print.summary.ebp <- function(x, ...) {
 
 #  ICC
 
-icc <- function(model) {
-  u <- as.numeric(VarCorr(model)[1, 1])
-  e <- model$sigma^2
+icc <- function(object) {
+  u <- object$model_par$sigmau2est 
+  e <- (object$model_par$sigmae2est+object$model_par$sigmah2est)
   u / (u + e)
 }
