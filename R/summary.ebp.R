@@ -76,27 +76,29 @@ summary.ebp <- function(object, ...) {
   ))
   kurtosis_res <- kurtosis(residuals(object$model,
     level = 0,
-    type = "pearson"
-  ))
+    type = "pearson"))
+  variance_res <- object$model_par$sigmae2est 
+  variance_ran <- object$model_par$sigmau2est 
+  
   if (!is.null(object$framework$smp_subdomains) && !is.null(object$framework$pop_subdomains))
   { # two fold model
    skewness_ran <- skewness(ranef(object$model)[[object$framework$smp_domains]]) 
    kurtosis_ran <- kurtosis(ranef(object$model)[[object$framework$smp_domains]])
    skewness_ran_sub <- skewness(ranef(object$model)[[object$framework$smp_subdomains]])
    kurtosis_ran_sub <- kurtosis(ranef(object$model)[[object$framework$smp_subdomains]])
-   
+   variance_ran_sub <- object$model_par$sigmah2est 
    norm <- data.frame(
    Skewness = c(skewness_res, skewness_ran,skewness_ran_sub), 
    Kurtosis = c(kurtosis_res, kurtosis_ran,kurtosis_ran_sub),
    Shapiro_W = c(NA, NA, NA),
    Shapiro_p = c(NA, NA, NA),
+   Variance = c(variance_res,variance_ran,variance_ran_sub), 
    row.names = c("Error", paste0(object$framework$smp_domains," random effect"),paste0(object$framework$smp_subdomains," random effect"))
    ) 
   } # close two fold model 
   else {
   skewness_ran <- skewness(ranef(object$model)$"(Intercept)")
   kurtosis_ran <- kurtosis(ranef(object$model)$"(Intercept)")
-
   if (length(residuals(object$model, level = 0, type = "pearson")) > 3 &&
     length(residuals(object$model, level = 0, type = "pearson")) < 5000) {
     shapiro_p_res <-
@@ -130,6 +132,7 @@ summary.ebp <- function(object, ...) {
     Kurtosis = c(kurtosis_res, kurtosis_ran),
     Shapiro_W = c(shapiro_W_res, shapiro_W_ran),
     Shapiro_p = c(shapiro_p_res, shapiro_p_ran),
+    Variance = c(variance_res, variance_ran), 
     row.names = c("Error", "Random_effect")
   )
   } # close one fold model  
