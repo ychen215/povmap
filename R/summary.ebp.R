@@ -96,6 +96,7 @@ summary.ebp <- function(object, ...) {
    ) 
    var <- data.frame(Variance = c(variance_res,variance_ran,variance_ran_sub),
                      row.names = c("Error", paste0(object$framework$smp_domains," random effect"),paste0(object$framework$smp_subdomains," random effect"))         
+   )
   } # close two fold model 
   else {
   skewness_ran <- skewness(ranef(object$model)$"(Intercept)")
