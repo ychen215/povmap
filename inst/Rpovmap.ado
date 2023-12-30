@@ -203,7 +203,7 @@ file write Rscript `" benchmark_type = `benchmark_type', benchmark_level = `benc
 if "`saveobject'"~="" {
 file write Rscript `"save(ebp_results,file="`saveobject'")"' _n  	
 }
-file write Rscript `"write.excel(ebp_results, file = "`savexls'", indicator = "all", MSE = `mse', CV = `mse', split = FALSE)"' _n          
+file write Rscript `"write.excel(ebp_results, file = "`savexls'", indicator = "all", MSE = `mse', CV = `mse', split = FALSE,model=TRUE)"' _n          
 file close Rscript 
 
 rscript using povmap.R, require(povmap haven)
