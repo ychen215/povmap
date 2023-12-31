@@ -142,8 +142,6 @@ local nlme_opt "nlminb"
  else {
   	local smp_subdomains `""`smp_subdomains'""'
   }
- set trace on 
- set traced 1 
   if `mse_pop_weights'=="" {
   	local mse_pop_weights "NULL"
   }
