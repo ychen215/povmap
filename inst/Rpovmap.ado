@@ -146,7 +146,7 @@ local nlme_opt "nlminb"
   	local mse_pop_weights "NULL"
   }
  else {
-  	local mse_pop_weights `""`mse_pop_weights'""'
+  	local mse_pop_weights `"`mse_pop_weights'"'
   }
  
 local pop_data : subinstr local pop_data "\" "/", all 
