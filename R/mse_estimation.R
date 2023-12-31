@@ -136,8 +136,6 @@ mse_estim <- function(framework,
   # in bootstrap_par.
 
   if (is.null(framework$MSE_pop_weights)) { 
-  
-  
   if (boot_type == "wild") {
     superpop <- superpopulation_wild(
       framework = framework,
@@ -355,9 +353,7 @@ mse_estim <- function(framework,
 true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,transformation,fixed) {
   
 if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  # one fold model 
-  sigmau2est <- model_par$sigmau2est 
-  sigmae2est <- model_par$sigmae2est 
-  sigmah2est <- 0 
+  model_par$sigmah2est <- 0 
   eta_pop <- rep(0,framework$N_pop)
   framework$obs_subdom <- rep(0,framework$N_pop)
 } 
@@ -426,26 +422,27 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   }
   
   
-  true_indicators_weighted<-matrix(nrow = N_dom_pop_tmp, 
-                          ncol = length(framework$indicator_names))
-  
-  
-
- #Do Mean calculation 
-# 1. Draw epsilon 
-    var_eps <- vector(length=framework$N_pop)
-    var_eps[(framework$obs_dom & framework$obs_subdom)] <- (model_par$sigmae2est)
-    var_eps[(framework$obs_dom & !framework$obs_subdom)] <- (model_par$sigmae2est+model_par$sigmah2est)
-    var_eps[!framework$obs_dom] <- (model_par$sigmae2est+model_par$sigmah2est+model_par$sigmau2est)
+  #  Draw epsilon 
+  var_eps <- vector(length=framework$N_pop)
+  var_eps[(framework$obs_dom & framework$obs_subdom)] <- (model_par$sigmae2est) # observed subdomain within observed domain 
+  var_eps[(framework$obs_dom & !framework$obs_subdom)] <- (model_par$sigmae2est+model_par$sigmah2est) # observed domain but unobserved subdomain 
+  var_eps[!framework$obs_dom] <- (model_par$sigmae2est+model_par$sigmah2est+model_par$sigmau2est) # unobserved domain 
   
   eps <- rnorm(framework$N_pop, 0, sqrt(var_eps))
-#2. transform draw   
+
+  
+  true_indicators_weighted<-matrix(nrow = N_dom_pop_tmp, 
+                                   ncol = length(framework$indicator_names))
+  
+ #Do Mean calculation 
+
+#1. back-transform draw   
   Y_pop_b <- gen_model$mu_fixed + vu_pop + eta_pop + eps
   Y_pop_b <- back_transformation(y=Y_pop_b,transformation=transformation,lambda=lambda,shift=shift,framework=framework)
-#3. Calulate expected value of transformed XB+mu
+#2. Calulate expected value of transformed XB+mu
   Y_pop_mu <- gen_model$mu_fixed + vu_pop + eta_pop 
   EY_pop_mu <- expected_transformed_mean(Y_pop_mu,var=var_eps,transformation=transformation,lambda=lambda)
-#4. Scale down implied residual to simulate taking draws over repeated observations   
+#3. Scale down implied residual to simulate taking draws over repeated observations   
   Y_pop_b <- EY_pop_mu+((Y_pop_b-Y_pop_mu)/sqrt(framework$pop_data[,framework$MSE_pop_weights]))
     true_indicators_weighted[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
     # Note that for no transformation case, true_indicators Y_pop_b ~ N(XB+mu, var(epsilon)/MSE_pop_weights) 
