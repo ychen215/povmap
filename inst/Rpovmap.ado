@@ -142,14 +142,14 @@ local nlme_opt "nlminb"
  else {
   	local smp_subdomains `""`smp_subdomains'""'
   }
- 
-  if "`mse_pop_weights'"=="" {
+ set trace on 
+ set traced 1 
+  if `mse_pop_weights'=="" {
   	local mse_pop_weights "NULL"
   }
  else {
   	local mse_pop_weights `""`mse_pop_weights'""'
   }
- 
  
 local pop_data : subinstr local pop_data "\" "/", all 
 local smp_data : subinstr local smp_data "\" "/", all 
