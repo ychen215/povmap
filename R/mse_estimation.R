@@ -353,7 +353,6 @@ mse_estim <- function(framework,
 true_indicators_weighted <- function(framework,model_par,gen_model,lambda,shift,transformation,fixed) {
   
 if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  # one fold model 
-  model_par$sigmah2est <- 0 
   eta_pop <- rep(0,framework$N_pop)
   framework$obs_subdom <- rep(0,framework$N_pop)
 } 
@@ -425,7 +424,7 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   #  Draw epsilon 
   var_eps <- vector(length=framework$N_pop)
   var_eps[(framework$obs_dom & framework$obs_subdom)] <- (model_par$sigmae2est) # observed subdomain within observed domain 
-  var_eps[(framework$obs_dom & !framework$obs_subdom)] <- (model_par$sigmae2est+model_par$sigmah2est) # observed domain but unobserved subdomain 
+  var_eps[(framework$obs_dom & !framework$obs_subdom)] <- (model_par$sigmae2est+model_par$sigmah2est) # unobserved subdomain within observed subdomain 
   var_eps[!framework$obs_dom] <- (model_par$sigmae2est+model_par$sigmah2est+model_par$sigmau2est) # unobserved domain 
   
   eps <- rnorm(framework$N_pop, 0, sqrt(var_eps))
@@ -454,7 +453,7 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
     p_pov <- expected_head_count(mu=Y_pop_mu,threshold=framework$threshold,var=var_eps,transformation=transformation,lambda=lambda,shift=shift)
 # draw from binomial distribution, then divide by total number of trials      
     pov <- mapply(FUN=rbinom,n=1,size=framework$pop_data[,framework$MSE_pop_weights],prob=p_pov)
-    pov <- as.vector(pov)/framework$pop_data[,framework$MSE_pop_weights]
+    pov <- as.vector(pov)/framework$pop_data[,framework$MSE_pop_weights] #divide by total number of trials 
 # take weighted mean across target aggregation areas      
     true_indicators_weighted[,2] <- mapply(FUN=weighted.mean, x=split(pov, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
     return(list(true_indicators=true_indicators_weighted,vu_tmp = vu_tmp))
