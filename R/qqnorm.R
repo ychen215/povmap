@@ -108,7 +108,7 @@ qqnorm.emdi <- function(y, color = c("blue", "lightblue3"),
       xlab("Theoretical quantiles") +
       gg_theme
   }
-  invisible(grid.arrange(arrangeGrob(res, ran, ncol = 3)))
+  invisible(grid.arrange(arrangeGrob(res, ran, ran_sa, ncol = 3)))
 }
 
 
