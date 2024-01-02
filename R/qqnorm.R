@@ -97,7 +97,7 @@ qqnorm.emdi <- function(y, color = c("blue", "lightblue3"),
 
   
   if (!is.null(tmp_sa)) { # sub-area random effects 
-    ran_sa <- ggplot(data.frame(tmp_sa), aes(sample = tmp)) +
+    ran_sa <- ggplot(data.frame(tmp_sa), aes(sample = tmp_sa)) +
       stat_qq(distribution = qnorm, dparams = list(
         mean = mean(tmp_sa),
         sd = sd(tmp_sa)
