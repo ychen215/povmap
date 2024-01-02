@@ -75,7 +75,7 @@ qqnorm.emdi <- function(y, color = c("blue", "lightblue3"),
   extra_args <- list(...)
   residuals <- extra_args[["residuals"]]
   tmp <- extra_args[["tmp"]]
-
+  tmp_sa <- extra_args[["tmp_sa"]]
   ## QQ Plots
   # Residuals
   res <- qplot(sample = residuals) +
@@ -95,7 +95,20 @@ qqnorm.emdi <- function(y, color = c("blue", "lightblue3"),
     xlab("Theoretical quantiles") +
     gg_theme
 
-  invisible(grid.arrange(arrangeGrob(res, ran, ncol = 2)))
+  
+  if (!is.null(tmp_sa)) { # sub-area random effects 
+    ran_sa <- ggplot(data.frame(tmp_sa), aes(sample = tmp)) +
+      stat_qq(distribution = qnorm, dparams = list(
+        mean = mean(tmp_sa),
+        sd = sd(tmp_sa)
+      )) +
+      geom_abline(intercept = 0, slope = 1, na.rm = TRUE, col = color[1]) +
+      ggtitle("Sub-area random effect") +
+      ylab("Quantiles of random effects") +
+      xlab("Theoretical quantiles") +
+      gg_theme
+  }
+  invisible(grid.arrange(arrangeGrob(res, ran, ncol = 3)))
 }
 
 
@@ -104,10 +117,10 @@ qqnorm.emdi <- function(y, color = c("blue", "lightblue3"),
 qqnorm.ebp <- function(y, color = c("blue", "lightblue3"),
                        gg_theme = NULL, ...) {
   residuals <- residuals(y$model, level = 0, type = "pearson")
+  if (y$model_par$sigmah2est==0) {
   rand.eff <- nlme::ranef(y$model)$"(Intercept)"
   srand.eff <- (rand.eff - mean(rand.eff)) / sd(rand.eff)
   tmp <- as.matrix(random.effects(y$model))[, 1]
-
   model <- y$model
   model$call$fixed <- y$fixed
 
@@ -115,6 +128,25 @@ qqnorm.ebp <- function(y, color = c("blue", "lightblue3"),
     residuals = residuals,
     tmp = tmp
   )
+  } 
+  else {
+    rand.eff <- random.effects(y$model,level=1)$"(Intercept)"
+    srand.eff <- (rand.eff - mean(rand.eff)) / sd(rand.eff)
+    rand_eff_sa <- random.effects(y$model,level=2)$"(Intercept)"
+    tmp <- as.matrix(random.effects(y$model,level=1)$"(Intercept)")
+    tmp_sa <- as.matrix(random.effects(y$model,level=2)$"(Intercept)")
+    model <- y$model
+    model$call$fixed <- y$fixed
+    NextMethod("qqnorm",
+               residuals = residuals,
+               tmp = tmp,
+               tmp_sa= tmp_sa 
+    )
+    
+    
+  }
+  
+  
 }
 
 #' @rdname qqnorm.emdi

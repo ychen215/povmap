@@ -227,9 +227,9 @@ model_par <- function(framework,
   if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
     sigmau2est <- as.numeric(VarCorr(mixed_model)[2,1])
     sigmah2est <- as.numeric(VarCorr(mixed_model)[4,1])
-    # Random sub-area effect for sample subdomains
+    # Random area effect for sample domains
     rand_eff[framework$dist_obs_dom] <- random.effects(mixed_model,level=1)$"(Intercept)"[framework$dist_obs_smp_dom]
-    # Random area-effect 
+    # Random subarea-effect 
     rand_eff_h[framework$dist_obs_subdom] <- random.effects(mixed_model,level=2)$"(Intercept)"[framework$dist_obs_smp_subdom]
   } 
   else {
