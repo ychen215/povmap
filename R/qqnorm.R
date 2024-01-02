@@ -90,7 +90,7 @@ qqnorm.emdi <- function(y, color = c("blue", "lightblue3"),
       sd = sd(tmp)
     )) +
     geom_abline(intercept = 0, slope = 1, na.rm = TRUE, col = color[1]) +
-    ggtitle("Random effect") +
+    ggtitle("Area Random effect") +
     ylab("Quantiles of random effects") +
     xlab("Theoretical quantiles") +
     gg_theme
