@@ -50,7 +50,7 @@ ebp_check1 <- function(fixed, pop_data, pop_domains, smp_data, smp_domains, L) {
 ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                        L, custom_indicator, cpus, seed, na.rm, weights,
                        pop_weights, weights_type, benchmark, benchmark_type,
-                       benchmark_level, benchmark_weights, MSE_pop_weights) {
+                       benchmark_level, benchmark_weights, MSE_pop_weights, smp_subdomains, pop_subdomains) {
 
 
   if (!is.null(threshold) && !(is.numeric(threshold) &&
@@ -189,6 +189,14 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  "Weighted ebp with weights_type == 'Guadarrama' can only be
                  used without transformation or the log-transformation."))
   }
+  
+  if (!is.null(weights) && weights_type == "Guadarrama" &&
+      (!is.null(smp_subdomains) && !is.null(pop_subdomains) {
+    stop(strwrap(prefix = " ", initial = "",
+                 "Two-fold nested error model may only only be used with nlme weights"))
+  }
+  
+  
   #if (!is.null(weights) && isTRUE(MSE) && boot_type == "wild") {
   #  stop(strwrap(prefix = " ", initial = "",
   #               "The weighted version of ebp is only available with the
