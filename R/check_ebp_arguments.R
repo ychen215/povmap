@@ -191,7 +191,7 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   }
   
   if (!is.null(weights) && weights_type == "Guadarrama" &&
-      (!is.null(smp_subdomains) && !is.null(pop_subdomains) {
+      (!is.null(smp_subdomains) && (!is.null(pop_subdomains)))) {
     stop(strwrap(prefix = " ", initial = "",
                  "Two-fold nested error model may only only be used with nlme weights"))
   }
