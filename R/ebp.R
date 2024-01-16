@@ -363,7 +363,7 @@ ebp <- function(fixed,
     weights_type = weights_type, benchmark = benchmark,
     benchmark_type = benchmark_type, benchmark_level = benchmark_level,
     benchmark_weights = benchmark_weights,MSE_pop_weights=MSE_pop_weights,
-    smp_subdomains=smp_subdomains, pop_subdomains=pop_subdomains) 
+    smp_subdomains=smp_subdomains, pop_subdomains=pop_subdomains 
   )
 
   # Save function call ---------------------------------------------------------
