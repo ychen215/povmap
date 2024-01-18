@@ -236,6 +236,7 @@ ebp_reportdescriptives <- function(model,
 #' @return dataframe with census and survey means and test results for their
 #' difference.
 #' @examples
+#' \donttest{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'
@@ -248,6 +249,8 @@ ebp_reportdescriptives <- function(model,
 #'                pop_data = eusilcA_pop,
 #'                smp_data = eusilcA_smp,
 #'                weights = "weight")
+#'
+#' }
 #'
 #' @export
 
@@ -317,6 +320,7 @@ ebp_test_means <- function(varlist,
 #' @param decimals the number of decimals to report on coefficient estimates
 #' @return dataframe with regression model results
 #' @examples
+#' \donttest{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'
@@ -328,6 +332,8 @@ ebp_test_means <- function(varlist,
 #'  L = 2, na.rm = TRUE)
 #'
 #'ebp_reportcoef_table(ebp_model, 4)
+#'
+#' }
 #'
 #' @export
 
@@ -402,6 +408,7 @@ ebp_reportcoef_table <- function(model,
 #' poor population
 #'
 #' @examples
+#' \donttest{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'
@@ -434,6 +441,7 @@ ebp_reportcoef_table <- function(model,
 #'                   pop_weights = "hhsize",
 #'                   number_to_list = 10,
 #'                   head = FALSE)
+#' }
 #'
 #' @export
 
@@ -701,7 +709,7 @@ ebp_compute_cv <- function(model,
 #' the skewness and kurtosis of the random and idiosyncratic error term
 #'
 #' @examples
-#'
+#' \donttest{
 #' data("eusilcA_pop")
 #' data("eusilcA_smp")
 #'
@@ -714,6 +722,7 @@ ebp_compute_cv <- function(model,
 #'  )
 #'
 #'  ebp_normalityfit(model = ebp_model)
+#' }
 #'
 #' @export
 #' @importFrom MuMIn r.squaredGLMM

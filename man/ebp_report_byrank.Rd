@@ -57,6 +57,7 @@ head count rates themselves in descending order. The function allows the user
 to select the first/last "x" number of areas by name as well.
 }
 \examples{
+\donttest{
 data("eusilcA_pop")
 data("eusilcA_smp")
 
@@ -89,5 +90,6 @@ ebp_report_byrank(model = ebp_model,
                   pop_weights = "hhsize",
                   number_to_list = 10,
                   head = FALSE)
+}
 
 }

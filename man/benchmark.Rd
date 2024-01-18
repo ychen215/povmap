@@ -43,6 +43,7 @@ object and the MSE estimates are set to NULL since these are not
 benchmarked.
 }
 \examples{
+\donttest{
 # Loading data - population and sample data
 data("eusilcA_popAgg")
 data("eusilcA_smpAgg")
@@ -76,6 +77,7 @@ fh_bench <- benchmark(fh_std,
   benchmark = 20140.09,
   share = eusilcA_popAgg$ratio_n, type = "ratio", overwrite = TRUE
 )
+}
 }
 \references{
 Datta,G. S., Ghosh, M., Steorts, R. and Maples, J. (2010) Bayesian

@@ -30,6 +30,7 @@
 #' Datta,G. S., Ghosh, M., Steorts, R. and Maples, J. (2010) Bayesian
 #' benchmarking with applications to small area estimation. Test, 20, 574–588.
 #' @examples
+#' \donttest{
 #' # Loading data - population and sample data
 #' data("eusilcA_popAgg")
 #' data("eusilcA_smpAgg")
@@ -63,6 +64,7 @@
 #'   benchmark = 20140.09,
 #'   share = eusilcA_popAgg$ratio_n, type = "ratio", overwrite = TRUE
 #' )
+#' }
 #' @export
 
 

@@ -37,6 +37,7 @@ census and the survey. A test for difference of the means are performed for
 each variable with two-tailed p-values returned.
 }
 \examples{
+\donttest{
 data("eusilcA_pop")
 data("eusilcA_smp")
 
@@ -49,5 +50,7 @@ ebp_test_means(varlist = variables,
                pop_data = eusilcA_pop,
                smp_data = eusilcA_smp,
                weights = "weight")
+
+}
 
 }
