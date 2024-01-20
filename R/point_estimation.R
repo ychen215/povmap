@@ -487,6 +487,17 @@ indicators[,"Head_Count"] <- expected_head_count(mu=gen_model$mu,var=var, transf
 #indicators[,"Quantile_90"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.9) 
 
 
+#Output Ydrmp if selected 
+if (!is.null(Ydump)) {
+  Ydumpdf <- data.frame(c(framework$pop_domains_vec,indicators$Mean,indicators$Head_Count,gen_model$mu,var,sigma2vu,sigma2eta,model_par$sigmae2est))
+  colnames(Ydumpdf) <- c("Domain","Mean","Head_Count","Mu","Variance","Var_vu","Var_eta","Var_eps")
+  write.csv(Ydumpdf,row.names = FALSE)
+}
+
+
+
+
+
 
 point_estimates <- aggregate_weighted_mean(indicators[,c("Mean","Head_Count")],by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
 point_estimates <- cbind(point_estimates, data.frame(matrix(ncol=length(framework$indicator_names)-2,nrow=N_dom_pop_tmp)))
@@ -597,7 +608,16 @@ monte_carlo <- function(transformation,
       pop_weights_vec <- rep(1, nrow(framework$pop_data))
     }
     if (!is.null(Ydump)){
-      Ydumpdf <- data.frame(rep(l,nrow(framework$pop_data)), framework$pop_domains_vec,population_vector,gen_model$mu,errors$vu,errors$epsilon)
+      if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
+        Ydumpdf <- data.frame(rep(l,nrow(framework$pop_data)), framework$pop_domains_vec,population_vector,gen_model$mu,errors$vu,errors$eta,errors$epsilon)
+      }
+      else {
+        Ydumpdf <- data.frame(rep(l,nrow(framework$pop_data)), framework$pop_domains_vec,population_vector,gen_model$mu,errors$vu,errors$epsilon)  
+      }
+      
+      
+      
+      
       #write.csv(Ydumpdf,Ydump,row.names = FALSE,append=TRUE)
       write.table(Ydumpdf,file=Ydump,row.names = FALSE,append=TRUE,col.names=F, sep=",") 
     }
