@@ -489,8 +489,8 @@ indicators[,"Head_Count"] <- expected_head_count(mu=gen_model$mu,var=var, transf
 
 #Output Ydrmp if selected 
 if (!is.null(Ydump)) {
-  Ydumpdf <- data.frame(framework$pop_domains_vec,indicators[,"Mean"],indicators[,"Head_Count"],gen_model$mu,var,sigma2vu,sigma2eta,model_par$sigmae2est,framework$pop_data[,framework$pop_weights],framework$obs_dom)
-  colnames(Ydumpdf) <- c("Domain","Mean","Head_Count","Mu","Variance","Var_vu","Var_eta","Var_eps","pop_weight","Observed_dom")
+  Ydumpdf <- data.frame(framework$pop_domains_vec,indicators[,"Mean"],indicators[,"Head_Count"],gen_model$mu,var,sigma2vu,sigma2eta,model_par$sigmae2est,framework$pop_data[,framework$pop_weights],framework$obs_dom,model_par$rand_eff,model_par$mu_fixed)
+  colnames(Ydumpdf) <- c("Domain","Mean","Head_Count","Mu","Variance","Var_vu","Var_eta","Var_eps","pop_weight","Observed_dom","Area_reffect","Xbhat")
   write.table(Ydumpdf,file=Ydump,row.names = FALSE,append=FALSE,col.names=T, sep=",")
 }
 
