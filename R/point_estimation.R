@@ -242,7 +242,10 @@ model_par <- function(framework,
     varFix=mixed_model$varFix 
     apVar=mixed_model$apVar
   }
-  
+  else {
+    varFix = NULL 
+    apVar = NULL 
+  }
   
   
  
