@@ -665,7 +665,7 @@ monte_carlo <- function(transformation,
 # See Molina and Rao (2010) p. 375 (20)
 
 errors_gen <- function(framework, model_par, gen_model) {
-    if (framework$model_parameters)=="variable" {
+    if (framework$model_parameters=="variable") {
       model_par$sigmae2est <- rnorm(1,model_par$sigmae2est,getthisfrommodelpar)
     } 
   
