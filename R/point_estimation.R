@@ -238,7 +238,10 @@ model_par <- function(framework,
     # random area effect 
     rand_eff[framework$dist_obs_dom] <- (random.effects(mixed_model)[[1]])
   }
-  
+  if (framework$model_parameters!="fixed") {
+    varFix=mixed_model$varFix 
+    apVar=mixed_model$apVar
+  }
   
   
   
@@ -255,7 +258,9 @@ model_par <- function(framework,
       sigmah2est = sigmah2est, 
       sigmau2est = sigmau2est,
       rand_eff = rand_eff,
-      rand_eff_h = rand_eff_h
+      rand_eff_h = rand_eff_h,
+      varFix=varFix, 
+      apVar=apVar
     ))
 
 } # End model_par
@@ -660,7 +665,11 @@ monte_carlo <- function(transformation,
 # See Molina and Rao (2010) p. 375 (20)
 
 errors_gen <- function(framework, model_par, gen_model) {
-  epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
+    if (framework$model_parameters)=="variable" {
+      model_par$sigmae2est <- rnorm(1,model_par$sigmae2est,getthisfrommodelpar)
+    } 
+  
+    epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
 
   # empty vector for new random effect in generating model
   vu <- vector(length = framework$N_pop)

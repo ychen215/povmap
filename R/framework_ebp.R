@@ -12,7 +12,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
                           MSE_pop_weights, weights_type, benchmark_level, 
                           benchmark_weights,nlme_maxiter, nlme_tolerance, 
                           nlme_opt, nlme_optimmethod, nlme_method, nlme_mstol, 
-                          nlme_returnobject, nlme_msmaxiter, rescale_weights) {
+                          nlme_returnobject, nlme_msmaxiter, rescale_weights,model_parameters) {
 
   # Reduction of number of variables
   mod_vars <- all.vars(fixed)
@@ -317,7 +317,8 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     nlme_msmaxiter = nlme_msmaxiter, 
     nlme_mstol = nlme_mstol, 
     nlme_returnobject = nlme_returnobject, 
-    nlme_method = nlme_method
+    nlme_method = nlme_method,
+    model_parameters = model_parameters
   ))
 }
 

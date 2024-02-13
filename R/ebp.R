@@ -177,6 +177,9 @@
 #' @param Ydump a string specifying the name of a .csv file to save all simulated
 #' values of the dependent value, model predictions, and error terms used for
 #' point estimation.
+#' @param model_parameters a string specifying "fixed" or "variable". If variable is specified,
+#' estimates of model parameters beta or sigma will be drawn from their estimated 
+#' distribution. Otherwise they are assumed fixed. Defaults to "fixed".  
 #' @return An object of class "ebp", "emdi" that provides estimators for
 #' regional disaggregated indicators and optionally corresponding MSE estimates.
 #' Several generic functions have methods for the returned object. For a full
@@ -346,7 +349,8 @@ ebp <- function(fixed,
                 nlme_msmaxiter = 1000, 
                 nlme_returnobject = FALSE, 
                 rescale_weights = FALSE,
-                Ydump = NULL
+                Ydump = NULL,
+                model_parameters = "fixed"
                 ) {
  
    start.time <- Sys.time()
@@ -413,7 +417,8 @@ ebp <- function(fixed,
     nlme_mstol=nlme_mstol, 
     nlme_msmaxiter = nlme_msmaxiter, 
     nlme_returnobject = nlme_returnobject, 
-    rescale_weights = rescale_weights
+    rescale_weights = rescale_weights,
+    model_parameters = model_parameters
   )
 
 
