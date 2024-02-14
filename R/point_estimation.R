@@ -127,14 +127,15 @@ point_estim <- function(framework,
   # Function gen_model calculates the parameters in the generating model.
   # See Molina and Rao (2010) p. 375 (20)
   # The function returns sigmav2est and the constant part mu.
-  
-  if (framework$model_parameters!="variable") {
     est_par <- model_par(
       mixed_model = mixed_model,
       framework = framework,
       fixed = fixed,
       transformation_par = transformation_par
     )
+    
+  if (framework$model_parameters!="variable") {
+
     
     gen_par <- gen_model(
     model_par = est_par,
@@ -144,7 +145,6 @@ point_estim <- function(framework,
   )
   } 
   else {
-    est_par <- NULL 
     gen_par <- NULL 
   }
   
@@ -250,14 +250,6 @@ model_par <- function(framework,
   if (framework$model_parameters!="fixed") {
     varFix=mixed_model$varFix 
     varErr = lmeInfo:::varcomp_vcov(mixed_model)
-      # draw error terms 
-      R <- chol(varErr)   
-      sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(varErr)
-      sigmae2est <- sigma2[2]
-      sigmau2est <- sigma2[1]
-      # draw betas 
-      R <- chol(varFix)
-      betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + betas
       }
   else {
     varFix = NULL 
@@ -420,9 +412,6 @@ gen_model <- function(fixed,
     rand_eff_h_pop <- rep(rand_eff_h,framework$n_pop_subdom)
     mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop 
   }
-  
-    
-    
     return(list(sigmav2est = sigmav2est, sigmai2est = sigmai2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
 } # End gen_model
 
@@ -609,18 +598,24 @@ monte_carlo <- function(mixed_model,
   ))
 
   for (l in seq_len(L)) {
-
-    
+  
     if (framework$model_parameters=="variable") {
       # variable parameters means they must be drawn every replication
       # so we redraw the parameters  
-      model_par <- model_par(
-        mixed_model = mixed_model,
-        framework = framework,
-        fixed = fixed,
-        transformation_par = transformation_par
-      )
-      
+      # draw error terms 
+      R <- chol(model_par$varErr) 
+      sigma2<- c(-1,-1)
+      while (sigma2[2]<0 | sigma2[1]<0) {
+      sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(model_par$varErr)
+      model_par$sigmae2est <- sigma2[2]
+      model_par$sigmau2est <- sigma2[1]
+      }
+      # draw betas 
+      R <- chol(model_par$varFix)
+      model_par$betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas      
+
+
+
       gen_model <- gen_model(
         model_par = model_par,
         fixed = fixed,
