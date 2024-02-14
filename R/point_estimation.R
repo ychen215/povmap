@@ -103,12 +103,7 @@ point_estim <- function(framework,
     # error linear regression model. It returns the beta coefficients (betas),
     # sigmae2est, sigmau2est, sigmah2est (which is set to 0 for one-fold models) and the random effect (rand_eff)
   
-    est_par <- model_par(
-      mixed_model = mixed_model,
-      framework = framework,
-      fixed = fixed,
-      transformation_par = transformation_par
-    )
+
     
   
   
@@ -132,14 +127,26 @@ point_estim <- function(framework,
   # Function gen_model calculates the parameters in the generating model.
   # See Molina and Rao (2010) p. 375 (20)
   # The function returns sigmav2est and the constant part mu.
-  gen_par <- gen_model(
+  
+  if (framework$model_parameters!="variable") {
+    est_par <- model_par(
+      mixed_model = mixed_model,
+      framework = framework,
+      fixed = fixed,
+      transformation_par = transformation_par
+    )
+    
+    gen_par <- gen_model(
     model_par = est_par,
     fixed = fixed,
     framework = framework,
     dep_var = dep_var 
   )
-
-  
+  } 
+  else {
+    est_par <- NULL 
+    gen_par <- NULL 
+  }
   
   
   
@@ -156,7 +163,9 @@ point_estim <- function(framework,
   # The monte-carlo function returns a data frame of desired indicators.
  if (L>0) {
    indicator_prediction <- monte_carlo(
-    transformation = transformation,
+  mixed_model = mixed_model, 
+     transformation = transformation,
+  transformation_par = transformation_par, 
     L = L,
     framework = framework,
     lambda = optimal_lambda,
@@ -241,7 +250,15 @@ model_par <- function(framework,
   if (framework$model_parameters!="fixed") {
     varFix=mixed_model$varFix 
     varErr = lmeInfo:::varcomp_vcov(mixed_model)
-  }
+      # draw error terms 
+      R <- chol(varErr)   
+      sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(varErr)
+      sigmae2est <- sigma2[2]
+      sigmau2est <- sigma2[1]
+      # draw betas 
+      R <- chol(varFix)
+      betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + betas
+      }
   else {
     varFix = NULL 
     varErr = NULL 
@@ -287,6 +304,8 @@ gen_model <- function(fixed,
     weight_smp <- framework$smp_data[[as.character(framework$weights)]]
   }
     
+ 
+  
   
   # calculate gamma 
   if (any(framework$weights_type %in% c("nlme", "nlme_lambda")) | is.null(framework$weights)) {
@@ -381,9 +400,7 @@ gen_model <- function(fixed,
     
     
   }
- 
 
-  
   framework$pop_data[[paste0(fixed[2])]] <- seq_len(nrow(framework$pop_data))
   X_pop <- model.matrix(fixed, framework$pop_data)
   
@@ -555,7 +572,9 @@ transformed_percentile <- function(mu=mu,threshold=threshold,var=var,transformat
 # The function approximates the expected value (Molina and Rao (2010)
 # p.372 (6)). For description of monte-carlo simulation see Molina and
 # Rao (2010) p. 373 (13) and p. 374-375
-monte_carlo <- function(transformation,
+monte_carlo <- function(mixed_model, 
+                        transformation,
+                        transformation_par, 
                         L,
                         framework,
                         lambda,
@@ -591,6 +610,26 @@ monte_carlo <- function(transformation,
 
   for (l in seq_len(L)) {
 
+    
+    if (framework$model_parameters=="variable") {
+      # variable parameters means they must be drawn every replication
+      # so we redraw the parameters  
+      model_par <- model_par(
+        mixed_model = mixed_model,
+        framework = framework,
+        fixed = fixed,
+        transformation_par = transformation_par
+      )
+      
+      gen_model <- gen_model(
+        model_par = model_par,
+        fixed = fixed,
+        framework = framework,
+        dep_var = dep_var 
+      )
+    } # close condition to redraw parameters 
+    
+    
     # Errors in generating model: individual error term and random effect
     # See below for function errors_gen.
     errors <- errors_gen(
@@ -605,10 +644,9 @@ monte_carlo <- function(transformation,
       transformation = transformation,
       lambda = lambda,
       shift = shift,
-      gen_model = gen_model,
       errors_gen = errors,
+      gen_model = gen_model, 
       framework = framework,
-      model_par=model_par, 
       fixed = fixed
     )
 
@@ -669,16 +707,7 @@ monte_carlo <- function(transformation,
 # See Molina and Rao (2010) p. 375 (20)
 
 errors_gen <- function(framework, model_par, gen_model) {
-  # Draw variance parameters for sigma2epsilon and sigma2u if model_parameters option set to "variable" 
-  # then set sigma2v accordingly as shrinkage^2*var(sigma2u) where shrinkage=sigma2v/sigma2u and sigma2u is drawn. 
-    if (framework$model_parameters=="variable") {
-      R <- chol(model_par$varErr)   
-      sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(model_par$varErr)
-      model_par$sigmae2est <- sigma2[2]
-      shrinkagefactor <- gen_model$sigmav2est/model_par$sigmau2est 
-      model_par$sigmav2est <- sigma2[1]*shrinkagefactor^2 
-      model_par$sigmau2est <- sigma2[1]
-    } 
+
     epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
 
   # empty vector for new random effect in generating model
@@ -712,21 +741,12 @@ errors_gen <- function(framework, model_par, gen_model) {
 prediction_y <- function(transformation,
                          lambda,
                          shift,
-                         gen_model,
                          errors_gen,
+                         gen_model, 
                          framework,
-                         model_par, 
                          fixed) {
 
-  if (framework$model_parameters=="variable") {
-   # recalcluate gen_model$mu by drawing betas from estimated distribution 
-    R <- chol(model_par$varFix)
-    betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas
-    X_pop <- model.matrix(fixed[-2], framework$pop_data)
-    mu_fixed <- X_pop %*% betas
-    rand_eff_pop <- rep(gen_model$rand_eff, framework$n_pop)
-    gen_model$mu <- mu_fixed + rand_eff_pop
-  }
+  
   
   # predicted population income vector
   y_pred <- gen_model$mu + errors_gen$epsilon + errors_gen$vu
