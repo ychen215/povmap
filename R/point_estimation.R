@@ -240,11 +240,11 @@ model_par <- function(framework,
   }
   if (framework$model_parameters!="fixed") {
     varFix=mixed_model$varFix 
-    apVar=mixed_model$apVar
+    varErr = lmeInfo:::varcomp_vcov(mixed_model)
   }
   else {
     varFix = NULL 
-    apVar = NULL 
+    varErr = NULL 
   }
   
   
@@ -263,7 +263,7 @@ model_par <- function(framework,
       rand_eff = rand_eff,
       rand_eff_h = rand_eff_h,
       varFix=varFix, 
-      apVar=apVar
+      varErr=varErr
     ))
 
 } # End model_par
@@ -608,6 +608,7 @@ monte_carlo <- function(transformation,
       gen_model = gen_model,
       errors_gen = errors,
       framework = framework,
+      model_par=model_par, 
       fixed = fixed
     )
 
@@ -668,10 +669,16 @@ monte_carlo <- function(transformation,
 # See Molina and Rao (2010) p. 375 (20)
 
 errors_gen <- function(framework, model_par, gen_model) {
+  # Draw variance parameters for sigma2epsilon and sigma2u if model_parameters option set to "variable" 
+  # then set sigma2v accordingly as shrinkage^2*var(sigma2u) where shrinkage=sigma2v/sigma2u and sigma2u is drawn. 
     if (framework$model_parameters=="variable") {
-      model_par$sigmae2est <- rnorm(1,model_par$sigmae2est,getthisfrommodelpar)
+      R <- chol(model_par$varErr)   
+      sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(model_par$varErr)
+      model_par$sigmae2est <- sigma2[2]
+      shrinkagefactor <- gen_model$sigmav2est/model_par$sigmau2est 
+      model_par$sigmav2est <- sigma2[1]*shrinkagefactor^2 
+      model_par$sigmau2est <- sigma2[1]
     } 
-  
     epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
 
   # empty vector for new random effect in generating model
@@ -708,8 +715,18 @@ prediction_y <- function(transformation,
                          gen_model,
                          errors_gen,
                          framework,
+                         model_par, 
                          fixed) {
 
+  if (framework$model_parameters=="variable") {
+   # recalcluate gen_model$mu by drawing betas from estimated distribution 
+    betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas
+    X_pop <- model.matrix(fixed[-2], framework$pop_data)
+    mu_fixed <- X_pop %*% betas
+    rand_eff_pop <- rep(gen_model$rand_eff, framework$n_pop)
+    gen_model$mu <- mu_fixed + rand_eff_pop
+  }
+  
   # predicted population income vector
   y_pred <- gen_model$mu + errors_gen$epsilon + errors_gen$vu
 
