@@ -720,6 +720,7 @@ prediction_y <- function(transformation,
 
   if (framework$model_parameters=="variable") {
    # recalcluate gen_model$mu by drawing betas from estimated distribution 
+    R <- chol(model_par$varFix)
     betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas
     X_pop <- model.matrix(fixed[-2], framework$pop_data)
     mu_fixed <- X_pop %*% betas
