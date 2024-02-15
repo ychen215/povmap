@@ -102,22 +102,6 @@ point_estim <- function(framework,
     # Function model_par extracts the needed parameters theta from the nested
     # error linear regression model. It returns the beta coefficients (betas),
     # sigmae2est, sigmau2est, sigmah2est (which is set to 0 for one-fold models) and the random effect (rand_eff)
-  
-
-    
-  
-  
-
-     
-    
-        
-    
-   
-   
-
-
-
-
 
     dep_var <- transformation_par$transformed_data[[
       as.character(mixed_model$terms[[2]])]]
@@ -161,11 +145,11 @@ point_estim <- function(framework,
   }
 
   # The monte-carlo function returns a data frame of desired indicators.
- if (L>0) {
+ if (L>0 & framework$vectorize==FALSE) {
    indicator_prediction <- monte_carlo(
-  mixed_model = mixed_model, 
-     transformation = transformation,
-  transformation_par = transformation_par, 
+    mixed_model = mixed_model, 
+    transformation = transformation,
+    transformation_par = transformation_par, 
     L = L,
     framework = framework,
     lambda = optimal_lambda,
@@ -176,7 +160,24 @@ point_estim <- function(framework,
     Ydump = Ydump 
   )
  }
-  else {
+  else if (L>0 & framework$vectorize==TRUE) {
+    indicator_prediction <- monte_carlo_vec(
+      mixed_model=mixed_model,
+      transformation = transformation,
+      transformation_par = transformation_par, 
+      L = L,
+      framework = framework,
+      lambda = optimal_lambda,
+      shift = shift_par,
+      model_par = est_par,
+      gen_model = gen_par,
+      fixed = fixed,
+      Ydump = Ydump 
+    )
+    
+    
+  }
+    else {
     indicator_prediction <- analytic(
       transformation=transformation,
       framework = framework,
@@ -697,6 +698,168 @@ monte_carlo <- function(mixed_model,
   return(point_estimates)
 } # End Monte-Carlo
 
+
+monte_carlo_vec <- function(mixed_model, 
+                            transformation,
+                            transformation_par, 
+                            L,
+                            framework,
+                            lambda,
+                            shift,
+                            model_par,
+                            gen_model,
+                            fixed,
+                            Ydump) {
+
+  # Preparing matrices for indicators for the Monte-Carlo simulation
+  
+  if(!is.null(framework$aggregate_to_vec)){
+    N_dom_pop_tmp <- framework$N_dom_pop_agg
+    pop_domains_vec_tmp <- framework$aggregate_to_vec
+  } else {
+    N_dom_pop_tmp <- framework$N_dom_pop
+    pop_domains_vec_tmp <- framework$pop_domains_vec
+  }
+  
+ 
+  
+   errors_vec <- errors_gen_vec(
+    framework = framework,
+    model_par = model_par, 
+    gen_model = gen_model,
+    L=L 
+  )
+  
+   population_vector_vec <- prediction_y_vec(
+     transformation = transformation,
+     lambda = lambda,
+     shift = shift,
+     errors_gen = errors_vec,
+     gen_model = gen_model, 
+     framework = framework,
+     fixed = fixed,
+     L=L 
+   )
+  
+   if(!is.null(framework$pop_weights)){
+     pop_weights_vec <- rep(framework$pop_data[[framework$pop_weights]],L)
+   }else{
+     pop_weights_vec <- rep(1, nrow(framework$pop_data)*L)
+  
+     Lindex <-rep(1:L,each=nrow(framework$pop_data)) 
+     
+    if (!is.null(Ydump)){ 
+      Ydumpdf <- data.frame(Lindex, rep(framework$pop_domains_vec,L),population_vector_vec,rep(gen_model$mu,L),errors_vec$vu,errors_vec$epsilon) 
+      colnames(Ydumpdf) <- c("L","Domain","Simulated_Y","XBetahat","eta","epsilon")
+      write.table(Ydumpdf,file=Ydump,row.names = FALSE,append=FALSE,col.names=T, sep=",") 
+    }
+     
+     pop_domains_by_Lindex <- factor(paste(Lindex,pop_domains_vec_tmp))
+     # Calculation of indicators for each Monte Carlo population
+     
+     #ests_mcmc <- array(dim = c(
+    #   N_dom_pop_tmp,
+    #   L,
+    #   length(framework$indicator_names)
+    # ))
+     
+     
+     
+     
+     ests_mcmc_2d[, ] <-
+       matrix(
+         nrow = N_dom_pop_tmp,
+         data = unlist(lapply(framework$indicator_list,
+                              function(f, threshold) {
+                                matrix(
+                                  nrow = N_dom_pop_tmp*L,
+                                  data = unlist(mapply(
+                                    y = split(population_vector_vec, pop_domains_by_Lindex),
+                                    pop_weights = split(pop_weights_vec, pop_domains_by_Lindex),
+                                    f,
+                                    threshold = framework$threshold
+                                  )), byrow = TRUE
+                                )
+                              },
+                              threshold = framework$threshold
+         ))
+       )
+     
+     ests_mcmc <- array(unlist(split(data.frame(ests_mcmc_2d), rep(1:L, each  = N_dom_pop_tmp))),c(N_dom_pop_tmp,L,ncol(ests_mcmc_2d)))
+     point_estimates <- data.frame(
+       Domain = unique(pop_domains_vec_tmp),
+       apply(ests_mcmc, c(3), rowMeans)
+     )
+     
+  colnames(point_estimates) <- c("Domain", framework$indicator_names)
+  return(point_estimates)
+} # End Monte-Carlo_vec
+
+errors_gen_vec <- function(framework, model_par, gen_model,L) {
+  
+  epsilon <- rnorm(framework$N_pop*L, 0, sqrt(model_par$sigmae2est))
+  
+  # empty vector for new random effect in generating model
+  vu <- vector(length = framework$N_pop*L)
+  framework$obs_dom_vec <- rep(framework$obs_dom,L)
+  framework$n_pop_vec <- rep(framework$n_pop[!framework$dist_obs_dom],L)
+  # new random effect for out-of-sample domains
+  N_dom_unobs_vec <- framework$N_dom_unobs*L
+  vu[!framework$obs_dom_vec] <- rep(
+    rnorm(
+      framework$N_dom_unobs*L,
+      0,
+      sqrt(model_par$sigmau2est)
+    ),
+    framework$n_pop_vec
+  )
+  # new random effect for in-sample-domains
+  framework$n_pop_vec <- rep(framework$n_pop[framework$dist_obs_dom],L)
+  vu[framework$obs_dom_vec] <- rep(
+    rnorm(
+      framework$N_dom_smp*L,
+      0,
+      sqrt(gen_model$sigmav2est)
+    ),
+    framework$n_pop_vec
+  )
+  # individual error term in generating model epsilon
+  
+  return(list(epsilon = epsilon, vu = vu))
+} # End errors_gen_vec 
+
+
+prediction_y_vec <- function(transformation,
+                         lambda,
+                         shift,
+                         errors_gen,
+                         gen_model, 
+                         framework,
+                         fixed,
+                         L=L) {
+  
+  
+  
+  # predicted population income vector
+  y_pred <- rep(gen_model$mu,L) + errors_gen$epsilon + errors_gen$vu
+  
+  # back-transformation of predicted population income vector
+  y_pred <- back_transformation(
+    y = y_pred,
+    transformation = transformation,
+    lambda = lambda,
+    shift = shift,
+    framework = framework,
+    fixed = fixed
+  )
+  y_pred[!is.finite(y_pred)] <- 0
+  
+  return(y_pred)
+} # End prediction_y
+
+
+  
+  
 
 # The function errors_gen returns error terms of the generating model.
 # See Molina and Rao (2010) p. 375 (20)
