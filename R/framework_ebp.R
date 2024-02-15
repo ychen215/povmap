@@ -12,7 +12,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
                           MSE_pop_weights, weights_type, benchmark_level, 
                           benchmark_weights,nlme_maxiter, nlme_tolerance, 
                           nlme_opt, nlme_optimmethod, nlme_method, nlme_mstol, 
-                          nlme_returnobject, nlme_msmaxiter, rescale_weights,model_parameters,vectorize) {
+                          nlme_returnobject, nlme_msmaxiter, rescale_weights,model_parameters,vectorize,indicators) {
 
   # Reduction of number of variables
   mod_vars <- all.vars(fixed)
@@ -193,21 +193,21 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   )
 
   indicator_list <- list(
-    fast_mean = function(y, pop_weights, threshold) {
+    Mean = function(y, pop_weights, threshold) {
       t(weighted.mean(y, pop_weights))
     },
-    hcr = function(y, pop_weights, threshold) {
+    Head_Count = function(y, pop_weights, threshold) {
        t(weighted.mean(y < threshold, pop_weights))
     },
-    pgap = function(y, pop_weights, threshold) {
+    Poverty_Gap = function(y, pop_weights, threshold) {
       sum((1 - (y[y < threshold]/threshold)) * pop_weights[y < threshold])/
         sum(pop_weights)
     },
-    psev = function(y, pop_weights, threshold) {
+    Poverty_Severity = function(y, pop_weights, threshold) {
       sum((1 - (y[y < threshold]/threshold)^2) * pop_weights[y < threshold])/
         sum(pop_weights)
     },
-    gini = function(y, pop_weights, threshold) {
+    Gini = function(y, pop_weights, threshold) {
         n <- length(y)
         pop_weights <- pop_weights[order(y)]
         y <- sort(y)
@@ -217,7 +217,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
         G <- 1 - (2* auc)
         return(G)
     },
-    qsr = function(y, pop_weights, threshold) {
+    Quintile_Share = function(y, pop_weights, threshold) {
       quant14 <- wtd.quantile(x = y, weights = pop_weights, probs = c(0.2, 0.8))
 
       iq1 <- y <= quant14[1]
@@ -225,7 +225,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
       t((sum(pop_weights[iq4] * y[iq4]) / sum(pop_weights[iq4])) /
            (sum(pop_weights[iq1] * y[iq1]) / sum(pop_weights[iq1])))
     },
-    quants = function(y, pop_weights, threshold) {
+    Quantiles = function(y, pop_weights, threshold) {
       if(length(unique(pop_weights)) == 1 & 1 %in% unique(pop_weights)){
         t(quantile(x = y, probs = c(.10, .25, .5, .75, .9)))
       }else{
@@ -249,6 +249,27 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     "Quantile_90"
   )
 
+  function_names <- c(
+    "Mean",
+    "Head_Count",
+    "Poverty_Gap",
+    "Poverty_Severity",
+    "Gini",
+    "Quintile_Share",
+    "Quantiles"
+  )
+  
+  
+  
+  
+  if (!is.null(indicators)) {
+    keepthese <- which(function_names %in% indicators)
+    indicator_list <- indicator_list[keepthese]
+    if (7 %in% keepthese) {
+      keepthese <- c(keepthese,8,9,10,11)
+    }
+    indicator_names <- indicator_names[keepthese]
+  }
 
   if (!is.null(custom_indicator) && length(custom_indicator) > 0) {
     for(i in 1:length(custom_indicator)) {
@@ -319,7 +340,8 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     nlme_returnobject = nlme_returnobject, 
     nlme_method = nlme_method,
     model_parameters = model_parameters,
-    vectorize=vectorize
+    vectorize=vectorize,
+    indicators
   ))
 }
 

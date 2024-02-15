@@ -181,8 +181,10 @@
 #' estimates of model parameters beta or sigma will be drawn from their estimated 
 #' distribution. Otherwise they are assumed fixed. Defaults to "fixed".  
 #' @param vectorize a logical indicating if the monte-carlo simulations should be conducted using
-#' vectorization instead of a loop. Vectorization is much faster if there is sufficient memory. 
+#' vectorization instead of a loop. Vectorization is faster if there is sufficient memory. 
 #' Defaults to FALSE 
+#' @param indicators a list of strings containing outcome indicators that should be calculated. 
+#' Defaults to NULL, which selects all indicators. 
 #' @return An object of class "ebp", "emdi" that provides estimators for
 #' regional disaggregated indicators and optionally corresponding MSE estimates.
 #' Several generic functions have methods for the returned object. For a full
@@ -354,7 +356,8 @@ ebp <- function(fixed,
                 rescale_weights = FALSE,
                 Ydump = NULL,
                 model_parameters = "fixed",
-                vectorize=FALSE 
+                vectorize=FALSE,
+                indicators = NULL
                 ) {
  
    start.time <- Sys.time()
@@ -423,7 +426,8 @@ ebp <- function(fixed,
     nlme_returnobject = nlme_returnobject, 
     rescale_weights = rescale_weights,
     model_parameters = model_parameters,
-    vectorize=vectorize
+    vectorize=vectorize,
+    indicators=indicators 
   )
 
 
