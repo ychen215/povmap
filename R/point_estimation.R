@@ -721,7 +721,30 @@ monte_carlo_vec <- function(mixed_model,
     pop_domains_vec_tmp <- framework$pop_domains_vec
   }
   
- 
+  if (framework$model_parameters=="variable") {
+    # variable parameters means they must be drawn every replication
+    # so we redraw the parameters  
+    # draw error terms 
+    R <- chol(model_par$varErr) 
+    sigma2<- c(-1,-1)
+    while (sigma2[2]<0 | sigma2[1]<0) {
+      sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(model_par$varErr)
+      model_par$sigmae2est <- sigma2[2]
+      model_par$sigmau2est <- sigma2[1]
+    }
+    # draw betas 
+    R <- chol(model_par$varFix)
+    model_par$betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas      
+    
+    
+    
+    gen_model <- gen_model(
+      model_par = model_par,
+      fixed = fixed,
+      framework = framework,
+      dep_var = dep_var 
+    )
+  } # close condition to redraw parameters
   
    errors_vec <- errors_gen_vec(
     framework = framework,
