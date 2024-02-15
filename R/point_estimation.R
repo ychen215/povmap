@@ -766,9 +766,9 @@ monte_carlo_vec <- function(mixed_model,
      
      
      
-     ests_mcmc_2d[, ] <-
+     ests_mcmc_2d <-
        matrix(
-         nrow = N_dom_pop_tmp,
+         nrow = N_dom_pop_tmp*L,
          data = unlist(lapply(framework$indicator_list,
                               function(f, threshold) {
                                 matrix(
