@@ -745,7 +745,7 @@ monte_carlo_vec <- function(mixed_model,
      pop_weights_vec <- rep(framework$pop_data[[framework$pop_weights]],L)
    }else{
      pop_weights_vec <- rep(1, nrow(framework$pop_data)*L)
-  
+   }
      Lindex <-rep(1:L,each=nrow(framework$pop_data)) 
      
     if (!is.null(Ydump)){ 
