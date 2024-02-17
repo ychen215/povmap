@@ -300,7 +300,7 @@ get_polygone <- function(values) {
   )
 
   combo <- merge(poly, values, by = "id", all = TRUE, sort = FALSE)
-  melt(combo[order(combo$ordering), ], id.vars = c("id", "x", "y", "ordering"))
+  reshape2::melt(combo[order(combo$ordering), ], id.vars = c("id", "x", "y", "ordering"))
 }
 
 get_scale_points <- function(y, ind, scale_points) {

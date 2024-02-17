@@ -746,18 +746,18 @@ monte_carlo_vec <- function(mixed_model,
     )
   } # close condition to redraw parameters
   
-   errors_vec <- errors_gen_vec(
+   errors_mat <- errors_gen_mat(
     framework = framework,
     model_par = model_par, 
     gen_model = gen_model,
     L=L 
   )
   
-   population_vector_vec <- prediction_y_vec(
+   population_vector_mat <- prediction_y_mat(
      transformation = transformation,
      lambda = lambda,
      shift = shift,
-     errors_gen = errors_vec,
+     errors_gen = errors_mat,
      gen_model = gen_model, 
      framework = framework,
      fixed = fixed,
@@ -769,14 +769,27 @@ monte_carlo_vec <- function(mixed_model,
    }else{
      pop_weights_vec <- rep(1, nrow(framework$pop_data)*L)
    }
-     Lindex <-rep(1:L,each=nrow(framework$pop_data)) 
      
-    if (!is.null(Ydump)){ 
-      Ydumpdf <- data.frame(Lindex, rep(framework$pop_domains_vec,L),population_vector_vec,rep(gen_model$mu,L),errors_vec$vu,errors_vec$epsilon) 
+     
+    if (!is.null(Ydump)){
+      vu_vec <- matrix(errors_mat$vu,ncol=1)
+      epsilon_vec <- matrix(errors_mat$epsilon,ncol=1)
+      population_vector_vec <- matrix(population_vector_mat,ncol=1)
+      Lindex <-rep(1:L,each=nrow(framework$pop_data))  
+      
+     # DT.m1 = melt(DT, measure.vars = c("dob_child1", "dob_child2", "dob_child3"),
+                  # variable.name = "child", value.name = "dob")
+      
+      
+      Ydumpdf <- data.frame(Lindex, rep(framework$pop_domains_vec,L),population_vector_vec,rep(gen_model$mu,L),vu_vec,epsilon_vec) 
       colnames(Ydumpdf) <- c("L","Domain","Simulated_Y","XBetahat","eta","epsilon")
       write.table(Ydumpdf,file=Ydump,row.names = FALSE,append=FALSE,col.names=T, sep=",") 
     }
      
+   
+   
+   
+   
      pop_domains_by_Lindex <- factor(paste(Lindex,pop_domains_vec_tmp))
      # Calculation of indicators for each Monte Carlo population
      
@@ -787,6 +800,11 @@ monte_carlo_vec <- function(mixed_model,
     # ))
      
      
+     
+     rownames(population_vector_mat) <- framework$pop_domains 
+     a <- as.data.table(population_vector_mat,keep.rownames="Domain")
+     ans <- data.table:::a[, data.table:::.(.N),by = .(Domain)]
+     ans <- flights[, '.(.N)', by = .(origin)]
      
      
      ests_mcmc_2d <-
@@ -818,41 +836,49 @@ monte_carlo_vec <- function(mixed_model,
   return(point_estimates)
 } # End Monte-Carlo_vec
 
-errors_gen_vec <- function(framework, model_par, gen_model,L) {
+errors_gen_mat <- function(framework, model_par, gen_model,L) {
+  epsilon <- matrix(rnorm(framework$N_pop*L,0,sqrt(model_par$sigmae2est)),ncol=L)
   
-  epsilon <- rnorm(framework$N_pop*L, 0, sqrt(model_par$sigmae2est))
   
-  # empty vector for new random effect in generating model
-  vu <- vector(length = framework$N_pop*L)
-  framework$obs_dom_vec <- rep(framework$obs_dom,L)
-  framework$n_pop_vec <- rep(framework$n_pop[!framework$dist_obs_dom],L)
+  #epsilon <- rnorm(framework$N_pop*L, 0, sqrt(model_par$sigmae2est))
+  
+  # empty matrix for new random effect in generating model
+  vu <- matrix(nrow = framework$N_pop,ncol=L)
+  # matrix of random effects  for out-of-sample domains
+  vu[!framework$obs_dom,] <- matrix(rep(rnorm(framework$N_dom_unobs*L,0,sqrt(model_par$sigmau2est)),rep(framework$n_pop[!framework$dist_obs_dom],L)),ncol=L)
+ 
+  vu[framework$obs_dom,] <- matrix(rep(rnorm(framework$N_dom_smp*L,0,sqrt(gen_model$sigmav2est)),rep(framework$n_pop[ framework$dist_obs_dom],L)),ncol=L)
+  
+
+  #framework$obs_dom_vec <- rep(framework$obs_dom,L)
+  #framework$n_pop_vec <- rep(framework$n_pop[!framework$dist_obs_dom],L)
   # new random effect for out-of-sample domains
-  N_dom_unobs_vec <- framework$N_dom_unobs*L
-  vu[!framework$obs_dom_vec] <- rep(
-    rnorm(
-      framework$N_dom_unobs*L,
-      0,
-      sqrt(model_par$sigmau2est)
-    ),
-    framework$n_pop_vec
-  )
+  #N_dom_unobs_vec <- framework$N_dom_unobs*L
+  #vu[!framework$obs_dom_vec] <- rep(
+  #  rnorm(
+  #    framework$N_dom_unobs*L,
+  #    0,
+  #    sqrt(model_par$sigmau2est)
+  #  ),
+  #  framework$n_pop_vec
+  #)
   # new random effect for in-sample-domains
-  framework$n_pop_vec <- rep(framework$n_pop[framework$dist_obs_dom],L)
-  vu[framework$obs_dom_vec] <- rep(
-    rnorm(
-      framework$N_dom_smp*L,
-      0,
-      sqrt(gen_model$sigmav2est)
-    ),
-    framework$n_pop_vec
-  )
+  #framework$n_pop_vec <- rep(framework$n_pop[framework$dist_obs_dom],L)
+  #vu[framework$obs_dom_vec] <- rep(
+  #  rnorm(
+  #    framework$N_dom_smp*L,
+  #    0,
+  #    sqrt(gen_model$sigmav2est)
+  #  ),
+  #  framework$n_pop_vec
+  #)
   # individual error term in generating model epsilon
   
   return(list(epsilon = epsilon, vu = vu))
-} # End errors_gen_vec 
+} # End errors_gen_mat 
 
 
-prediction_y_vec <- function(transformation,
+prediction_y_mat <- function(transformation,
                          lambda,
                          shift,
                          errors_gen,
@@ -863,26 +889,25 @@ prediction_y_vec <- function(transformation,
   
   
   
-  # predicted population income vector
-  y_pred <- rep(gen_model$mu,L) + errors_gen$epsilon + errors_gen$vu
+  # predicted population income matrix 
+  y_pred <- matrix(rep(gen_model$mu,L),ncol=L) + errors_gen$epsilon + errors_gen$vu
   
-  # back-transformation of predicted population income vector
-  y_pred <- back_transformation(
-    y = y_pred,
-    transformation = transformation,
-    lambda = lambda,
-    shift = shift,
-    framework = framework,
-    fixed = fixed
-  )
+  # back-transformation of predicted population income matrix, by column 
+  y_pred <- apply(y_pred,2,back_transformation,transformation = transformation,lambda = lambda,shift = shift,framework = framework,fixed = fixed)
+  
+  
+  #y_pred <- back_transformation(
+  #  y = y_pred,
+  #  transformation = transformation,
+  #  lambda = lambda,
+  #  shift = shift,
+  #  framework = framework,
+  #  fixed = fixed
+  #)
   y_pred[!is.finite(y_pred)] <- 0
   
   return(y_pred)
 } # End prediction_y
-
-
-  
-  
 
 # The function errors_gen returns error terms of the generating model.
 # See Molina and Rao (2010) p. 375 (20)

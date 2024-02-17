@@ -33,8 +33,6 @@
 #' @importFrom nlme fixef fixed.effects
 #' @export fixed.effects
 #' @export fixef
-fixef
-
 #' @export fixef.ebp
 #' @export
 #' @rdname fixef
@@ -103,7 +101,6 @@ fixed.effects.fh <- function(object, ...) {
 #' @name getData
 #' @importFrom nlme getData
 #' @export getData
-getData
 
 #' @export getData.direct
 #' @export
@@ -167,8 +164,6 @@ getData.fh <- function(object, ...) {
 #' @name getGroups
 #' @importFrom nlme getGroups
 #' @export getGroups
-getGroups
-
 #' @export getGroups.direct
 #' @export
 #' @rdname getGroups
@@ -226,8 +221,6 @@ getGroups.fh <- function(object, ...) {
 #' @name getGroupsFormula
 #' @importFrom nlme getGroupsFormula
 #' @export getGroupsFormula
-getGroupsFormula
-
 #' @export getGroupsFormula.direct
 #' @export
 #' @rdname getGroupsFormula
@@ -283,8 +276,6 @@ getGroupsFormula.fh <- function(object, ...) {
 #' @name getResponse
 #' @importFrom nlme getResponse
 #' @export getResponse
-getResponse
-
 #' @export getResponse.direct
 #' @export
 #' @rdname getResponse
@@ -362,8 +353,6 @@ getResponse.fh <- function(object, ...) {
 #' @name getVarCov
 #' @importFrom nlme getVarCov
 #' @export getVarCov
-getVarCov
-
 #' @export getVarCov.ebp
 #' @export
 #' @rdname getVarCov
@@ -666,8 +655,6 @@ print.getVarCov.fh <- function(x, ...) {
 #' @name intervals
 #' @importFrom nlme intervals
 #' @export intervals
-intervals
-
 #' @export intervals.ebp
 #' @export
 #' @rdname intervals
@@ -739,8 +726,6 @@ intervals.fh <- function(object, level = 0.95, parm = NULL, ...) {
 #' @importFrom nlme ranef random.effects
 #' @export random.effects
 #' @export ranef
-ranef
-
 #' @export ranef.ebp
 #' @export
 #' @rdname ranef

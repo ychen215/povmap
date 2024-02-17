@@ -7,11 +7,11 @@
 \alias{getGroups.fh}
 \title{Extract Grouping Factors from an emdi Object}
 \usage{
-\method{getGroups}{direct}(object, ...)
+getGroups.direct(object, ...)
 
-\method{getGroups}{ebp}(object, ...)
+getGroups.ebp(object, ...)
 
-\method{getGroups}{fh}(object, ...)
+getGroups.fh(object, ...)
 }
 \arguments{
 \item{object}{an object of type "emdi", depending on the method either

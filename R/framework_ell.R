@@ -9,7 +9,7 @@
 framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, smp_data, smp_domains,
                           smp_subdomains, threshold, custom_indicator = NULL, na.rm,
                           aggregate_to = NULL, weights, pop_weights, 
-                          benchmark_level, benchmark_weights, rescale_weights) {
+                          benchmark_level, benchmark_weights, rescale_weights, errors,model_parameters, indicators) {
 
 
   # Reduction of number of variables
@@ -35,7 +35,7 @@ framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, s
     smp_domains = smp_domains, threshold = threshold, weights = weights,
     pop_weights = pop_weights, benchmark_level = benchmark_level,
     benchmark_weights = benchmark_weights, weights_type = weights_type,
-    rescale_weights = rescale_weights
+    rescale_weights = rescale_weights,
   )
 
 
@@ -210,6 +210,15 @@ framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, s
     "Quantile_90"
   )
 
+  if (!is.null(indicators)) {
+    keepthese <- which(function_names %in% indicators)
+    indicator_list <- indicator_list[keepthese]
+    if (7 %in% keepthese) {
+      keepthese <- c(keepthese,8,9,10,11)
+    }
+    indicator_names <- indicator_names[keepthese]
+  }
+  
 
   if (!is.null(custom_indicator) && length(custom_indicator) > 0) {
     for(i in 1:length(custom_indicator)) {
@@ -258,7 +267,9 @@ framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, s
     threshold = threshold,
     weights = weights,
     benchmark_weights = benchmark_weights,
-    pop_weights = pop_weights
+    pop_weights = pop_weights,
+    errors=errors,
+    model_parameters=model_parameters 
   ))
 }
 

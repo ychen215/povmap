@@ -234,9 +234,9 @@ nobs.fh <- function(object, ...) {
 #'   na.rm = TRUE
 #' )
 #'
-#' predict(emdi_model)
+#' povmap::predict(emdi_model)
 #' }
-#' @export
+#' @export 
 #' @method predict emdi
 #' @importFrom stats predict
 

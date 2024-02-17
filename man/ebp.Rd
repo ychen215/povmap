@@ -42,7 +42,10 @@ ebp(
   nlme_msmaxiter = 1000,
   nlme_returnobject = FALSE,
   rescale_weights = FALSE,
-  Ydump = NULL
+  Ydump = NULL,
+  model_parameters = "fixed",
+  vectorize = FALSE,
+  indicators = NULL
 )
 }
 \arguments{
@@ -245,6 +248,17 @@ within each domain.}
 \item{Ydump}{a string specifying the name of a .csv file to save all simulated
 values of the dependent value, model predictions, and error terms used for
 point estimation.}
+
+\item{model_parameters}{a string specifying "fixed" or "variable". If variable is specified,
+estimates of model parameters beta and sigma will be drawn from their estimated 
+distribution. Otherwise they are assumed fixed. Defaults to "fixed".}
+
+\item{vectorize}{a logical indicating if the monte-carlo simulations should be conducted using
+vectorization instead of a loop. Vectorization is faster if there is sufficient memory. 
+Defaults to FALSE}
+
+\item{indicators}{a list of strings containing outcome indicators that should be calculated. 
+Defaults to NULL, which selects all indicators.}
 }
 \value{
 An object of class "ebp", "emdi" that provides estimators for

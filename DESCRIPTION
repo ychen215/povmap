@@ -45,7 +45,8 @@ Imports:
     survey,
     sf,
     FNN,
-    plm
+    plm,
+    data.table
 Suggests:
     testthat,
     R.rsp,

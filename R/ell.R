@@ -129,6 +129,14 @@
 #' @param Ydump a string specifying the name of a .csv file to save all simulated
 #' values of the dependent value, model predictions, and error terms used for
 #' point estimation.
+#' @param errors a string containing either "normal" or "nonnormal". If normal, error terms 
+#' are drawn from a normal distribution. If non-normal, error terms are drawn via a 
+#' non-parametric bootstrap. 
+#' @param model_parameters a string specifying "fixed" or "variable". If variable is specified,
+#' estimates of model parameters beta and sigma will be drawn from their estimated 
+#' distribution. Otherwise they are assumed fixed. Defaults to "variable".  
+#' @param indicators a list of strings containing outcome indicators that should be calculated. 
+#' Defaults to NULL, which selects all indicators.  
 #' @return An object of class "ell", "emdi" that provides estimators for
 #' regional disaggregated indicators.
 #' Several generic functions have methods for the returned object. For a full
@@ -170,7 +178,10 @@ ell <- function(fixed,
                 benchmark_level = NULL,
                 benchmark_weights = NULL,
                 rescale_weights = FALSE,
-                Ydump = NULL
+                Ydump = NULL, 
+                errors = "normal",
+                model_parameters = "variable", 
+                indicators = NULL 
 ) {
   
   start.time <- Sys.time()
@@ -221,7 +232,9 @@ ell <- function(fixed,
     pop_weights = pop_weights,
     benchmark_level = benchmark_level,
     benchmark_weights = benchmark_weights,
-    rescale_weights = rescale_weights
+    rescale_weights = rescale_weights,
+    errors = errors,
+    indicators = indicators 
   )
   
   

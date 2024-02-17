@@ -2,20 +2,20 @@
 % Please edit documentation in R/nlme_methods.R
 \name{fixef}
 \alias{fixef}
-\alias{fixed.effects}
 \alias{fixef.ebp}
+\alias{fixed.effects}
 \alias{fixed.effects.ebp}
 \alias{fixef.fh}
 \alias{fixed.effects.fh}
 \title{Extract Fixed Effects from an emdi Object}
 \usage{
-\method{fixef}{ebp}(object, ...)
+fixef.ebp(object, ...)
 
-\method{fixed.effects}{ebp}(object, ...)
+fixed.effects.ebp(object, ...)
 
-\method{fixef}{fh}(object, ...)
+fixef.fh(object, ...)
 
-\method{fixed.effects}{fh}(object, ...)
+fixed.effects.fh(object, ...)
 }
 \arguments{
 \item{object}{an object of type "emdi", depending on the used method either

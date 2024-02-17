@@ -2,20 +2,20 @@
 % Please edit documentation in R/nlme_methods.R
 \name{ranef}
 \alias{ranef}
-\alias{random.effects}
 \alias{ranef.ebp}
+\alias{random.effects}
 \alias{random.effects.ebp}
 \alias{ranef.fh}
 \alias{random.effects.fh}
 \title{Extract Random Effects of emdi Objects}
 \usage{
-\method{ranef}{ebp}(object, ...)
+ranef.ebp(object, ...)
 
-\method{random.effects}{ebp}(object, ...)
+random.effects.ebp(object, ...)
 
-\method{ranef}{fh}(object, ...)
+ranef.fh(object, ...)
 
-\method{random.effects}{fh}(object, ...)
+random.effects.fh(object, ...)
 }
 \arguments{
 \item{object}{an object of type "emdi", depending on the used method either

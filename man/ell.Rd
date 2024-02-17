@@ -28,7 +28,10 @@ ell(
   benchmark_level = NULL,
   benchmark_weights = NULL,
   rescale_weights = FALSE,
-  Ydump = NULL
+  Ydump = NULL,
+  errors = "normal",
+  model_parameters = "variable",
+  indicators = NULL
 )
 }
 \arguments{
@@ -164,6 +167,17 @@ within each domain.}
 \item{Ydump}{a string specifying the name of a .csv file to save all simulated
 values of the dependent value, model predictions, and error terms used for
 point estimation.}
+
+\item{errors}{a string containing either "normal" or "nonnormal". If normal, error terms 
+are drawn from a normal distribution. If non-normal, error terms are drawn via a 
+non-parametric bootstrap.}
+
+\item{model_parameters}{a string specifying "fixed" or "variable". If variable is specified,
+estimates of model parameters beta and sigma will be drawn from their estimated 
+distribution. Otherwise they are assumed fixed. Defaults to "variable".}
+
+\item{indicators}{a list of strings containing outcome indicators that should be calculated. 
+Defaults to NULL, which selects all indicators.}
 
 \item{weights_type}{a character string. Two different methods for survey
 weights are available (i) EBP under informative sampling from

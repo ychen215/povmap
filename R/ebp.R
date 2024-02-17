@@ -178,7 +178,7 @@
 #' values of the dependent value, model predictions, and error terms used for
 #' point estimation.
 #' @param model_parameters a string specifying "fixed" or "variable". If variable is specified,
-#' estimates of model parameters beta or sigma will be drawn from their estimated 
+#' estimates of model parameters beta and sigma will be drawn from their estimated 
 #' distribution. Otherwise they are assumed fixed. Defaults to "fixed".  
 #' @param vectorize a logical indicating if the monte-carlo simulations should be conducted using
 #' vectorization instead of a loop. Vectorization is faster if there is sufficient memory. 
@@ -305,7 +305,7 @@
 #' )
 #' }
 #' @export
-#' @importFrom nlme fixed.effects VarCorr lme random.effects varComb varIdent
+#' @importFrom nlme fixed.effects VarCorr lme random.effects varComb varIdent 
 #' varFixed
 #' @importFrom parallelMap parallelStop parallelLapply parallelLibrary
 #' @importFrom parallel detectCores clusterSetRNGStream
@@ -313,7 +313,9 @@
 #' qnorm quantile residuals rnorm sd fitted ave
 #' @importFrom utils flush.console write.table write.csv
 #' @importFrom FNN knnx.index
-#' @importFrom plm 
+#' @importFrom plm plm 
+#' @import data.table
+
 
 ebp <- function(fixed,
                 pop_data,

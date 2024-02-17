@@ -7,11 +7,11 @@
 \alias{getData.fh}
 \title{Extract emdi Object Data}
 \usage{
-\method{getData}{direct}(object, ...)
+getData.direct(object, ...)
 
-\method{getData}{ebp}(object, ...)
+getData.ebp(object, ...)
 
-\method{getData}{fh}(object, ...)
+getData.fh(object, ...)
 }
 \arguments{
 \item{object}{an object of type "emdi", depending on the method either

@@ -6,9 +6,9 @@
 \alias{intervals.fh}
 \title{Confidence Intervals on Coefficients of an emdi Object}
 \usage{
-\method{intervals}{ebp}(object, level = 0.95, parm = NULL, ...)
+intervals.ebp(object, level = 0.95, parm = NULL, ...)
 
-\method{intervals}{fh}(object, level = 0.95, parm = NULL, ...)
+intervals.fh(object, level = 0.95, parm = NULL, ...)
 }
 \arguments{
 \item{object}{an object of type "emdi", depending on the method either "ebp"

@@ -238,14 +238,51 @@ monte_carlo_ell <- function(transformation,
   start_time <- Sys.time()
   for (l in seq_len(L)) {
     
+    if (framework$model_parameters=="variable") {
+      # variable parameters means they must be drawn every replication
+      # so we redraw the parameters  
+      # draw error terms 
+      R <- chol(model_par$varErr) 
+      sigma2<- c(-1,-1)
+      while (sigma2[2]<0 | sigma2[1]<0) {
+        sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(model_par$varErr)
+        model_par$sigmae2est <- sigma2[2]
+        model_par$sigmau2est <- sigma2[1]
+      }
+      # draw betas 
+      R <- chol(model_par$varFix)
+      model_par$betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas      
+      
+      gen_model <- gen_model(
+        model_par = model_par,
+        fixed = fixed,
+        framework = framework,
+        dep_var = dep_var 
+      )
+    } # close condition to redraw parameters 
+    
+    
+    
     # Errors in generating model: individual error term and random effect
     # See below for function errors_gen.
-    parameters <- parameters_gen(
+    
+    if (framework$errors!="nonnormal") {
+    errors <- errors_gen(
       framework = framework,
       model_par = model_par,
       gen_model = gen_model,
       alpha_model = alpha_model
     )
+    } 
+    else {
+      errors <- errors_gen_nonp(
+        framework=framework,
+        model_par = model_par,
+        gen_model=gen_model, 
+        alpha_model = alpha_model 
+      )
+    
+    }
     
     # generate gen_model$mu here based parameters$beta, if you have the data conveniently around 
     
@@ -256,7 +293,7 @@ monte_carlo_ell <- function(transformation,
       lambda = lambda,
       shift = shift,
       gen_model = gen_model,
-      parameters = parameters,
+      errors = errors,
       framework = framework,
       fixed = fixed
     )
@@ -334,11 +371,8 @@ monte_carlo_ell <- function(transformation,
 } # End Monte-Carlo
 
 
-# The function parameters_gen returns error terms of the generating model.
-# and draws betas 
-# See Molina and Rao (2010) p. 375 (20)
-
-parameters_gen <- function(framework, model_par, gen_model, alpha_model) {
+# The function errors_gen returns error terms of the generating model.
+errors_gen <- function(framework, model_par, gen_model, alpha_model) {
   if (is.null(alpha_model)) {
     epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
   } 
@@ -350,15 +384,35 @@ parameters_gen <- function(framework, model_par, gen_model, alpha_model) {
   # draw random effect
   vu <- rep(rnorm(framework$N_dom_pop,0,sqrt(model_par$sigmau2est)
     ),framework$n_pop)
-  
-
-    #betas <- mvrnorm(n=1, mu=model_par$betas,Sigma=as.matrix(model_par$vcov))
-    # This is equivalent and needs no package   
-    R <- chol(model_par$vcov)   
-    betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas 
-    
   return(list(epsilon = epsilon, vu = vu, betas=betas))
-} # End parameters_gen
+} # End errors_gen
+
+# The function errors_gen_nonp returns error terms of the generating model
+# obtained through a non-parametric bootstrap procedure 
+errors_gen_nonp <- function(framework, model_par, gen_model, alpha_model) {
+  
+  
+  
+  if (is.null(alpha_model)) {
+    epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
+  } 
+  else {
+    epsilon <- rnorm(framework$N_pop, 0, sqrt(alpha_model$sigmae2est))
+  }
+  # empty vector for new random effect in generating model
+  vu <- vector(length = framework$N_pop)
+  # draw random effect
+  vu <- rep(rnorm(framework$N_dom_pop,0,sqrt(model_par$sigmau2est)
+  ),framework$n_pop)
+  
+  
+  
+  return(list(epsilon = epsilon, vu = vu, betas=betas))
+} # End errors_gen
+
+
+
+
 
 # The function prediction_y returns a predicted income vector which can be used
 # to calculate indicators. Note that a whole income vector is predicted without
@@ -367,15 +421,15 @@ prediction_y_ell <- function(transformation,
                          lambda,
                          shift,
                          gen_model,
-                         parameters,
+                         errors,
                          framework,
                          fixed) {
   # construct vector of Xes by starting with intercept and binding it to the population
   # dataframe constructed from all the coefficient names except the 
-  Xes <- cbind(rep(1,framework$N_pop),framework$pop_data[rownames(parameters$betas)[-1]]) 
+
   
   # predicted population income vector
-  y_pred <- as.matrix(Xes) %*% (parameters$betas) + parameters$epsilon + parameters$vu
+  y_pred <- gen_model$mu + errors$epsilon + errors$vu
   
   # back-transformation of predicted population income vector
   y_pred <- back_transformation(

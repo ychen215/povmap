@@ -7,11 +7,11 @@
 \alias{getGroupsFormula.fh}
 \title{Extract Grouping Formula from an emdi Object}
 \usage{
-\method{getGroupsFormula}{direct}(object, ...)
+getGroupsFormula.direct(object, ...)
 
-\method{getGroupsFormula}{ebp}(object, ...)
+getGroupsFormula.ebp(object, ...)
 
-\method{getGroupsFormula}{fh}(object, ...)
+getGroupsFormula.fh(object, ...)
 }
 \arguments{
 \item{object}{an object of type "emdi", depending on the method either
