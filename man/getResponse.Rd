@@ -7,11 +7,11 @@
 \alias{getResponse.fh}
 \title{Extract Response Variable from an emdi Object}
 \usage{
-getResponse.direct(object, ...)
+\method{getResponse}{direct}(object, ...)
 
-getResponse.ebp(object, ...)
+\method{getResponse}{ebp}(object, ...)
 
-getResponse.fh(object, ...)
+\method{getResponse}{fh}(object, ...)
 }
 \arguments{
 \item{object}{an object of type "emdi", depending on the method either

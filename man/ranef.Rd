@@ -9,13 +9,13 @@
 \alias{random.effects.fh}
 \title{Extract Random Effects of emdi Objects}
 \usage{
-ranef.ebp(object, ...)
+\method{ranef}{ebp}(object, ...)
 
-random.effects.ebp(object, ...)
+\method{random.effects}{ebp}(object, ...)
 
-ranef.fh(object, ...)
+\method{ranef}{fh}(object, ...)
 
-random.effects.fh(object, ...)
+\method{random.effects}{fh}(object, ...)
 }
 \arguments{
 \item{object}{an object of type "emdi", depending on the used method either

@@ -9,13 +9,13 @@
 \alias{fixed.effects.fh}
 \title{Extract Fixed Effects from an emdi Object}
 \usage{
-fixef.ebp(object, ...)
+\method{fixef}{ebp}(object, ...)
 
-fixed.effects.ebp(object, ...)
+\method{fixed.effects}{ebp}(object, ...)
 
-fixef.fh(object, ...)
+\method{fixef}{fh}(object, ...)
 
-fixed.effects.fh(object, ...)
+\method{fixed.effects}{fh}(object, ...)
 }
 \arguments{
 \item{object}{an object of type "emdi", depending on the used method either

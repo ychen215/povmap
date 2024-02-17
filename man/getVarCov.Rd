@@ -6,9 +6,9 @@
 \alias{getVarCov.fh}
 \title{Extract Variance-covariance Matrix from an emdi Object}
 \usage{
-getVarCov.ebp(obj, individuals = 1, type = "random.effects", ...)
+\method{getVarCov}{ebp}(obj, individuals = 1, type = "random.effects", ...)
 
-getVarCov.fh(obj, individuals = 1, type = "random.effects", ...)
+\method{getVarCov}{fh}(obj, individuals = 1, type = "random.effects", ...)
 }
 \arguments{
 \item{obj}{an object of type "emdi", either "ebp" or "fh".}
