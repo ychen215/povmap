@@ -753,7 +753,7 @@ monte_carlo_vec <- function(mixed_model,
     L=L 
   )
   
-   population_vector_mat <- prediction_y_mat(
+   population_vector_dt <- prediction_y_dt(
      transformation = transformation,
      lambda = lambda,
      shift = shift,
@@ -790,7 +790,7 @@ monte_carlo_vec <- function(mixed_model,
    
    
    
-     pop_domains_by_Lindex <- factor(paste(Lindex,pop_domains_vec_tmp))
+     #pop_domains_by_Lindex <- factor(paste(Lindex,pop_domains_vec_tmp))
      # Calculation of indicators for each Monte Carlo population
      
      #ests_mcmc <- array(dim = c(
@@ -799,12 +799,47 @@ monte_carlo_vec <- function(mixed_model,
     #   length(framework$indicator_names)
     # ))
      
+ 
+     Mean_dt <- function(y,pop_weights,by) {
+       # new method 
+       #1. multiply all columns of y by w except for column 1 (domain ID) 
+       #2 Cbind w to end   
+       #3. sum all columns by group 
+       #4. divide all columns except 1 by column 1 in sum 
+       
+       y[,2:ncol(y) :=y[,lapply(.SD,"*",pop_weights),.SDcols=2:ncol(y)]]
+       y <- cbind(y,weights=pop_weights)
+       sumwy <- y[,lapply(.SD,sum),by=.(Domain)]
+       sumwy[,2:(ncol(sumwy)-1) := sumwy[,lapply(.SD,"/",sumwy[,ncol(sumwy),with=FALSE]),.SDcols=2:(ncol(sumwy)-1)]]
+       return(sumwy[,1:(ncol(sumwy)-1)]) # return Domain plus Mean, not weight  
+     }
      
+
+     Head_Count_dt <- function (y, threshold,pop_weights,by) {
+     y[,2:ncol(y) := y[,lapply(.SD,"<",threshold),.SDcols=-1]]
+      HC <- Mean_dt(y,pop_weights,by)
+      return(HC)
+     }
+       
      
      rownames(population_vector_mat) <- framework$pop_domains 
-     a <- as.data.table(population_vector_mat,keep.rownames="Domain")
-     ans <- data.table:::a[, data.table:::.(.N),by = .(Domain)]
-     ans <- flights[, '.(.N)', by = .(origin)]
+     y <- as.data.table(population_vector_mat,keep.rownames="Domain")
+     w <- as.data.table(framework$pop_data[[framework$pop_weights]])
+     # construct weights matrix 
+     
+     
+     
+     #ans <- Head_Count_dt(y=y,w=w,threshold=framework$threshold,by="Domain")
+     
+     
+     
+     #a <- a[,pop_weights := framework$pop_weights]
+     #b <- a[,lapply(.SD,framework$indicator_list[[1]],threshold=framework$threshold,by=Domain),.SDcols=!"pop_weights"]
+     #b <- a[,lapply(.SD,framework$indicator_list[[1]],threshold=framework$threshold,by=Domain),.SDcols=!"pop_weights"]
+     
+     #ans <- a[,lapply(framework$indicator_list[[1]](pop_weights))
+     
+     
      
      
      ests_mcmc_2d <-
@@ -878,7 +913,7 @@ errors_gen_mat <- function(framework, model_par, gen_model,L) {
 } # End errors_gen_mat 
 
 
-prediction_y_mat <- function(transformation,
+prediction_y_dt <- function(transformation,
                          lambda,
                          shift,
                          errors_gen,
@@ -890,10 +925,16 @@ prediction_y_mat <- function(transformation,
   
   
   # predicted population income matrix 
-  y_pred <- matrix(rep(gen_model$mu,L),ncol=L) + errors_gen$epsilon + errors_gen$vu
   
+  mu <- setDT(rep(list(as.vector(gen_model$mu)),100))
+  epsilon <- as.data.table(errors_gen$epsilon)
+  vu <- as.data.table(errors_gen$vu)
+  y_pred <- vu+epsilon+mu 
+  
+
   # back-transformation of predicted population income matrix, by column 
-  y_pred <- apply(y_pred,2,back_transformation,transformation = transformation,lambda = lambda,shift = shift,framework = framework,fixed = fixed)
+  y_pred [ ,1:ncol(y_pred) := y_pred[,lapply(.SD,back_transformation,transformation = transformation,lambda = lambda,shift = shift,framework = framework,fixed = fixed)]]
+  #y_pred <- apply(y_pred,2,back_transformation,transformation = transformation,lambda = lambda,shift = shift,framework = framework,fixed = fixed)
   
   
   #y_pred <- back_transformation(
@@ -904,8 +945,8 @@ prediction_y_mat <- function(transformation,
   #  framework = framework,
   #  fixed = fixed
   #)
-  y_pred[!is.finite(y_pred)] <- 0
-  
+  y_pred[mapply(is.infinite, y_pred)] <- NA
+  #y_pred[!is.finite(y_pred)] <- 0
   return(y_pred)
 } # End prediction_y
 

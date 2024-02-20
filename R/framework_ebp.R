@@ -235,6 +235,32 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     }
   )
 
+  #does this work? 
+  if (vectorize==TRUE) {
+    indicator_list[["Mean"]] >-  
+                      function(y,pop_weights,by) {
+      # new method 
+      #1. multiply all columns of y by w except for column 1 (domain ID) 
+      #2 Cbind w to end   
+      #3. sum all columns by group 
+      #4. divide all columns except 1 by column 1 in sum 
+      
+      y[,2:ncol(y) :=y[,lapply(.SD,"*",pop_weights),.SDcols=2:ncol(y)]]
+      y <- cbind(y,weights=pop_weights)
+      sumwy <- y[,lapply(.SD,sum),by=.(Domain)]
+      sumwy[,2:(ncol(sumwy)-1) := sumwy[,lapply(.SD,"/",sumwy[,ncol(sumwy),with=FALSE]),.SDcols=2:(ncol(sumwy)-1)]]
+      return(sumwy[,1:(ncol(sumwy)-1)]) # return Domain plus Mean, not weight  
+    }
+    
+    indicator_list[["Head_Count"]] <- 
+    Head_Count_dt <- function (y, threshold,pop_weights,by) {
+      y[,2:ncol(y) := y[,lapply(.SD,"<",threshold),.SDcols=-1]]
+      HC <- framework$indicator_list[["Mean"]](y,pop_weights,by)
+      return(HC)
+    }
+  } # close vectorized functions 
+  
+  
   indicator_names <- c(
     "Mean",
     "Head_Count",
@@ -273,7 +299,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
 
   if (!is.null(custom_indicator) && length(custom_indicator) > 0) {
     for(i in 1:length(custom_indicator)) {
-      formals(custom_indicator[[i]]) <- alist(y=, pop_weights=, threshold=)
+      formals(custom_indicator[[i]]) <- list(y=, pop_weights=, threshold=)
     }
 
     indicator_list <- c(indicator_list, custom_indicator)

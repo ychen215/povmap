@@ -267,7 +267,7 @@ monte_carlo_ell <- function(transformation,
     # See below for function errors_gen.
     
     if (framework$errors!="nonnormal") {
-    errors <- errors_gen(
+    errors <- errors_gen_ell(
       framework = framework,
       model_par = model_par,
       gen_model = gen_model,
@@ -275,7 +275,7 @@ monte_carlo_ell <- function(transformation,
     )
     } 
     else {
-      errors <- errors_gen_nonp(
+      errors <- errors_gen_ell_nonp(
         framework=framework,
         model_par = model_par,
         gen_model=gen_model, 
@@ -372,7 +372,7 @@ monte_carlo_ell <- function(transformation,
 
 
 # The function errors_gen returns error terms of the generating model.
-errors_gen <- function(framework, model_par, gen_model, alpha_model) {
+errors_gen_ell <- function(framework, model_par, gen_model, alpha_model) {
   if (is.null(alpha_model)) {
     epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
   } 
@@ -389,7 +389,7 @@ errors_gen <- function(framework, model_par, gen_model, alpha_model) {
 
 # The function errors_gen_nonp returns error terms of the generating model
 # obtained through a non-parametric bootstrap procedure 
-errors_gen_nonp <- function(framework, model_par, gen_model, alpha_model) {
+errors_gen_ell_nonp <- function(framework, model_par, gen_model, alpha_model) {
   
   
   
