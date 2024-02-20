@@ -47,7 +47,6 @@
 #' evaluate_plot(direct = emdi_direct, model = emdi_model)
 #' }
 #' @export
-#' @importFrom reshape2 melt
 
 
 evaluate_plot <- function(direct, model, indicator = "all", color = c("blue", "lightblue3")) {
@@ -96,7 +95,7 @@ evaluate_plot <- function(direct, model, indicator = "all", color = c("blue", "l
     
     data_tmp <- data_tmp[order(smp_size), ]
     data_tmp$ID <- 1:length(ind_direct$Domain)
-    data_shaped <- data.frame(melt(data_tmp, id.vars = "ID"))
+    data_shaped <- data.frame(reshape2::melt(data_tmp, id.vars = "ID"))
     names(data_shaped) <- c("ID", "Method", "value")
     
     print(ggplot(data = data_shaped, aes(x = ID, 

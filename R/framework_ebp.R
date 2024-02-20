@@ -237,7 +237,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
 
   #does this work? 
   if (vectorize==TRUE) {
-    indicator_list[["Mean"]] >-  
+    indicator_list[["Mean"]] <-   
                       function(y,pop_weights,by) {
       # new method 
       #1. multiply all columns of y by w except for column 1 (domain ID) 

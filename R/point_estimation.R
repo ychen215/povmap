@@ -774,7 +774,7 @@ monte_carlo_vec <- function(mixed_model,
     if (!is.null(Ydump)){
       vu_vec <- matrix(errors_mat$vu,ncol=1)
       epsilon_vec <- matrix(errors_mat$epsilon,ncol=1)
-      population_vector_vec <- matrix(population_vector_mat,ncol=1)
+      population_vector_vec <- matrix(population_vector_dt,ncol=1)
       Lindex <-rep(1:L,each=nrow(framework$pop_data))  
       
      # DT.m1 = melt(DT, measure.vars = c("dob_child1", "dob_child2", "dob_child3"),
@@ -822,8 +822,8 @@ monte_carlo_vec <- function(mixed_model,
      }
        
      
-     rownames(population_vector_mat) <- framework$pop_domains 
-     y <- as.data.table(population_vector_mat,keep.rownames="Domain")
+     rownames(population_vector_dt) <- framework$pop_domains 
+     y <- as.data.table(population_vector_dt,keep.rownames="Domain")
      w <- as.data.table(framework$pop_data[[framework$pop_weights]])
      # construct weights matrix 
      
@@ -842,24 +842,7 @@ monte_carlo_vec <- function(mixed_model,
      
      
      
-     ests_mcmc_2d <-
-       matrix(
-         nrow = N_dom_pop_tmp*L,
-         data = unlist(lapply(framework$indicator_list,
-                              function(f, threshold) {
-                                matrix(
-                                  nrow = N_dom_pop_tmp*L,
-                                  data = unlist(mapply(
-                                    y = split(population_vector_vec, pop_domains_by_Lindex),
-                                    pop_weights = split(pop_weights_vec, pop_domains_by_Lindex),
-                                    f,
-                                    threshold = framework$threshold
-                                  )), byrow = TRUE
-                                )
-                              },
-                              threshold = framework$threshold
-         ))
-       )
+
      
      ests_mcmc <- array(unlist(split(data.frame(ests_mcmc_2d), rep(1:L, each  = N_dom_pop_tmp))),c(N_dom_pop_tmp,L,ncol(ests_mcmc_2d)))
      point_estimates <- data.frame(
@@ -926,9 +909,9 @@ prediction_y_dt <- function(transformation,
   
   # predicted population income matrix 
   
-  mu <- setDT(rep(list(as.vector(gen_model$mu)),100))
-  epsilon <- as.data.table(errors_gen$epsilon)
-  vu <- as.data.table(errors_gen$vu)
+  mu <- data.table::setDT(rep(list(as.vector(gen_model$mu)),100))
+  epsilon <- data.table::as.data.table(errors_gen$epsilon)
+  vu <- data.table::as.data.table(errors_gen$vu)
   y_pred <- vu+epsilon+mu 
   
 

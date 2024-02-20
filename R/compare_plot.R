@@ -183,7 +183,6 @@ compare_plot <- function(model, direct, indicator = "all", MSE = FALSE,
 #' # Example 4: Compare also MSE and CV estimates
 #' compare_plot(fh_std, MSE = TRUE, CV = TRUE)
 #' }
-#' @importFrom reshape2 melt
 #' @importFrom ggplot2 geom_point geom_smooth geom_line geom_boxplot
 #' @importFrom ggplot2 aes xlim ylim scale_shape_manual scale_linetype_manual
 #' @importFrom ggplot2 scale_color_manual scale_fill_manual coord_flip
@@ -255,7 +254,7 @@ compare_plots <- function(object, type, selected_indicators, MSE, CV, label,
     }
 
     data_tmp$ID <- seq_along(object$Domain)
-    data_shaped <- melt(data_tmp, id.vars = "ID")
+    data_shaped <- reshape2::melt(data_tmp, id.vars = "ID")
     names(data_shaped) <- c("ID", "Method", "value")
 
 
@@ -340,7 +339,7 @@ compare_plots <- function(object, type, selected_indicators, MSE, CV, label,
       data_tmp2 <- data_tmp2[order(data_tmp2$smp_size, decreasing = TRUE), ]
       data_tmp2$smp_size <- NULL
       data_tmp2$ID <- seq_along(object$Domain)
-      data_shaped <- melt(data_tmp2, id.vars = "ID")
+      data_shaped <- reshape2::melt(data_tmp2, id.vars = "ID")
       names(data_shaped) <- c("ID", "Method", "value")
       data_shaped$area <- rep(seq_len(NROW(data_tmp2$Direct)), 2)
 
@@ -387,7 +386,7 @@ compare_plots <- function(object, type, selected_indicators, MSE, CV, label,
       data_tmp3 <- data_tmp3[order(data_tmp3$smp_size, decreasing = TRUE), ]
       data_tmp3$smp_size <- NULL
       data_tmp3$ID <- seq_along(object$Domain)
-      data_shaped <- melt(data_tmp3, id.vars = "ID")
+      data_shaped <- reshape2::melt(data_tmp3, id.vars = "ID")
       names(data_shaped) <- c("ID", "Method", "value")
       data_shaped$area <- rep(seq_len(NROW(data_tmp3$Direct)), 2)
 
