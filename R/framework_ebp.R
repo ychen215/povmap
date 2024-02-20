@@ -12,7 +12,7 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
                           MSE_pop_weights, weights_type, benchmark_level, 
                           benchmark_weights,nlme_maxiter, nlme_tolerance, 
                           nlme_opt, nlme_optimmethod, nlme_method, nlme_mstol, 
-                          nlme_returnobject, nlme_msmaxiter, rescale_weights,model_parameters,vectorize,indicators) {
+                          nlme_returnobject, nlme_msmaxiter, rescale_weights,model_parameters,data.table,indicators) {
 
   # Reduction of number of variables
   mod_vars <- all.vars(fixed)
@@ -235,30 +235,26 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     }
   )
 
-  #does this work? 
-  if (vectorize==TRUE) {
+  if (data.table==TRUE) {
     indicator_list[["Mean"]] <-   
-                      function(y,pop_weights,by) {
-      # new method 
-      #1. multiply all columns of y by w except for column 1 (domain ID) 
-      #2 Cbind w to end   
-      #3. sum all columns by group 
-      #4. divide all columns except 1 by column 1 in sum 
-      
-      y[,2:ncol(y) :=y[,lapply(.SD,"*",pop_weights),.SDcols=2:ncol(y)]]
-      y <- cbind(y,weights=pop_weights)
-      sumwy <- y[,lapply(.SD,sum),by=.(Domain)]
-      sumwy[,2:(ncol(sumwy)-1) := sumwy[,lapply(.SD,"/",sumwy[,ncol(sumwy),with=FALSE]),.SDcols=2:(ncol(sumwy)-1)]]
-      return(sumwy[,1:(ncol(sumwy)-1)]) # return Domain plus Mean, not weight  
+          Mean <- function(y,pop_weights,by) {
+              # new method 
+              #1. multiply all columns of y by w except for column 1 (domain ID) 
+              #2 Cbind w to end   
+              #3. sum all columns by group 
+              #4. divide all columns except 1 by column 1 in sum 
+              y <- cbind(y,weights=pop_weights)
+              mean <- y[,lapply(.SD,weighted.mean,w=weights.V1),by="Domain.V1",.SDcols=-ncol(y)]
+              return(mean) # return Domain plus Mean, not weight  
     }
     
     indicator_list[["Head_Count"]] <- 
-    Head_Count_dt <- function (y, threshold,pop_weights,by) {
+    Head_Count <- function (y, threshold,pop_weights,by) {
       y[,2:ncol(y) := y[,lapply(.SD,"<",threshold),.SDcols=-1]]
       HC <- framework$indicator_list[["Mean"]](y,pop_weights,by)
       return(HC)
     }
-  } # close vectorized functions 
+  } # close data.table functions 
   
   
   indicator_names <- c(
@@ -366,7 +362,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     nlme_returnobject = nlme_returnobject, 
     nlme_method = nlme_method,
     model_parameters = model_parameters,
-    vectorize=vectorize,
+    data.table=data.table,
     indicators
   ))
 }

@@ -358,7 +358,7 @@ ebp <- function(fixed,
                 rescale_weights = FALSE,
                 Ydump = NULL,
                 model_parameters = "fixed",
-                vectorize=FALSE,
+                data.table=FALSE,
                 indicators = NULL
                 ) {
  
@@ -428,7 +428,7 @@ ebp <- function(fixed,
     nlme_returnobject = nlme_returnobject, 
     rescale_weights = rescale_weights,
     model_parameters = model_parameters,
-    vectorize=vectorize,
+    data.table=data.table,
     indicators=indicators 
   )
 

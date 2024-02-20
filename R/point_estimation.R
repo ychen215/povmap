@@ -145,7 +145,7 @@ point_estim <- function(framework,
   }
 
   # The monte-carlo function returns a data frame of desired indicators.
- if (L>0 & framework$vectorize==FALSE) {
+ if (L>0 & framework$data.table==FALSE) {
    indicator_prediction <- monte_carlo(
     mixed_model = mixed_model, 
     transformation = transformation,
@@ -160,8 +160,8 @@ point_estim <- function(framework,
     Ydump = Ydump 
   )
  }
-  else if (L>0 & framework$vectorize==TRUE) {
-    indicator_prediction <- monte_carlo_vec(
+  else if (L>0 & framework$data.table==TRUE) {
+    indicator_prediction <- monte_carlo_dt(
       mixed_model=mixed_model,
       transformation = transformation,
       transformation_par = transformation_par, 
@@ -699,7 +699,7 @@ monte_carlo <- function(mixed_model,
 } # End Monte-Carlo
 
 
-monte_carlo_vec <- function(mixed_model, 
+monte_carlo_dt <- function(mixed_model, 
                             transformation,
                             transformation_par, 
                             L,
@@ -764,11 +764,11 @@ monte_carlo_vec <- function(mixed_model,
      L=L 
    )
   
-   if(!is.null(framework$pop_weights)){
-     pop_weights_vec <- rep(framework$pop_data[[framework$pop_weights]],L)
-   }else{
-     pop_weights_vec <- rep(1, nrow(framework$pop_data)*L)
-   }
+   #if(!is.null(framework$pop_weights)){
+  #   pop_weights_vec <- rep(framework$pop_data[[framework$pop_weights]],L)
+  # }else{
+  #   pop_weights_vec <- rep(1, nrow(framework$pop_data)*L)
+  # }
      
      
     if (!is.null(Ydump)){
@@ -800,51 +800,49 @@ monte_carlo_vec <- function(mixed_model,
     # ))
      
  
-     Mean_dt <- function(y,pop_weights,by) {
-       # new method 
-       #1. multiply all columns of y by w except for column 1 (domain ID) 
-       #2 Cbind w to end   
-       #3. sum all columns by group 
-       #4. divide all columns except 1 by column 1 in sum 
+ 
        
-       y[,2:ncol(y) :=y[,lapply(.SD,"*",pop_weights),.SDcols=2:ncol(y)]]
-       y <- cbind(y,weights=pop_weights)
-       sumwy <- y[,lapply(.SD,sum),by=.(Domain)]
-       sumwy[,2:(ncol(sumwy)-1) := sumwy[,lapply(.SD,"/",sumwy[,ncol(sumwy),with=FALSE]),.SDcols=2:(ncol(sumwy)-1)]]
-       return(sumwy[,1:(ncol(sumwy)-1)]) # return Domain plus Mean, not weight  
-     }
-     
-
-     Head_Count_dt <- function (y, threshold,pop_weights,by) {
-     y[,2:ncol(y) := y[,lapply(.SD,"<",threshold),.SDcols=-1]]
-      HC <- Mean_dt(y,pop_weights,by)
-      return(HC)
-     }
-       
-     
-     rownames(population_vector_dt) <- framework$pop_domains 
-     y <- as.data.table(population_vector_dt,keep.rownames="Domain")
+     y <- cbind(Domain=as.data.table(framework$pop_domain),population_vector_dt) 
+     #rownames(population_vector_dt) <- framework$pop_domains
+     #y <- as.data.table(population_vector_dt,keep.rownames="Domain")
      w <- as.data.table(framework$pop_data[[framework$pop_weights]])
      # construct weights matrix 
      
      
      
-     #ans <- Head_Count_dt(y=y,w=w,threshold=framework$threshold,by="Domain")
+     #ans <- Head_Count_dt(y=y,pop_weights=w,threshold=framework$threshold,by="Domain")
+    ests_mcmc <- lapply(framework$indicator_list,function(f,threshold,pop_weights,by) {
+      y=y
+      },
+      pop_weights=w,
+      threshold=framework$threshold,
+      by="Domain"
+      )
+
+    a <- ests_mcmc[[1]]
+    b <- a[, rowMeans(.SD,), .SDcols = -1]
+    c <- lapply(ests_mcmc,FUN=function(y) {
+      y=y[,rowMeans(.SD,),.SDcols = -1]
+    }
+    ) 
+    
+   
+    point_estimates <- data.frame(c)
      
-     
+    
      
      #a <- a[,pop_weights := framework$pop_weights]
      #b <- a[,lapply(.SD,framework$indicator_list[[1]],threshold=framework$threshold,by=Domain),.SDcols=!"pop_weights"]
      #b <- a[,lapply(.SD,framework$indicator_list[[1]],threshold=framework$threshold,by=Domain),.SDcols=!"pop_weights"]
      
      #ans <- a[,lapply(framework$indicator_list[[1]](pop_weights))
-     
+  
      
      
      
 
      
-     ests_mcmc <- array(unlist(split(data.frame(ests_mcmc_2d), rep(1:L, each  = N_dom_pop_tmp))),c(N_dom_pop_tmp,L,ncol(ests_mcmc_2d)))
+     #ests_mcmc <- array(unlist(split(data.frame(ests_mcmc_2d), rep(1:L, each  = N_dom_pop_tmp))),c(N_dom_pop_tmp,L,ncol(ests_mcmc_2d)))
      point_estimates <- data.frame(
        Domain = unique(pop_domains_vec_tmp),
        apply(ests_mcmc, c(3), rowMeans)
@@ -929,6 +927,7 @@ prediction_y_dt <- function(transformation,
   #  fixed = fixed
   #)
   y_pred[mapply(is.infinite, y_pred)] <- NA
+  
   #y_pred[!is.finite(y_pred)] <- 0
   return(y_pred)
 } # End prediction_y
