@@ -237,22 +237,14 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
 
   if (data.table==TRUE) {
     indicator_list[["Mean"]] <-   
-          Mean <- function(y,pop_weights,by) {
-              # new method 
-              #1. multiply all columns of y by w except for column 1 (domain ID) 
-              #2 Cbind w to end   
-              #3. sum all columns by group 
-              #4. divide all columns except 1 by column 1 in sum 
-              y <- cbind(y,weights=pop_weights)
-              mean <- y[,lapply(.SD,weighted.mean,w=weights.V1),by="Domain.V1",.SDcols=-ncol(y)]
-              return(mean) # return Domain plus Mean, not weight  
+          function(y,pop_weights,threshold=NULL) {
+      weighted.mean(x=y,w=pop_weights)
     }
     
     indicator_list[["Head_Count"]] <- 
-    Head_Count <- function (y, threshold,pop_weights,by) {
-      y[,2:ncol(y) := y[,lapply(.SD,"<",threshold),.SDcols=-1]]
-      HC <- framework$indicator_list[["Mean"]](y,pop_weights,by)
-      return(HC)
+     function (y,threshold,pop_weights) {
+      # write functions to operate on vectors and then use data.table subsetting 
+      weighted.mean(y<threshold,w=pop_weights)
     }
   } # close data.table functions 
   
