@@ -35,7 +35,7 @@ framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, s
     smp_domains = smp_domains, threshold = threshold, weights = weights,
     pop_weights = pop_weights, benchmark_level = benchmark_level,
     benchmark_weights = benchmark_weights, weights_type = weights_type,
-    rescale_weights = rescale_weights,
+    rescale_weights = rescale_weights
   )
 
 

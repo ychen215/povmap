@@ -299,7 +299,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
 
   if (!is.null(custom_indicator) && length(custom_indicator) > 0) {
     for(i in 1:length(custom_indicator)) {
-      formals(custom_indicator[[i]]) <- list(y=, pop_weights=, threshold=)
+      formals(custom_indicator[[i]]) <- alist(y=, pop_weights=, threshold=)
     }
 
     indicator_list <- c(indicator_list, custom_indicator)
