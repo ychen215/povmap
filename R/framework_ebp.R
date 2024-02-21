@@ -245,7 +245,12 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
      function (y,threshold,pop_weights) {
       # write functions to operate on vectors and then use data.table subsetting 
       weighted.mean(y<threshold,w=pop_weights)
-    }
+     }
+    
+    
+    
+    
+    
   } # close data.table functions 
   
   

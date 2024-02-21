@@ -895,7 +895,7 @@ prediction_y_dt <- function(transformation,
   
   # predicted population income matrix 
   
-  mu <- data.table::setDT(rep(list(as.vector(gen_model$mu)),100))
+  mu <- data.table::setDT(rep(list(as.vector(gen_model$mu)),L))
   epsilon <- data.table::as.data.table(errors_gen$epsilon)
   vu <- data.table::as.data.table(errors_gen$vu)
   y_pred <- vu+epsilon+mu 
