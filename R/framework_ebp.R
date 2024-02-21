@@ -247,9 +247,26 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
       weighted.mean(y<threshold,w=pop_weights)
      }
     
+    indicator_list[["Quintile_Share"]] <- 
+     function(y, pop_weights, threshold) {
+        quant14 <- wtd.quantile(x = y, weights = pop_weights, probs = c(0.2, 0.8))
+        
+        iq1 <- y <= quant14[1]
+        iq4 <- y > quant14[2]
+        (sum(pop_weights[iq4] * y[iq4]) / sum(pop_weights[iq4])) /
+            (sum(pop_weights[iq1] * y[iq1]) / sum(pop_weights[iq1]))
+      }
     
-    
-    
+    indicator_list[["Quantiles"]] <-
+      function(y, pop_weights, threshold) {
+        if(length(unique(pop_weights)) == 1 & 1 %in% unique(pop_weights)){
+          quantile(x = y, probs = c(.10, .25, .5, .75, .9))
+        }else{
+          wtd.quantile(x = y, weights = pop_weights,
+                         probs = c(.10, .25, .5, .75, .9))
+        }
+      }
+      
     
   } # close data.table functions 
   
