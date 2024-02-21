@@ -763,13 +763,7 @@ monte_carlo_dt <- function(mixed_model,
      fixed = fixed,
      L=L 
    )
-  
-   #if(!is.null(framework$pop_weights)){
-  #   pop_weights_vec <- rep(framework$pop_data[[framework$pop_weights]],L)
-  # }else{
-  #   pop_weights_vec <- rep(1, nrow(framework$pop_data)*L)
-  # }
-     
+
      
     if (!is.null(Ydump)){
       vu_vec <- matrix(errors_mat$vu,ncol=1)
@@ -788,52 +782,23 @@ monte_carlo_dt <- function(mixed_model,
    
    
    
-   
-     #pop_domains_by_Lindex <- factor(paste(Lindex,pop_domains_vec_tmp))
-     # Calculation of indicators for each Monte Carlo population
-     
-     #ests_mcmc <- array(dim = c(
-    #   N_dom_pop_tmp,
-    #   L,
-    #   length(framework$indicator_names)
-    # ))
-     
- 
- 
+
        
      y <- cbind(Domain=as.data.table(framework$pop_domain),population_vector_dt) 
      y <- cbind(y,pop_weights=as.data.table(framework$pop_data[[framework$pop_weights]]))
-
-     
-  
-     
-  
-    
-
 indicators <- function(y,pop_weights,threshold, framework) {
   lapply(framework$indicator_list, function(f) f(y,pop_weights=pop_weights,threshold=framework$threshold))
 }
 
-
-     #ans <- Head_Count_dt(y=y,pop_weights=w,threshold=framework$threshold,by="Domain")
-     # y3 <- y2[,lapply(.SD,"Head_Count",threshold=framework$threshold,pop_weights=pop_weights.V1),.SDcols=2:101]
-      #y3 <- y2[,lapply(.SD,indicator_functions[[1]],threshold=framework$threshold,pop_weights=pop_weights.V1),.SDcols=2:101]
-      #y3 <- y[,unlist(lapply(.SD, function(y,pop_weights,threshold) 
-         #list(Head_Count=Head_Count(y,pop_weights=pop_weights.V1,threshold=framework$threshold))),recursive=FALSE),by=Domain.V1] 
-
-
-
-#y3 <- y[,unlist(lapply(.SD, indicators3,pop_weights=pop_weights.V1,threshold=framework$threshold,framework=framework),recursive=FALSE),by=Domain.V1]
 ests_mcmc <- y[,unlist(lapply(.SD, indicators,pop_weights=pop_weights.V1,framework=framework),recursive=FALSE),by=Domain.V1,.SDcols=-ncol(y)]
+if (!is.null(framework$indicator_list[["Quantiles"]])) {
+  #reshape wide 5 quantiles to columns 
+  #add a vector with the quantiles 
+    dcast(ests_mcmc,Domain.V1 ~ Quantile_names,value_var = pattern("Quantiles+") )
+}
 
 
 
-
-#ests_mcmc2 <- lapply(ests_mcmc,FUN=function(x) {
-#  x=ests_mcmc[,rowMeans(.SD,),.SDcols = -1]
-#}
-#)
-#ests_mcmc3 <- setDT(ests_mcmc2)
 ests_mcmc2 <- data.table::melt(data=ests_mcmc,id.vars = "Domain.V1",measure.vars = patterns(paste0("\\.",framework$indicator_names,"+")))
 point_estimates <- data.frame(ests_mcmc2[,lapply(.SD,mean),by=Domain.V1,.SDcols=3:ncol(ests_mcmc2)])
 colnames(point_estimates) <- c("Domain", framework$indicator_names)
