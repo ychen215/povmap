@@ -793,8 +793,12 @@ indicators <- function(y,pop_weights,threshold, framework) {
 ests_mcmc <- y[,unlist(lapply(.SD, indicators,pop_weights=pop_weights.V1,framework=framework),recursive=FALSE),by=Domain.V1,.SDcols=-ncol(y)]
 if (!is.null(framework$indicator_list[["Quantiles"]])) {
   #reshape wide 5 quantiles to columns 
-  #add a vector with the quantiles 
-    dcast(ests_mcmc,Domain.V1 ~ Quantile_names,value_var = pattern("Quantiles+") )
+     ests_mcmc[,Quantile_names := rep(c("10","25","50","75","90"),framework$N_dom_pop)]  
+     quantile_vars <- colnames(ests_mcmc)[grepl("V*\\.Quantiles+",colnames(ests_mcmc))]
+     ests_mcmc <- dcast(ests_mcmc,Domain.V1 ~ Quantile_names,value.var = quantile_vars)
+     colnames(ests_mcmc) <- gsub("Quantiles_","Quantile_",colnames(ests_mcmc))
+     colnames(ests_mcmc) <- gsub("Quantile_50","Median",colnames(ests_mcmc))
+     
 }
 
 
