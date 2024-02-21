@@ -777,8 +777,7 @@ monte_carlo_dt <- function(mixed_model,
       population_vector_vec <- matrix(population_vector_dt,ncol=1)
       Lindex <-rep(1:L,each=nrow(framework$pop_data))  
       
-     # DT.m1 = melt(DT, measure.vars = c("dob_child1", "dob_child2", "dob_child3"),
-                  # variable.name = "child", value.name = "dob")
+
       
       
       Ydumpdf <- data.frame(Lindex, rep(framework$pop_domains_vec,L),population_vector_vec,rep(gen_model$mu,L),vu_vec,epsilon_vec) 
@@ -803,37 +802,16 @@ monte_carlo_dt <- function(mixed_model,
  
        
      y <- cbind(Domain=as.data.table(framework$pop_domain),population_vector_dt) 
-     #rownames(population_vector_dt) <- framework$pop_domains
-     #y <- as.data.table(population_vector_dt,keep.rownames="Domain")
      y <- cbind(y,pop_weights=as.data.table(framework$pop_data[[framework$pop_weights]]))
-     #w <- as.data.table(framework$pop_data[[framework$pop_weights]])
-     # construct weights matrix 
+
      
+  
      
+  
     
-     #ests_mcmc <-  result = fit_df[, c(list(stat=names), lapply(.SD, statistical_tests)), by="Domain"]
-     threshold=framework$threshold
-     
-     indicator_functions <- unlist(framework$indicator_list)
-     Head_Count <- framework$indicator_list$Head_Count 
-     Mean <- framework$indicator_list$Mean 
-     y2 <-y [Domain.V1=="101001"]
-     
-     
-     #indicators <- list(Head_Count=Head_Count(y,pop_weights=pop_weights.V1,threshold=framework$threshold))
-     #}
-     
-indicators <- function(y,pop_weights,threshold,framework) {
-   list(Head_count=framework$indicator_list$Head_Count(y,pop_weights=pop_weights,threshold=threshold),
-        Mean=framework$indicator_list$Mean(y,pop_weights=pop_weights))
-}
 
-indicators2 <- function(y,pop_weights,threshold,framework) {
-  list(unlist(framework$indicator_list[[1]]))
-}
-
-indicators3 <- function(y,pop_weights,threshold, framework) {
-  lapply(framework$indicator_list, function(f) f(y,pop_weights=pop_weights,threshold=threshold))
+indicators <- function(y,pop_weights,threshold, framework) {
+  lapply(framework$indicator_list, function(f) f(y,pop_weights=pop_weights,threshold=framework$threshold))
 }
 
 
@@ -846,69 +824,21 @@ indicators3 <- function(y,pop_weights,threshold, framework) {
 
 
 #y3 <- y[,unlist(lapply(.SD, indicators3,pop_weights=pop_weights.V1,threshold=framework$threshold,framework=framework),recursive=FALSE),by=Domain.V1]
-y3 <- y[,unlist(lapply(.SD, indicators3,pop_weights=pop_weights.V1,threshold=framework$threshold,framework=framework),recursive=FALSE),by=Domain.V1,.SDcols=-ncol(y)]
+ests_mcmc <- y[,unlist(lapply(.SD, indicators,pop_weights=pop_weights.V1,framework=framework),recursive=FALSE),by=Domain.V1,.SDcols=-ncol(y)]
 
 
-    
-#y3 <- y[,unlist(lapply(.SD, function(y,pop_weights,threshold) 
-#list(Mean=Mean(y,pop_weights=pop_weights.V1))),recursive=FALSE),by=Domain.V1] 
 
 
-#y3 <- y[,unlist(lapply(.SD,indicators),recursive=FALSE),by=Domain.V1] 
+#ests_mcmc2 <- lapply(ests_mcmc,FUN=function(x) {
+#  x=ests_mcmc[,rowMeans(.SD,),.SDcols = -1]
+#}
+#)
+#ests_mcmc3 <- setDT(ests_mcmc2)
 
-        #indicators,threshold=framework$threshold,pop_weights=pop_weights.V1))),.SDcols=2:101]
-      #mean <- y[,lapply(.SD,weighted.mean,w=pop_weights.V1,.SDcols=-ncol(y))]
-      
-#      DT[, unlist(lapply(.SD,
- #                        function(x) list(mean = mean(x),
-  #                                        median = median(x))),
-   #               recursive = FALSE),
-    #     .SDcols = c('a', 'b')]
-         
-         
-     #ests_mcmc <- lapply(framework$indicator_list,function(f) {
-    #  data.table()
-    #}, 
-      #pop_weights=w,
-      #threshold=framework$threshold,
-      #by="Domain"
-      #)
 
-    
-   
-    
-    
-    a <- ests_mcmc[[1]]
-    b <- a[, rowMeans(.SD,), .SDcols = -1]
-    c <- lapply(ests_mcmc,FUN=function(y) {
-      y=y[,rowMeans(.SD,),.SDcols = -1]
-    }
-    )
-     
-    
-   
-    point_estimates <- data.frame(c)
-     
-    
-     
-     #a <- a[,pop_weights := framework$pop_weights]
-     #b <- a[,lapply(.SD,framework$indicator_list[[1]],threshold=framework$threshold,by=Domain),.SDcols=!"pop_weights"]
-     #b <- a[,lapply(.SD,framework$indicator_list[[1]],threshold=framework$threshold,by=Domain),.SDcols=!"pop_weights"]
-     
-     #ans <- a[,lapply(framework$indicator_list[[1]](pop_weights))
-  
-     
-     
-     
-
-     
-     #ests_mcmc <- array(unlist(split(data.frame(ests_mcmc_2d), rep(1:L, each  = N_dom_pop_tmp))),c(N_dom_pop_tmp,L,ncol(ests_mcmc_2d)))
-    # point_estimates <- data.frame(
-    #   Domain = unique(pop_domains_vec_tmp),
-    #   apply(ests_mcmc, c(3), rowMeans)
-    # )
-     
-  colnames(point_estimates) <- c("Domain", framework$indicator_names)
+ests_mcmc2 <- melt(data=ests_mcmc,id.vars = "Domain.V1",measure.vars = patterns("\\.Head_Count+", "\\.Mean+"))
+point_estimates <- data.frame(ests_mcmc2[,lapply(.SD,mean),by=Domain.V1,.SDcols=3:ncol(ests_mcmc2)])
+colnames(point_estimates) <- c("Domain", framework$indicator_names)
   return(point_estimates)
 } # End Monte-Carlo_vec
 
