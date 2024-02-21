@@ -834,9 +834,7 @@ ests_mcmc <- y[,unlist(lapply(.SD, indicators,pop_weights=pop_weights.V1,framewo
 #}
 #)
 #ests_mcmc3 <- setDT(ests_mcmc2)
-
-
-ests_mcmc2 <- melt(data=ests_mcmc,id.vars = "Domain.V1",measure.vars = patterns("\\.Head_Count+", "\\.Mean+"))
+ests_mcmc2 <- data.table::melt(data=ests_mcmc,id.vars = "Domain.V1",measure.vars = patterns(paste0("\\.",framework$indicator_names,"+")))
 point_estimates <- data.frame(ests_mcmc2[,lapply(.SD,mean),by=Domain.V1,.SDcols=3:ncol(ests_mcmc2)])
 colnames(point_estimates) <- c("Domain", framework$indicator_names)
   return(point_estimates)
