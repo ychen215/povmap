@@ -784,7 +784,7 @@ monte_carlo_dt <- function(mixed_model,
    
 
        
-     y <- cbind(Domain=as.data.table(framework$pop_domain),population_vector_dt) 
+     y <- cbind(Domain=as.data.table(framework$pop_data[framework$pop_domains]),population_vector_dt) 
      y <- cbind(y,pop_weights=as.data.table(framework$pop_data[[framework$pop_weights]]))
 indicators <- function(y,pop_weights,threshold, framework) {
   lapply(framework$indicator_list, function(f) f(y,pop_weights=pop_weights,threshold=framework$threshold))
@@ -793,10 +793,15 @@ indicators <- function(y,pop_weights,threshold, framework) {
 ests_mcmc <- y[,unlist(lapply(.SD, indicators,pop_weights=pop_weights.V1,framework=framework),recursive=FALSE),by=Domain.V1,.SDcols=-ncol(y)]
 if (!is.null(framework$indicator_list[["Quantiles"]])) {
   #reshape wide 5 quantiles to columns 
-     ests_mcmc[,Quantile_names := rep(c("10","25","50","75","90"),framework$N_dom_pop)]  
-     quantile_vars <- colnames(ests_mcmc)[grepl("V*\\.Quantiles+",colnames(ests_mcmc))]
-     ests_mcmc <- dcast(ests_mcmc,Domain.V1 ~ Quantile_names,value.var = quantile_vars)
-     colnames(ests_mcmc) <- gsub("Quantiles_","Quantile_",colnames(ests_mcmc))
+    ests_mcmc[,Quantile_names := rep(c("10","25","50","75","90"),framework$N_dom_pop)]  
+     
+    quantile_vars <- colnames(ests_mcmc)[grepl("V*\\.Quantiles+",colnames(ests_mcmc))]
+     ests_mcmc_q <- dcast(ests_mcmc,Domain.V1 ~ Quantile_names,value.var = quantile_vars)
+     #ests_mcmc_others <- ests_mcmc[,.SD[1],by=Domain.V1][,setdiff(colnames(ests_mcmc),colnames(ests_mcmc2))]
+     ests_mcmc_others <- ests_mcmc[,.SD[1],by=Domain.V1,.SDcols=-c(quantile_vars,"Quantile_names")]
+     ests_mcmc <-cbind(ests_mcmc_q[,1],ests_mcmc_others[,1:ncol(ests_mcmc_others)],ests_mcmc_q[,2:ncol(ests_mcmc_q)])
+     
+     colnames(ests_mcmc) <- gsub("Quantiles_","Quansetdiff(colnames(ests_mcmc),colnames(ests_mcmc2))tile_",colnames(ests_mcmc))
      colnames(ests_mcmc) <- gsub("Quantile_50","Median",colnames(ests_mcmc))
      
 }

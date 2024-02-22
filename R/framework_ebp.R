@@ -328,6 +328,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
   return(list(
     pop_data = pop_data,
     pop_domains_vec = pop_domains_vec,
+    pop_domains = pop_domains, 
     pop_subdomains = pop_subdomains, 
     pop_subdomains_vec = pop_subdomains_vec, 
     smp_data = smp_data,
