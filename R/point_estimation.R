@@ -489,7 +489,7 @@ var <- sigma2vu+sigma2eta+model_par$sigmae2est
 
 
 
-# do mean with function 
+# do mean and/or headcount with function 
 indicators <- matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop)
 colnames(indicators) <- framework$indicator_names
 
@@ -523,7 +523,7 @@ if (!is.null(Ydump)) {
 #point_estimates <- aggregate_weighted_mean(indicators[,c("Mean","Head_Count")],by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec)
 point_estimates <- aggregate_weighted_mean(indicators[,framework$indicator_names],by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
 
-point_estimates <- cbind(point_estimates, data.frame(matrix(ncol=length(framework$indicator_names),nrow=N_dom_pop_tmp)))
+#point_estimates <- cbind(point_estimates, data.frame(matrix(ncol=length(framework$indicator_names),nrow=N_dom_pop_tmp)))
 colnames(point_estimates) <- c("Domain",framework$indicator_names)
 return(point_estimates)
 } # end analytic 

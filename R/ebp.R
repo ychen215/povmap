@@ -569,7 +569,8 @@ ebp <- function(fixed,
         "pop_subdomains_vec",
         "weights",
         "pop_weights",
-        "response"
+        "response",
+        "indicator_names"
       )],
       transformation = transformation,
       method = "reml",
