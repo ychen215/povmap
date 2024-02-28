@@ -210,6 +210,16 @@ framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, s
     "Quantile_90"
   )
 
+  function_names <- c(
+    "Mean",
+    "Head_Count",
+    "Poverty_Gap",
+    "Poverty_Severity",
+    "Gini",
+    "Quintile_Share",
+    "Quantiles"
+  )
+  
   if (!is.null(indicators)) {
     keepthese <- which(function_names %in% indicators)
     indicator_list <- indicator_list[keepthese]

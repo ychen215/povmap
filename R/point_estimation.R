@@ -119,8 +119,6 @@ point_estim <- function(framework,
     )
     
   if (framework$model_parameters!="variable") {
-
-    
     gen_par <- gen_model(
     model_par = est_par,
     fixed = fixed,
@@ -131,9 +129,6 @@ point_estim <- function(framework,
   else {
     gen_par <- NULL 
   }
-  
-  
-  
   
   # Monte-Carlo approximation --------------------------------------------------
   if (inherits(framework$threshold, "function")) {
@@ -489,17 +484,12 @@ var <- sigma2vu+sigma2eta+model_par$sigmae2est
 
 
 
-# do mean and/or headcount with function 
+# do mean with function 
 indicators <- matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop)
 colnames(indicators) <- framework$indicator_names
 
-if ("Mean" %in% framework$indicator_names) {
-  indicators[,"Mean"] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,lambda=lambda) 
-} 
-if ("Head_Count" %in% framework$indicator_names) {
-  indicators[,"Head_Count"] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,threshold=framework$threshold)  
-}
-
+indicators[,"Mean"] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,lambda=lambda) 
+indicators[,"Head_Count"] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,threshold=framework$threshold)
 #indicators[,"Median"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.5)
 #indicators[,"Quantile_10"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.1) 
 #indicators[,"Quantile_25"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.25) 
@@ -520,10 +510,8 @@ if (!is.null(Ydump)) {
 
 
 
-#point_estimates <- aggregate_weighted_mean(indicators[,c("Mean","Head_Count")],by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec)
-point_estimates <- aggregate_weighted_mean(indicators[,framework$indicator_names],by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
-
-#point_estimates <- cbind(point_estimates, data.frame(matrix(ncol=length(framework$indicator_names),nrow=N_dom_pop_tmp)))
+point_estimates <- aggregate_weighted_mean(indicators[,c("Mean","Head_Count")],by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
+point_estimates <- cbind(point_estimates, data.frame(matrix(ncol=length(framework$indicator_names)-2,nrow=N_dom_pop_tmp)))
 colnames(point_estimates) <- c("Domain",framework$indicator_names)
 return(point_estimates)
 } # end analytic 
@@ -605,22 +593,26 @@ monte_carlo <- function(mixed_model,
     length(framework$indicator_names)
   ))
 
+  betas <- model_par$betas 
+  
   for (l in seq_len(L)) {
   
     if (framework$model_parameters=="variable") {
       # variable parameters means they must be drawn every replication
       # so we redraw the parameters  
       # draw error terms 
-      R <- chol(model_par$varErr) 
-      sigma2<- c(-1,-1)
-      while (sigma2[2]<0 | sigma2[1]<0) {
-      sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(model_par$varErr)
-      model_par$sigmae2est <- sigma2[2]
-      model_par$sigmau2est <- sigma2[1]
-      }
+      # This part is commented out 
+      #R <- chol(model_par$varErr) 
+      #sigma2<- c(-1,-1)
+      #while (sigma2[2]<0 | sigma2[1]<0) {
+      #sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(model_par$varErr)
+      #model_par$sigmae2est <- sigma2[2]
+      #model_par$sigmau2est <- sigma2[1]
+      #}
       # draw betas 
       R <- chol(model_par$varFix)
-      model_par$betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas      
+      
+      model_par$betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + betas       
 
 
 
@@ -791,7 +783,7 @@ monte_carlo_dt <- function(mixed_model,
    
 
        
-     y <- cbind(Domain=as.data.table(framework$pop_domains_vec),population_vector_dt) 
+     y <- cbind(Domain=as.data.table(framework$pop_domain),population_vector_dt) 
      y <- cbind(y,pop_weights=as.data.table(framework$pop_data[[framework$pop_weights]]))
 indicators <- function(y,pop_weights,threshold, framework) {
   lapply(framework$indicator_list, function(f) f(y,pop_weights=pop_weights,threshold=framework$threshold))
@@ -800,17 +792,8 @@ indicators <- function(y,pop_weights,threshold, framework) {
 ests_mcmc <- y[,unlist(lapply(.SD, indicators,pop_weights=pop_weights.V1,framework=framework),recursive=FALSE),by=Domain.V1,.SDcols=-ncol(y)]
 if (!is.null(framework$indicator_list[["Quantiles"]])) {
   #reshape wide 5 quantiles to columns 
-    ests_mcmc[,Quantile_names := rep(c("10","25","50","75","90"),framework$N_dom_pop)]  
-     
-    quantile_vars <- colnames(ests_mcmc)[grepl("V*\\.Quantiles+",colnames(ests_mcmc))]
-     ests_mcmc_q <- dcast(ests_mcmc,Domain.V1 ~ Quantile_names,value.var = quantile_vars)
-     #ests_mcmc_others <- ests_mcmc[,.SD[1],by=Domain.V1][,setdiff(colnames(ests_mcmc),colnames(ests_mcmc2))]
-     ests_mcmc_others <- ests_mcmc[,.SD[1],by=Domain.V1,.SDcols=-c(quantile_vars,"Quantile_names")]
-     ests_mcmc <-cbind(ests_mcmc_others,ests_mcmc_q[,2:ncol(ests_mcmc_q)])
-     
-     colnames(ests_mcmc) <- gsub("Quantiles_","Quantile_",colnames(ests_mcmc))
-     colnames(ests_mcmc) <- gsub("Quantile_50","Median",colnames(ests_mcmc))
-     
+  #add a vector with the quantiles 
+    dcast(ests_mcmc,Domain.V1 ~ Quantile_names,value_var = pattern("Quantiles+") )
 }
 
 

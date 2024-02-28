@@ -45,9 +45,6 @@ point_estim_ell <- function(framework,
   
   # Model estimation, model parameter and parameter of generating model --------
   
-  # Estimation of the nested error linear regression model
-  # See Molina and Rao (2010) p. 374
-  # lme function is included in the nlme package which is imported.
 
   # Do an unconditional random effect model 
   random_arg <- NULL 
@@ -79,8 +76,8 @@ point_estim_ell <- function(framework,
   
   
   if (!is.null(alpha)) {
-    alpha_model <- alpha_model(re_model = re_model,
-                    alpha = alpha)
+    alpha_model <- alpha_model(residuals = est_par$residuals,
+                    alpha = alpha,data=re_model$model)
   }
   
   
@@ -106,7 +103,6 @@ point_estim_ell <- function(framework,
       lambda = optimal_lambda,
       shift = shift_par,
       model_par = est_par,
-      gen_model = gen_par,
       fixed = fixed,
       Ydump = Ydump,
       alpha_model = alpha_model
@@ -153,16 +149,30 @@ model_par_ell <- function(framework,
   sigmae2est <- re_model$ercomp$sigma2[1]
   # VarCorr(fit2) is the estimated random error variance
   sigmau2est <- re_model$ercomp$sigma2[2]
-  vcov <- re_model$vcov
+  
+  if (framework$model_parameters!="fixed") {
+    varFix <- re_model$vcov
+  }
+  else {
+    varFix = NULL 
+  }
+  residuals <- re_model$model[,1]-predict(re_model)
+  residuals <- as.data.frame(cbind(residuals,attr(re_model$residuals,"index")[,1]))
+  colnames(residuals) <- c("residuals","index")
+  
+  framework$pop_data[[paste0(fixed[2])]] <- seq_len(nrow(framework$pop_data))
+  X_pop <- model.matrix(fixed, framework$pop_data)
+  mu_fixed <- X_pop %*% betas
   
   
-
-    
     return(list(
       betas = betas,
       sigmae2est = sigmae2est,
       sigmau2est = sigmau2est,
-      vcov = vcov
+      varFix = varFix,
+      varErr = NULL,
+      residuals = residuals,
+      mu_fixed = mu_fixed 
     ))
   } 
 
@@ -177,18 +187,15 @@ rowvar <- function(x) {
 #Alpha model function
 # This function estimates the alpha model, as described in Zhao and Lanjouw's reference guide to povmap 
 # it returns the alpha model and the expected value of the variance 
-alpha_model <- function(re_model, alpha) {
+alpha_model <- function(residuals, alpha,data) {
   # 1. Decopmose the residuals into an average cluster effect and a residual 
-  residuals <- re_model$model[,1]-predict(re_model)
-  residuals <- as.data.frame(cbind(residuals,attr(re_model$residuals,"index")[,1]))
-  colnames(residuals) <- c("residuals","index")
     mean_residuals <- ave(residuals$residuals,residuals$index)
     eps_squared <- (residuals[,1]-mean_residuals)^2 
     A <- 1.05*max(eps_squared)
-    re_model$model$transformed_eps_squared <- log(eps_squared/(A-eps_squared))
-    re_model$model$transformed_eps_squared[eps_squared==0] <- 0
+    data$transformed_eps_squared <- log(eps_squared/(A-eps_squared))
+    data$transformed_eps_squared[eps_squared==0] <- 0
      model <- as.formula(paste0("transformed_eps_squared ~ ",alpha))
-    alphamodel<-lm(model,data=re_model$model)
+    alphamodel<-lm(model,data=data)
     B <- exp(predict(alphamodel))
     var_r <- summary(alphamodel)$sigma^2
     sigmae2est <- A * B / (1+B) + 0.5*var_r*(A*B*(1-B)/(1+B)^3)
@@ -205,7 +212,6 @@ monte_carlo_ell <- function(transformation,
                         lambda,
                         shift,
                         model_par,
-                        gen_model,
                         fixed,
                         Ydump,
                         alpha_model) {
@@ -222,8 +228,8 @@ monte_carlo_ell <- function(transformation,
   
   
   if (!is.null(Ydump)) {
-    Ydumpdf <- data.frame(matrix(ncol = 8+length(model_par$betas), nrow = 0))
-    colnames(Ydumpdf) <- c("L","Domain","Simulated_Y","XBetahat","eta","epsilon","sigma2eta","sigma2eps",colnames(model_par$betas))
+    Ydumpdf <- data.frame(matrix(ncol = 6, nrow = 0))
+    colnames(Ydumpdf) <- c("L","Domain","Simulated_Y","XBetahat","eta","epsilon")
     write.csv(Ydumpdf,Ydump,row.names = FALSE)
   }
   
@@ -234,6 +240,7 @@ monte_carlo_ell <- function(transformation,
     length(framework$indicator_names)
   ))
   
+  betas <- model_par$betas 
   message("\r", "Bootstrap started                                            ")
   start_time <- Sys.time()
   for (l in seq_len(L)) {
@@ -242,23 +249,17 @@ monte_carlo_ell <- function(transformation,
       # variable parameters means they must be drawn every replication
       # so we redraw the parameters  
       # draw error terms 
-      R <- chol(model_par$varErr) 
-      sigma2<- c(-1,-1)
-      while (sigma2[2]<0 | sigma2[1]<0) {
-        sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(model_par$varErr)
-        model_par$sigmae2est <- sigma2[2]
-        model_par$sigmau2est <- sigma2[1]
-      }
+      #R <- chol(model_par$varErr) 
+      #sigma2<- c(-1,-1)
+      #while (sigma2[2]<0 | sigma2[1]<0) {
+      #  sigma2 <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + diag(model_par$varErr)
+      #  model_par$sigmae2est <- sigma2[2]
+      #  model_par$sigmau2est <- sigma2[1]
+      #}
       # draw betas 
       R <- chol(model_par$varFix)
-      model_par$betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + model_par$betas      
+      model_par$betas <- t(R)  %*% matrix(rnorm(ncol(R)), ncol(R)) + betas  
       
-      gen_model <- gen_model(
-        model_par = model_par,
-        fixed = fixed,
-        framework = framework,
-        dep_var = dep_var 
-      )
     } # close condition to redraw parameters 
     
     
@@ -270,7 +271,6 @@ monte_carlo_ell <- function(transformation,
     errors <- errors_gen_ell(
       framework = framework,
       model_par = model_par,
-      gen_model = gen_model,
       alpha_model = alpha_model
     )
     } 
@@ -278,7 +278,6 @@ monte_carlo_ell <- function(transformation,
       errors <- errors_gen_ell_nonp(
         framework=framework,
         model_par = model_par,
-        gen_model=gen_model, 
         alpha_model = alpha_model 
       )
     
@@ -286,13 +285,15 @@ monte_carlo_ell <- function(transformation,
     
     # generate gen_model$mu here based parameters$beta, if you have the data conveniently around 
     
+    
+    
     # Prediction of population vector y
     # See below for function prediction_y.
     population_vector <- prediction_y_ell(
       transformation = transformation,
       lambda = lambda,
       shift = shift,
-      gen_model = gen_model,
+      model_par = model_par, 
       errors = errors,
       framework = framework,
       fixed = fixed
@@ -304,7 +305,7 @@ monte_carlo_ell <- function(transformation,
       pop_weights_vec <- rep(1, nrow(framework$pop_data))
     }
     if (!is.null(Ydump)){
-      Ydumpdf <- data.frame(rep(l,framework$N_pop), framework$pop_domains_vec,population_vector,gen_model$mu,parameters$vu,parameters$epsilon,parameters$betas)
+      Ydumpdf <- data.frame(rep(l,framework$N_pop), framework$pop_domains_vec,population_vector,model_par$mu_fixed,errors$vu,errors$epsilon)
       #write.csv(Ydumpdf,Ydump,row.names = FALSE,append=TRUE)
       write.table(Ydumpdf,file=Ydump,row.names = FALSE,append=TRUE,col.names=F, sep=",") 
     }
@@ -372,7 +373,7 @@ monte_carlo_ell <- function(transformation,
 
 
 # The function errors_gen returns error terms of the generating model.
-errors_gen_ell <- function(framework, model_par, gen_model, alpha_model) {
+errors_gen_ell <- function(framework, model_par, alpha_model) {
   if (is.null(alpha_model)) {
     epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
   } 
@@ -384,31 +385,19 @@ errors_gen_ell <- function(framework, model_par, gen_model, alpha_model) {
   # draw random effect
   vu <- rep(rnorm(framework$N_dom_pop,0,sqrt(model_par$sigmau2est)
     ),framework$n_pop)
-  return(list(epsilon = epsilon, vu = vu, betas=betas))
-} # End errors_gen
+  return(list(epsilon = epsilon, vu = vu))
+} # End errors_gen_ell
 
 # The function errors_gen_nonp returns error terms of the generating model
 # obtained through a non-parametric bootstrap procedure 
-errors_gen_ell_nonp <- function(framework, model_par, gen_model, alpha_model) {
-  
-  
-  
-  if (is.null(alpha_model)) {
-    epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
-  } 
-  else {
-    epsilon <- rnorm(framework$N_pop, 0, sqrt(alpha_model$sigmae2est))
-  }
-  # empty vector for new random effect in generating model
-  vu <- vector(length = framework$N_pop)
-  # draw random effect
-  vu <- rep(rnorm(framework$N_dom_pop,0,sqrt(model_par$sigmau2est)
-  ),framework$n_pop)
-  
-  
-  
-  return(list(epsilon = epsilon, vu = vu, betas=betas))
-} # End errors_gen
+errors_gen_ell_nonp <- function(framework, model_par, alpha_model) {
+  mean_resid <- aggregate_weighted_mean(df=model_par$residuals$residuals,by=list(model_par$residuals$index),
+                                        w=framework$smp_data[,framework$weights])
+  dev_resid <- model_par$residuals$residuals - rep(mean_resid$V1,framework$n_smp)
+  epsilon <- sample(dev_resid, replace=TRUE,size=framework$N_pop)
+  vu <- rep(sample(mean_resid$V1,replace=TRUE,size=framework$N_dom_pop),framework$n_pop)
+  return(list(epsilon = epsilon, vu = vu))
+} # End errors_gen_ell_nonp
 
 
 
@@ -420,7 +409,7 @@ errors_gen_ell_nonp <- function(framework, model_par, gen_model, alpha_model) {
 prediction_y_ell <- function(transformation,
                          lambda,
                          shift,
-                         gen_model,
+                         model_par,
                          errors,
                          framework,
                          fixed) {
@@ -429,7 +418,7 @@ prediction_y_ell <- function(transformation,
 
   
   # predicted population income vector
-  y_pred <- gen_model$mu + errors$epsilon + errors$vu
+  y_pred <- model_par$mu_fixed + errors$epsilon + errors$vu
   
   # back-transformation of predicted population income vector
   y_pred <- back_transformation(

@@ -234,7 +234,8 @@ ell <- function(fixed,
     benchmark_weights = benchmark_weights,
     rescale_weights = rescale_weights,
     errors = errors,
-    indicators = indicators 
+    indicators = indicators,
+    model_parameters = model_parameters
   )
   
   
