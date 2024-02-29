@@ -398,6 +398,13 @@ ebp <- function(fixed,
   if (is.null(benchmark_weights) & !is.null(weights)) {
     benchmark_weights <- weights
   }
+  
+  if (L==0 && is.null(indicators)) {
+    #set default indicators to mean and headcount if calculating expected values 
+    #because these are only indicators currently supported
+    indicators <- c("Mean","Head_Count")
+  }
+  
 
   # The function framework_ebp can be found in script framework_ebp.R
   framework <- framework_ebp(
