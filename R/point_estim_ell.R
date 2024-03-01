@@ -194,7 +194,7 @@ alpha_model <- function(residuals, alpha,data) {
     A <- 1.05*max(eps_squared)
     data$transformed_eps_squared <- log(eps_squared/(A-eps_squared))
     data$transformed_eps_squared[eps_squared==0] <- 0
-    model <- as.formula(paste0("transformed_eps_squared ~ ",alpha))
+    model <- as.formula(paste0("transformed_eps_squared ",alpha))
     alphamodel<-lm(model,data=data)
     B <- exp(predict(alphamodel))
     var_r <- summary(alphamodel)$sigma^2
