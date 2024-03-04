@@ -77,7 +77,7 @@ point_estim_ell <- function(framework,
   
   if (!is.null(alpha)) {
     alpha_model <- alpha_model(residuals = est_par$residuals,
-                    alpha = alpha,data=framework$smp_data)
+                    alpha = alpha,data=framework$smp_data,weights=framework$weights)
   }
   
   
@@ -187,7 +187,7 @@ rowvar <- function(x) {
 #Alpha model function
 # This function estimates the alpha model, as described in Zhao and Lanjouw's reference guide to povmap 
 # it returns the alpha model and the expected value of the variance 
-alpha_model <- function(residuals, alpha,data) {
+alpha_model <- function(residuals, alpha,data,weights) {
   # 1. Decopmose the residuals into an average cluster effect and a residual 
     mean_residuals <- ave(residuals$residuals,residuals$index)
     eps_squared <- (residuals[,1]-mean_residuals)^2 
@@ -195,7 +195,7 @@ alpha_model <- function(residuals, alpha,data) {
     data$transformed_eps_squared <- log(eps_squared/(A-eps_squared))
     data$transformed_eps_squared[eps_squared==0] <- 0
     model <- as.formula(paste0("transformed_eps_squared ",alpha))
-    alphamodel<-lm(model,data=data)
+    alphamodel<-lm(model,data=data,weights=data[,weights])
     B <- exp(predict(alphamodel))
     var_r <- summary(alphamodel)$sigma^2
     sigmae2est <- A * B / (1+B) + 0.5*var_r*(A*B*(1-B)/(1+B)^3)
