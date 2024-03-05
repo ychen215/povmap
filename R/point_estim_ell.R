@@ -196,10 +196,11 @@ alpha_model <- function(residuals, alpha,data,weights) {
     data$transformed_eps_squared[eps_squared==0] <- 0
     model <- as.formula(paste0("transformed_eps_squared ",alpha))
     alphamodel<-lm(model,data=data,weights=data[,weights])
-    B <- exp(predict(alphamodel))
-    var_r <- summary(alphamodel)$sigma^2
-    sigmae2est <- A * B / (1+B) + 0.5*var_r*(A*B*(1-B)/(1+B)^3)
-    return(list(alpha_model=alphamodel,sigmae2est = sigmae2est))
+    
+    #B <- exp(predict(alphamodel))
+    #var_r <- summary(alphamodel)$sigma^2
+    #sigmae2est <- A * B / (1+B) + 0.5*var_r*(A*B*(1-B)/(1+B)^3)
+    return(list(alpha_model=alphamodel,A=A))
     }
 
 
@@ -394,7 +395,24 @@ errors_gen_ell_nonp <- function(framework, model_par, alpha_model) {
   mean_resid <- aggregate_weighted_mean(df=model_par$residuals$residuals,by=list(model_par$residuals$index),
                                         w=framework$smp_data[,framework$weights])
   dev_resid <- model_par$residuals$residuals - rep(mean_resid$V1,framework$n_smp)
-  epsilon <- sample(dev_resid, replace=TRUE,size=framework$N_pop)
+  # we want to draw standardized residuals, so first estimate the variance of epsilon in the sample 
+  B_smp <- exp(predict(alpha_model$alpha_model))
+  var_r <- summary(alpha_model$alpha_model)$sigma^2
+  A <- alpha_model$A 
+  sigmae2est_smp <- (A * B_smp / (1+B_smp)) + 0.5*var_r*(A*B_smp*(1-B_smp)/(1+B_smp)^3)
+  dev_resid_std <- dev_resid/sigmae2est_smp^0.5 
+  # draw standardized residuals 
+   epsilon_std <- sample(dev_resid_std, replace=TRUE,size=framework$N_pop)
+
+   # now we want to unstandardize the residuals, so we need the estimated variance of epsilon in the population
+   alpha_X_vars <- alpha_model$alpha_model$terms
+   framework$pop_data[[paste0(alpha_X_vars[[2]])]] <- seq_len(nrow(framework$pop_data))
+   X_pop <- model.matrix(alpha_X_vars, framework$pop_data)
+   B_pop <- exp(X_pop %*% alpha_model$alpha_model$coefficients)
+   sigmae2est_pop <- (A * B_pop / (1+B_pop)) + 0.5*var_r*(A*B_pop*(1-B_pop)/(1+B_pop)^3)
+   epsilon <- epsilon_std*sigmae2est_pop^0.5 
+   
+   
   vu <- rep(sample(mean_resid$V1,replace=TRUE,size=framework$N_dom_pop),framework$n_pop)
   return(list(epsilon = epsilon, vu = vu))
 } # End errors_gen_ell_nonp
