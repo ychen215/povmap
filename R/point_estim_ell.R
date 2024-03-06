@@ -77,7 +77,7 @@ point_estim_ell <- function(framework,
   
   if (!is.null(alpha)) {
     alpha_model <- alpha_model(residuals = est_par$residuals,
-                    alpha = alpha,data=framework$smp_data,weights=framework$weights)
+                    alpha = alpha,framework = framework)
   }
   
   
@@ -156,9 +156,9 @@ model_par_ell <- function(framework,
   else {
     varFix = NULL 
   }
-  residuals <- re_model$model[,1]-predict(re_model)
-  residuals <- as.data.frame(cbind(residuals,attr(re_model$residuals,"index")[,1]))
-  colnames(residuals) <- c("residuals","index")
+  residuals <- as.vector(re_model$model[,1]-predict(re_model))
+  #residuals <- as.data.frame(cbind(residuals,attr(re_model$residuals,"index")[,1]))
+  #colnames(residuals) <- c("residuals","index")
   
   framework$pop_data[[paste0(fixed[2])]] <- seq_len(nrow(framework$pop_data))
   X_pop <- model.matrix(fixed, framework$pop_data)
@@ -187,20 +187,36 @@ rowvar <- function(x) {
 #Alpha model function
 # This function estimates the alpha model, as described in Zhao and Lanjouw's reference guide to povmap 
 # it returns the alpha model and the expected value of the variance 
-alpha_model <- function(residuals, alpha,data,weights) {
+alpha_model <- function(residuals, alpha,framework) {
   # 1. Decopmose the residuals into an average cluster effect and a residual 
-    mean_residuals <- ave(residuals$residuals,residuals$index)
-    eps_squared <- (residuals[,1]-mean_residuals)^2 
+   weights <- framework$smp_data[,framework$weights]
+   mean_resid <- aggregate_weighted_mean(df=residuals,by=list(framework$smp_data[,framework$smp_domains]),
+                                         w=weights)
+    eps_squared <- (residuals-rep(mean_residuals,framework$n_smp))^2 
     A <- 1.05*max(eps_squared)
-    data$transformed_eps_squared <- log(eps_squared/(A-eps_squared))
-    data$transformed_eps_squared[eps_squared==0] <- 0
+    framework$smp_data$transformed_eps_squared <- log(eps_squared/(A-eps_squared))
+    framework$smp_data$transformed_eps_squared[eps_squared==0] <- 0
     model <- as.formula(paste0("transformed_eps_squared ",alpha))
-    alphamodel<-lm(model,data=data,weights=data[,weights])
     
-    #B <- exp(predict(alphamodel))
-    #var_r <- summary(alphamodel)$sigma^2
-    #sigmae2est <- A * B / (1+B) + 0.5*var_r*(A*B*(1-B)/(1+B)^3)
-    return(list(alpha_model=alphamodel,A=A))
+    alpha_model<-lm(model,data=framework$smp_data,weights=weights)
+    
+    dev_resid <- model_par$residuals$residuals - rep(mean_resid$V1,framework$n_smp)
+    # we want to draw standardized residuals, so first estimate the variance of epsilon in the sample 
+    B_smp <- exp(predict(alpha_model$alpha_model))
+    var_r <- summary(alpha_model$alpha_model)$sigma^2
+    A <- alpha_model$A 
+    sigmae2est_smp <- (A * B_smp / (1+B_smp)) + 0.5*var_r*(A*B_smp*(1-B_smp)/(1+B_smp)^3)
+    dev_resid_std <- dev_resid/sigmae2est_smp^0.5
+      
+    # now we want to unstandardize the residuals, so we need the estimated variance of epsilon in the population
+    alpha_X_vars <- alpha_model$alpha_model$terms
+    framework$pop_data[[paste0(alpha_X_vars[[2]])]] <- seq_len(nrow(framework$pop_data))
+    X_pop <- model.matrix(alpha_X_vars, framework$pop_data)
+    B_pop <- exp(X_pop %*% alpha_model$alpha_model$coefficients)
+    sigmae2est_pop <- (A * B_pop / (1+B_pop)) + 0.5*var_r*(A*B_pop*(1-B_pop)/(1+B_pop)^3)
+    
+    
+    return(list(alpha_model=alpha_model,sigma2est_smp=sigma2est_smp, sigma2est_pop=sigma2est_pop, dev_resid_std=dev_resid_std))
     }
 
 
@@ -392,25 +408,25 @@ errors_gen_ell <- function(framework, model_par, alpha_model) {
 # The function errors_gen_nonp returns error terms of the generating model
 # obtained through a non-parametric bootstrap procedure 
 errors_gen_ell_nonp <- function(framework, model_par, alpha_model) {
-  mean_resid <- aggregate_weighted_mean(df=model_par$residuals$residuals,by=list(model_par$residuals$index),
-                                        w=framework$smp_data[,framework$weights])
-  dev_resid <- model_par$residuals$residuals - rep(mean_resid$V1,framework$n_smp)
+  #mean_resid <- aggregate_weighted_mean(df=model_par$residuals$residuals,by=list(model_par$residuals$index),
+  # w=framework$smp_data[,framework$weights])
+  #dev_resid <- model_par$residuals$residuals - rep(mean_resid$V1,framework$n_smp)
   # we want to draw standardized residuals, so first estimate the variance of epsilon in the sample 
-  B_smp <- exp(predict(alpha_model$alpha_model))
-  var_r <- summary(alpha_model$alpha_model)$sigma^2
-  A <- alpha_model$A 
-  sigmae2est_smp <- (A * B_smp / (1+B_smp)) + 0.5*var_r*(A*B_smp*(1-B_smp)/(1+B_smp)^3)
-  dev_resid_std <- dev_resid/sigmae2est_smp^0.5 
+  #B_smp <- exp(predict(alpha_model$alpha_model))
+  #var_r <- summary(alpha_model$alpha_model)$sigma^2
+  #A <- alpha_model$A 
+  #sigmae2est_smp <- (A * B_smp / (1+B_smp)) + 0.5*var_r*(A*B_smp*(1-B_smp)/(1+B_smp)^3)
+  #dev_resid_std <- dev_resid/sigmae2est_smp^0.5
   # draw standardized residuals 
-   epsilon_std <- sample(dev_resid_std, replace=TRUE,size=framework$N_pop)
+   epsilon_std <- sample(alpha_model$dev_resid_std, replace=TRUE,size=framework$N_pop)
 
    # now we want to unstandardize the residuals, so we need the estimated variance of epsilon in the population
-   alpha_X_vars <- alpha_model$alpha_model$terms
-   framework$pop_data[[paste0(alpha_X_vars[[2]])]] <- seq_len(nrow(framework$pop_data))
-   X_pop <- model.matrix(alpha_X_vars, framework$pop_data)
-   B_pop <- exp(X_pop %*% alpha_model$alpha_model$coefficients)
-   sigmae2est_pop <- (A * B_pop / (1+B_pop)) + 0.5*var_r*(A*B_pop*(1-B_pop)/(1+B_pop)^3)
-   epsilon <- epsilon_std*sigmae2est_pop^0.5 
+   #alpha_X_vars <- alpha_model$alpha_model$terms
+   #framework$pop_data[[paste0(alpha_X_vars[[2]])]] <- seq_len(nrow(framework$pop_data))
+   #X_pop <- model.matrix(alpha_X_vars, framework$pop_data)
+   #B_pop <- exp(X_pop %*% alpha_model$alpha_model$coefficients)
+   #sigmae2est_pop <- (A * B_pop / (1+B_pop)) + 0.5*var_r*(A*B_pop*(1-B_pop)/(1+B_pop)^3)
+   epsilon <- epsilon_std*alpha_model$sigmae2est_pop^0.5 
    
    
   vu <- rep(sample(mean_resid$V1,replace=TRUE,size=framework$N_dom_pop),framework$n_pop)
