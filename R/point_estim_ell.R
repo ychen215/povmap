@@ -215,7 +215,8 @@ alpha_model <- function(residuals, alpha,framework) {
     B_pop <- exp(X_pop %*% alpha_model$coefficients)
     sigmae2est_pop <- (A * B_pop / (1+B_pop)) + 0.5*var_r*(A*B_pop*(1-B_pop)/(1+B_pop)^3)
     sigmae2est_pop[sigmae2est_pop<min(sigmae2est_smp)]=min(sigmae2est_smp)
-    return(list(alpha_model=alpha_model,sigma2est_smp=sigma2est_smp, sigma2est_pop=sigma2est_pop, dev_resid_std=dev_resid_std))
+    return(list(alpha_model=alpha_model,sigmae2est_smp=sigmae2est_smp, sigmae2est_pop=sigmae2est_pop, 
+                dev_resid_std=dev_resid_std,mean_resid = mean_resid$V1))
     }
 
 
@@ -428,7 +429,7 @@ errors_gen_ell_nonp <- function(framework, model_par, alpha_model) {
    epsilon <- epsilon_std*alpha_model$sigmae2est_pop^0.5 
    
    
-  vu <- rep(sample(mean_resid$V1,replace=TRUE,size=framework$N_dom_pop),framework$n_pop)
+  vu <- rep(sample(alpha_model$mean_resid,replace=TRUE,size=framework$N_dom_pop),framework$n_pop)
   return(list(epsilon = epsilon, vu = vu))
 } # End errors_gen_ell_nonp
 
