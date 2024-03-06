@@ -207,6 +207,7 @@ alpha_model <- function(residuals, alpha,framework) {
     var_r <- summary(alpha_model)$sigma^2
     sigmae2est_smp <- (A * B_smp / (1+B_smp)) + 0.5*var_r*(A*B_smp*(1-B_smp)/(1+B_smp)^3)
     dev_resid_std <- dev_resid/sigmae2est_smp^0.5
+    dev_resid_std <- dev_resid_std-ave(dev_resid_std,by=framework$smp_data[,framework$smp_domains]) # ELL p.357 eq (3)
       
     # now we want to unstandardize the residuals, so we need the estimated variance of epsilon in the population
     alpha_X_vars <- alpha_model$terms
@@ -214,7 +215,7 @@ alpha_model <- function(residuals, alpha,framework) {
     X_pop <- model.matrix(alpha_X_vars, framework$pop_data)
     B_pop <- exp(X_pop %*% alpha_model$coefficients)
     sigmae2est_pop <- (A * B_pop / (1+B_pop)) + 0.5*var_r*(A*B_pop*(1-B_pop)/(1+B_pop)^3)
-    sigmae2est_pop[sigmae2est_pop<min(sigmae2est_smp)]=min(sigmae2est_smp)
+    sigmae2est_pop[sigmae2est_pop<min(sigmae2est_smp)] <- min(sigmae2est_smp)
     return(list(alpha_model=alpha_model,sigmae2est_smp=sigmae2est_smp, sigmae2est_pop=sigmae2est_pop, 
                 dev_resid_std=dev_resid_std,mean_resid = mean_resid$V1))
     }
