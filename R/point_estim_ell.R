@@ -192,7 +192,8 @@ alpha_model <- function(residuals, alpha,framework) {
    weights <- framework$smp_data[,framework$weights]
    mean_resid <- aggregate_weighted_mean(df=residuals,by=list(framework$smp_data[,framework$smp_domains]),
                                          w=weights)
-    eps_squared <- (residuals-rep(mean_residuals,framework$n_smp))^2 
+   dev_resid <- residuals - rep(mean_resid$V1,framework$n_smp)
+   eps_squared <- dev_resid^2 
     A <- 1.05*max(eps_squared)
     framework$smp_data$transformed_eps_squared <- log(eps_squared/(A-eps_squared))
     framework$smp_data$transformed_eps_squared[eps_squared==0] <- 0
@@ -200,22 +201,20 @@ alpha_model <- function(residuals, alpha,framework) {
     
     alpha_model<-lm(model,data=framework$smp_data,weights=weights)
     
-    dev_resid <- model_par$residuals$residuals - rep(mean_resid$V1,framework$n_smp)
+    
     # we want to draw standardized residuals, so first estimate the variance of epsilon in the sample 
-    B_smp <- exp(predict(alpha_model$alpha_model))
-    var_r <- summary(alpha_model$alpha_model)$sigma^2
-    A <- alpha_model$A 
+    B_smp <- exp(predict(alpha_model))
+    var_r <- summary(alpha_model)$sigma^2
     sigmae2est_smp <- (A * B_smp / (1+B_smp)) + 0.5*var_r*(A*B_smp*(1-B_smp)/(1+B_smp)^3)
     dev_resid_std <- dev_resid/sigmae2est_smp^0.5
       
     # now we want to unstandardize the residuals, so we need the estimated variance of epsilon in the population
-    alpha_X_vars <- alpha_model$alpha_model$terms
+    alpha_X_vars <- alpha_model$terms
     framework$pop_data[[paste0(alpha_X_vars[[2]])]] <- seq_len(nrow(framework$pop_data))
     X_pop <- model.matrix(alpha_X_vars, framework$pop_data)
-    B_pop <- exp(X_pop %*% alpha_model$alpha_model$coefficients)
+    B_pop <- exp(X_pop %*% alpha_model$coefficients)
     sigmae2est_pop <- (A * B_pop / (1+B_pop)) + 0.5*var_r*(A*B_pop*(1-B_pop)/(1+B_pop)^3)
-    
-    
+    sigmae2est_pop[sigmae2est_pop<min(sigmae2est_smp)]=min(sigmae2est_smp)
     return(list(alpha_model=alpha_model,sigma2est_smp=sigma2est_smp, sigma2est_pop=sigma2est_pop, dev_resid_std=dev_resid_std))
     }
 
