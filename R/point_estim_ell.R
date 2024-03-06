@@ -76,10 +76,12 @@ point_estim_ell <- function(framework,
   
   
   if (!is.null(alpha)) {
-    alpha_model <- alpha_model(residuals = est_par$residuals,
+    alpha_model <- alphamodel(residuals = est_par$residuals,
                     alpha = alpha,framework = framework)
   }
-  
+  else {
+    alpha_model <- NULL 
+  }
   
   
   
@@ -187,7 +189,7 @@ rowvar <- function(x) {
 #Alpha model function
 # This function estimates the alpha model, as described in Zhao and Lanjouw's reference guide to povmap 
 # it returns the alpha model and the expected value of the variance 
-alpha_model <- function(residuals, alpha,framework) {
+alphamodel <- function(residuals, alpha,framework) {
   # 1. Decopmose the residuals into an average cluster effect and a residual 
    weights <- framework$smp_data[,framework$weights]
    mean_resid <- aggregate_weighted_mean(df=residuals,by=list(framework$smp_data[,framework$smp_domains]),
@@ -232,7 +234,7 @@ monte_carlo_ell <- function(transformation,
                         model_par,
                         fixed,
                         Ydump,
-                        alpha_model) {
+                        alpha_model = NULL) {
   
   # Preparing matrices for indicators for the Monte-Carlo simulation
   
@@ -408,12 +410,12 @@ errors_gen_ell <- function(framework, model_par, alpha_model=NULL) {
 
 # The function errors_gen_nonp returns error terms of the generating model
 # obtained through a non-parametric bootstrap procedure 
-errors_gen_ell_nonp <- function(framework, model_par, alpha_model=NULL) {
+errors_gen_ell_nonp <- function(framework, model_par, alpha_model) {
  
   if (!is.null(alpha_model)) {
     epsilon_std <- sample(alpha_model$dev_resid_std, replace=TRUE,size=framework$N_pop)
     # now we want to unstandardize the residuals, so we need the estimated variance of epsilon in the population
-    epsilon <- epsilon_std*alpha_model$sigmae2est_pop^0.5 
+    epsilon <- as.vector(epsilon_std*alpha_model$sigmae2est_pop^0.5)
     vu <- rep(sample(alpha_model$mean_resid,replace=TRUE,size=framework$N_dom_pop),framework$n_pop) 
   }
      else {
@@ -423,7 +425,7 @@ errors_gen_ell_nonp <- function(framework, model_par, alpha_model=NULL) {
                                              w=weights)
        dev_resid <- residuals - rep(mean_resid$V1,framework$n_smp)
        epsilon <- sample(dev_resid, replace=TRUE,size=framework$N_pop)
-       vu <- rep(sample(mean_resid,replace=TRUE,size=framework$N_dom_pop),framework$n_pop) 
+       vu <- rep(sample(mean_resid$V1,replace=TRUE,size=framework$N_dom_pop),framework$n_pop) 
      }
    
   return(list(epsilon = epsilon, vu = vu))
