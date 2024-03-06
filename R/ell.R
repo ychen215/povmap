@@ -181,7 +181,7 @@ ell <- function(fixed,
                 Ydump = NULL, 
                 errors = "normal",
                 model_parameters = "variable", 
-                indicators = NULL 
+                indicators = NULL
 ) {
   
   start.time <- Sys.time()
