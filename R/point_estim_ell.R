@@ -391,7 +391,7 @@ monte_carlo_ell <- function(transformation,
 
 
 # The function errors_gen returns error terms of the generating model.
-errors_gen_ell <- function(framework, model_par, alpha_model) {
+errors_gen_ell <- function(framework, model_par, alpha_model=NULL) {
   if (is.null(alpha_model)) {
     epsilon <- rnorm(framework$N_pop, 0, sqrt(model_par$sigmae2est))
   } 
@@ -408,29 +408,24 @@ errors_gen_ell <- function(framework, model_par, alpha_model) {
 
 # The function errors_gen_nonp returns error terms of the generating model
 # obtained through a non-parametric bootstrap procedure 
-errors_gen_ell_nonp <- function(framework, model_par, alpha_model) {
-  #mean_resid <- aggregate_weighted_mean(df=model_par$residuals$residuals,by=list(model_par$residuals$index),
-  # w=framework$smp_data[,framework$weights])
-  #dev_resid <- model_par$residuals$residuals - rep(mean_resid$V1,framework$n_smp)
-  # we want to draw standardized residuals, so first estimate the variance of epsilon in the sample 
-  #B_smp <- exp(predict(alpha_model$alpha_model))
-  #var_r <- summary(alpha_model$alpha_model)$sigma^2
-  #A <- alpha_model$A 
-  #sigmae2est_smp <- (A * B_smp / (1+B_smp)) + 0.5*var_r*(A*B_smp*(1-B_smp)/(1+B_smp)^3)
-  #dev_resid_std <- dev_resid/sigmae2est_smp^0.5
-  # draw standardized residuals 
-   epsilon_std <- sample(alpha_model$dev_resid_std, replace=TRUE,size=framework$N_pop)
-
-   # now we want to unstandardize the residuals, so we need the estimated variance of epsilon in the population
-   #alpha_X_vars <- alpha_model$alpha_model$terms
-   #framework$pop_data[[paste0(alpha_X_vars[[2]])]] <- seq_len(nrow(framework$pop_data))
-   #X_pop <- model.matrix(alpha_X_vars, framework$pop_data)
-   #B_pop <- exp(X_pop %*% alpha_model$alpha_model$coefficients)
-   #sigmae2est_pop <- (A * B_pop / (1+B_pop)) + 0.5*var_r*(A*B_pop*(1-B_pop)/(1+B_pop)^3)
-   epsilon <- epsilon_std*alpha_model$sigmae2est_pop^0.5 
+errors_gen_ell_nonp <- function(framework, model_par, alpha_model=NULL) {
+ 
+  if (!is.null(alpha_model)) {
+    epsilon_std <- sample(alpha_model$dev_resid_std, replace=TRUE,size=framework$N_pop)
+    # now we want to unstandardize the residuals, so we need the estimated variance of epsilon in the population
+    epsilon <- epsilon_std*alpha_model$sigmae2est_pop^0.5 
+    vu <- rep(sample(alpha_model$mean_resid,replace=TRUE,size=framework$N_dom_pop),framework$n_pop) 
+  }
+     else {
+       weights <- framework$smp_data[,framework$weights]
+       residuals <- model_par$residuals 
+       mean_resid <- aggregate_weighted_mean(df=residuals,by=list(framework$smp_data[,framework$smp_domains]),
+                                             w=weights)
+       dev_resid <- residuals - rep(mean_resid$V1,framework$n_smp)
+       epsilon <- sample(dev_resid, replace=TRUE,size=framework$N_pop)
+       vu <- rep(sample(mean_resid,replace=TRUE,size=framework$N_dom_pop),framework$n_pop) 
+     }
    
-   
-  vu <- rep(sample(alpha_model$mean_resid,replace=TRUE,size=framework$N_dom_pop),framework$n_pop)
   return(list(epsilon = epsilon, vu = vu))
 } # End errors_gen_ell_nonp
 
