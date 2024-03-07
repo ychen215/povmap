@@ -218,6 +218,7 @@ alphamodel <- function(residuals, alpha,framework) {
     B_pop <- exp(X_pop %*% alpha_model$coefficients)
     sigmae2est_pop <- (A * B_pop / (1+B_pop)) + 0.5*var_r*(A*B_pop*(1-B_pop)/(1+B_pop)^3)
     sigmae2est_pop[sigmae2est_pop<min(sigmae2est_smp)] <- min(sigmae2est_smp)
+    sigmae2est_pop[sigmae2est_pop>max(sigmae2est_smp)] <- max(sigmae2est_smp)
     return(list(alpha_model=alpha_model,sigmae2est_smp=sigmae2est_smp, sigmae2est_pop=sigmae2est_pop, 
                 dev_resid_std=dev_resid_std,mean_resid = mean_resid$V1))
     }
