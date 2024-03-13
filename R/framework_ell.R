@@ -9,7 +9,7 @@
 framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, smp_data, smp_domains,
                           smp_subdomains, threshold, custom_indicator = NULL, na.rm,
                           aggregate_to = NULL, weights, pop_weights, 
-                          benchmark_level, benchmark_weights, rescale_weights, errors,model_parameters, indicators) {
+                          benchmark_level, benchmark_weights, rescale_weights, errors,random_method,model_parameters, indicators) {
 
 
   # Reduction of number of variables
@@ -279,6 +279,7 @@ framework_ell <- function(fixed, alpha, pop_data, pop_domains, pop_subdomains, s
     benchmark_weights = benchmark_weights,
     pop_weights = pop_weights,
     errors=errors,
+    random_method=random_method, 
     model_parameters=model_parameters 
   ))
 }

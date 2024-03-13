@@ -57,7 +57,8 @@ point_estim_ell <- function(framework,
            data = transformation_par$transformed_data, 
            weights = framework$smp_data[,framework$weights],
            model="random",
-           index = framework$smp_domains)
+           index = framework$smp_domains,
+           random.method=framework$random_method)
  
  re_model <- do.call(plm:::plm, args)
  

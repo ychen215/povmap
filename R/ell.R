@@ -77,7 +77,7 @@
 #' a weighted version of the ebp will be used. The variable has to be numeric.
 #' Defaults to \code{NULL}.
 #' @param pop_weights a character string containing the name of a variable that
-#' indicates population weights in the populatation data. If a character string
+#' indicates population weights in the population data. If a character string
 #' is provided weighted indicators are estimated using population weights.
 #' The variable has to be numeric. Defaults to \code{NULL}.
 #' @param aggregate_to a character string containing the name of a variable from
@@ -119,9 +119,8 @@
 #' This is only possible for internal benchmarking and enable users to benchmark
 #' with weights differing from the survey weights (Default for weighting for
 #' internal benchmarking).
-#' @param nlme_maxiter an integer indicating the maximum number of iterations
-#' the \code{lme} function from package \code{\link{nlme}} will run for
-#' parameter convergence. Defaults to 1000. 
+#' @param random_method selects the method used by the plm function to estimate the random effects model.
+#' It can take on the values "swar" (default), "amemiya", "walhus", or "nerlove"
 #' @param rescale_weights a logical indicating if the sample weights are scaled.
 #' If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
 #' , the sample weights are rescaled such that the average weight is 1
@@ -178,6 +177,7 @@ ell <- function(fixed,
                 benchmark_level = NULL,
                 benchmark_weights = NULL,
                 rescale_weights = FALSE,
+                random_method = NULL, 
                 Ydump = NULL, 
                 errors = "normal",
                 model_parameters = "variable", 
@@ -235,6 +235,7 @@ ell <- function(fixed,
     rescale_weights = rescale_weights,
     errors = errors,
     indicators = indicators,
+    random_method = random_method, 
     model_parameters = model_parameters
   )
   
