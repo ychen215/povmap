@@ -377,7 +377,7 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
     nlme_method = nlme_method,
     model_parameters = model_parameters,
     data.table=data.table,
-    indicators
+    indicators=indicators
   ))
 }
 
