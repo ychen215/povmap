@@ -158,7 +158,10 @@ else {
 
 
 if "`model_parameters'"=="" {
-	local model_parameters "fixed"
+	local model_parameters `""fixed""' 
+}
+else {
+	local model_parameters `""model_parameters""' 
 }
 
 if "`data_table'"=="" {
