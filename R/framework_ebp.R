@@ -323,7 +323,6 @@ pop_data[[pop_subdomains]] <- factor(pop_data[[pop_subdomains]],
                           dependent variable and equals ", threshold)))
   }
 
-browser()
   return(list(
     pop_data = pop_data,
     pop_domains_vec = pop_domains_vec,
