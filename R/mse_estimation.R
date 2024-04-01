@@ -277,7 +277,7 @@ mse_estim <- function(framework,
         if (!is.null(dim(add_bench))) {
           colnames(add_bench) <- c(paste0(names(benchmark)[-1],"_bench"))
         } else {
-          names(add_bench) <- c(paste0(names(benchmark)[-1],"_bench"))
+          colnames(add_bench) <- c(paste0(names(benchmark)[-1],"_bench"))
         }
       }
     }
