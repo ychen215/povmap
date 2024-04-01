@@ -514,8 +514,8 @@ if (!is.null(Ydump)) {
 
 
 
-point_estimates <- aggregate_weighted_mean(indicators),by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
-point_estimates <- cbind(point_estimates, data.frame(matrix(ncol=length(framework$indicator_names)-2,nrow=N_dom_pop_tmp)))
+point_estimates <- aggregate_weighted_mean(indicators,by=list("Domain" = pop_domains_vec_tmp),w=pop_weights_vec) 
+#point_estimates <- cbind(point_estimates, data.frame(matrix(ncol=9-length(framework$indicator_names),nrow=N_dom_pop_tmp)))
 colnames(point_estimates) <- c("Domain",framework$indicator_names)
 return(point_estimates)
 } # end analytic 
