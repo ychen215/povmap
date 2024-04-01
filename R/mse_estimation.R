@@ -273,11 +273,11 @@ mse_estim <- function(framework,
           names(add_bench) <- c(paste0(names(benchmark),"_bench"))
         }
       } else {
-        add_bench <- true_indicators[, names(benchmark)[-1]]
+        add_bench <- as.data.frame(true_indicators[, names(benchmark)[-1]])
         if (!is.null(dim(add_bench))) {
           colnames(add_bench) <- c(paste0(names(benchmark)[-1],"_bench"))
         } else {
-          colnames(add_bench) <- c(paste0(names(benchmark)[-1],"_bench"))
+          names(add_bench) <- c(paste0(names(benchmark)[-1],"_bench"))
         }
       }
     }
@@ -324,6 +324,7 @@ mse_estim <- function(framework,
     framework = framework
   )[[1]][, -1])
 
+  colnames(bootstrap_point_estim) <- framework$indicator_names
   # benchmark
   if (!is.null(benchmark)) {
     if (is.null(benchmark_level)) {
