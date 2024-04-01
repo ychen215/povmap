@@ -501,11 +501,11 @@ indicators[,"Head_Count"] <- expected_head_count(mu=gen_model$mu,var=var, transf
 #indicators[,"Quantile_90"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.9) 
 
 
-#Output Ydrmp if selected 
+#Output Ydump if selected 
 if (!is.null(Ydump)) {
   rand_eff_pop <- rep(model_par$rand_eff, framework$n_pop)
-  Ydumpdf <- data.frame(framework$pop_domains_vec,indicators[,"Mean"],indicators[,"Head_Count"],gen_model$mu,var,sigma2vu,sigma2eta,model_par$sigmae2est,framework$pop_data[,framework$pop_weights],framework$obs_dom,rand_eff_pop,gen_model$mu_fixed)
-  colnames(Ydumpdf) <- c("Domain","Mean","Head_Count","Mu","Variance","Var_vu","Var_eta","Var_eps","pop_weight","Observed_dom","Area_reffect","Xbhat")
+  Ydumpdf <- data.frame(framework$pop_domains_vec,indicators,gen_model$mu,var,sigma2vu,sigma2eta,model_par$sigmae2est,framework$pop_data[,framework$pop_weights],framework$obs_dom,rand_eff_pop,gen_model$mu_fixed)
+  colnames(Ydumpdf) <- c("Domain",framework$indicator_names,"Mu","Variance","Var_vu","Var_eta","Var_eps","pop_weight","Observed_dom","Area_reffect","Xbhat")
   write.table(Ydumpdf,file=Ydump,row.names = FALSE,append=FALSE,col.names=T, sep=",")
 }
 
