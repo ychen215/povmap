@@ -488,8 +488,12 @@ var <- sigma2vu+sigma2eta+model_par$sigmae2est
 indicators <- matrix(ncol=length(framework$indicator_names),nrow=framework$N_pop)
 colnames(indicators) <- framework$indicator_names
 
+if ("Mean" %in% framework$indicator_names) {
 indicators[,"Mean"] <- expected_transformed_mean(gen_model$mu,var=var, transformation=transformation,lambda=lambda) 
+}
+if ("Head_Count" %in% framework$indicator_names) {
 indicators[,"Head_Count"] <- expected_head_count(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,threshold=framework$threshold)
+}
 #indicators[,"Median"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.5)
 #indicators[,"Quantile_10"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.1) 
 #indicators[,"Quantile_25"] <- transformed_percentile(mu=gen_model$mu,var=var, transformation=transformation,lambda=lambda,shift=shift,p=0.25) 
