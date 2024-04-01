@@ -432,9 +432,9 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   
   true_indicators_weighted<-matrix(nrow = N_dom_pop_tmp, 
                                    ncol = length(framework$indicator_names))
-  
+  colnames(true_indicators_weighted) <- framework$indicator_names 
+  if ("Mean" %in% framework$indicator_names) {
  #Do Mean calculation 
-
 #1. back-transform draw   
   Y_pop_b <- gen_model$mu_fixed + vu_pop + eta_pop + eps
   Y_pop_b <- back_transformation(y=Y_pop_b,transformation=transformation,lambda=lambda,shift=shift,framework=framework)
@@ -443,10 +443,12 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
   EY_pop_mu <- expected_transformed_mean(Y_pop_mu,var=var_eps,transformation=transformation,lambda=lambda)
 #3. Scale down implied residual to simulate taking draws over repeated observations   
   Y_pop_b <- EY_pop_mu+((Y_pop_b-Y_pop_mu)/sqrt(framework$pop_data[,framework$MSE_pop_weights]))
-    true_indicators_weighted[,1] <- mapply(FUN=weighted.mean, x=split(Y_pop_b, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
+    true_indicators_weighted[,"Mean"] <- mapply(FUN=weighted.mean, x=split(Y_pop_b, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
     # Note that for no transformation case, true_indicators Y_pop_b ~ N(XB+mu, var(epsilon)/MSE_pop_weights) 
     # for log transformation case, draws log normal, calculates the implied residual in levels, and scales that down 
-          
+  }
+  
+  if ("Head_Count" %in% framework$indicator_names) {
 # Do headcount calculation for population
 # 1. Find poverty probability of each obserbation
     p_pov <- vector(length = framework$N_pop)
@@ -455,10 +457,11 @@ if (is.null(framework$smp_subdomains) && is.null(framework$pop_subdomains)) {  #
     pov <- mapply(FUN=rbinom,n=1,size=framework$pop_data[,framework$MSE_pop_weights],prob=p_pov)
     pov <- as.vector(pov)/framework$pop_data[,framework$MSE_pop_weights] #divide by total number of trials 
 # take weighted mean across target aggregation areas      
-    true_indicators_weighted[,2] <- mapply(FUN=weighted.mean, x=split(pov, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
+    true_indicators_weighted[,"Head_Count"] <- mapply(FUN=weighted.mean, x=split(pov, pop_domains_vec_tmp),w=split(pop_weights_vec,pop_domains_vec_tmp))
     return(list(true_indicators=true_indicators_weighted,vu_tmp = vu_tmp))
 }
-
+# close function 
+}
 
 
 # Superpopulation function -----------------------------------------------------
