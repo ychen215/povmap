@@ -113,7 +113,7 @@ benchmark_ebp_national <- function (point_estim, framework, fixed, benchmark,
 benchmark_ebp_level <- function (point_estim, framework, fixed, benchmark,
                                  benchmark_type, benchmark_level) {
 
-  if (!(is.numeric(benchmark) || is.data.frame(benchmark))) {
+  if ((!(is.numeric(benchmark)) || is.data.frame(benchmark))) {
     benchmark_ <- data.frame(unique(framework$pop_data[[benchmark_level]]),
                              as.data.frame(matrix(nrow=length(unique(framework$pop_data[[benchmark_level]])),ncol=length(benchmark))))
 
