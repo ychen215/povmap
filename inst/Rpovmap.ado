@@ -172,7 +172,7 @@ if "`indicators'"=="" {
 	local vectorize "NULL"  
 }
 else {
-	local indicators `""`indicators'""'
+	local indicators `"`indicators'"'
 }
 
 
