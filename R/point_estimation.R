@@ -130,6 +130,8 @@ point_estim <- function(framework,
     gen_par <- NULL 
   }
   
+  est_par$rand_eff <- gen_par$rand_eff 
+    
   # Monte-Carlo approximation --------------------------------------------------
   if (inherits(framework$threshold, "function")) {
     framework$threshold <-
@@ -196,6 +198,8 @@ point_estim <- function(framework,
   } else {
     NULL
   }
+ 
+  
   return(list(
     ind = indicator_prediction,
     optimal_lambda = optimal_lambda,
