@@ -256,10 +256,9 @@ model_par <- function(framework,
     varErr = NULL 
   }
   
-  
+ e0 <- residuals(mixed_model,level=0) 
  
-  #Variance of cluster components 
-    # random effect for in-sample domains (dist_obs_dom)
+ 
   
   
     
@@ -272,7 +271,8 @@ model_par <- function(framework,
       rand_eff = rand_eff,
       rand_eff_h = rand_eff_h,
       varFix=varFix, 
-      varErr=varErr
+      varErr=varErr,
+      e0=e0
     ))
 
 } # End model_par
@@ -318,9 +318,12 @@ gen_model <- function(fixed,
 # shrink in-sample random effects provided by random.effects() function towards zero
   
     if (framework$nlme_shrink_re==TRUE) {
-    rand_eff[framework$dist_obs_dom] <- rand_eff[framework$dist_obs_dom] * gamma 
+    mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec,w=weight_smp)
+    rand_eff[framework$dist_obs_dom] <- gamma*mean_e0 
+      
     if (model_par$sigmah2est>0) {
-      rand_eff_h <- rand_eff_h * gamma_sub      
+      mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec,w=weight_smp)
+      rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub      
     }
     }
   } 
