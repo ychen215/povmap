@@ -318,11 +318,11 @@ gen_model <- function(fixed,
 # shrink in-sample random effects provided by random.effects() function towards zero
   
     if (framework$nlme_shrink_re==TRUE) {
-    mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec,w=weight_smp)
+    mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=weight_smp)
     rand_eff[framework$dist_obs_dom] <- gamma*mean_e0 
       
     if (model_par$sigmah2est>0) {
-      mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec,w=weight_smp)
+      mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
       rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub      
     }
     }
