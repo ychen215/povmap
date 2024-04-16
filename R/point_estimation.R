@@ -314,14 +314,15 @@ gen_model <- function(fixed,
     delta2_sub <- sums_sub[,3] / sums_sub[,2]^2
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
+  
 # shrink random effects provided by random.effects() function towards zero
+  
     if (framework$nlme_shrink_re==TRUE) {
     rand_eff <- rand_eff * gamma 
     if (model_par$sigmah2est>0) {
       rand_eff_h <- rand_eff_h * gamma_sub      
     }
-  }
-  
+    }
   } 
   else {
       # Calculations needed for pseudo EB for Guadarrama option 
@@ -330,9 +331,8 @@ gen_model <- function(fixed,
       mean_dep <- rep(0, framework$N_dom_smp)
       mean_indep <- matrix(0, nrow = framework$N_dom_smp, ncol = length(betas))
       delta2 <- rep(0, framework$N_dom_smp)
-      
       gamma <- rep(0, framework$N_dom_smp)
-      num <- matrix(0, nrow = length(betas), ncol = 1)if 
+      num <- matrix(0, nrow = length(betas), ncol = 1) 
       den <- matrix(0, nrow = length(betas), ncol = length(betas))
       
       for (d in 1:framework$N_dom_smp) {
