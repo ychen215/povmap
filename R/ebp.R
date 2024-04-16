@@ -121,7 +121,9 @@
 #' weights by using the weighting options of \code{\link{nlme}} and use these
 #' weights also to determine the optimal transformation parameter lambda
 #' ("nlme_lambda"). Defaults to \code{"Guadarrama"}.
-#' @param benchmark The input depends on the type of benchmarking to be
+#' @param nlme_shrink_re if \code{TRUE}, estimates of the random effects obtained 
+#' using nlme weights are shrunk, i.e. multiplied by gamma. Defaults to \code{TRUE}
+#' @param benchmark The input depends on the type of benchmarking to be 
 #' performed.
 #' (i) Benchmarking with a fixed value:
 #' (a) with one value for each indicator: a named vector containing the numeric
@@ -343,6 +345,7 @@ ebp <- function(fixed,
                 MSE_pop_weights = NULL, 
                 aggregate_to = NULL,
                 weights_type = "Guadarrama",
+                nlme_shrink_re = TRUE, 
                 benchmark = NULL,
                 benchmark_type = "ratio",
                 benchmark_level = NULL,
@@ -423,6 +426,7 @@ ebp <- function(fixed,
     pop_weights = pop_weights,
     MSE_pop_weights = MSE_pop_weights, 
     weights_type = weights_type,
+    nlme_shrink_re = nlme_shrink_re, 
     benchmark_level = benchmark_level,
     benchmark_weights = benchmark_weights,
     nlme_maxiter = nlme_maxiter,
