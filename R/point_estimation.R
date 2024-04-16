@@ -314,7 +314,7 @@ gen_model <- function(fixed,
     delta2_sub <- sums_sub[,3] / sums_sub[,2]^2
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
-  if (nlme_shrink_re==TRUE) {
+  if (framework$nlme_shrink_re==TRUE) {
     rand_eff <- rand_eff * gamma 
     rand_eff_h <- rand_eff_h * gamma_sub      
   }
