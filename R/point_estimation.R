@@ -315,10 +315,10 @@ gen_model <- function(fixed,
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
   
-# shrink random effects provided by random.effects() function towards zero
+# shrink in-sample random effects provided by random.effects() function towards zero
   
     if (framework$nlme_shrink_re==TRUE) {
-    rand_eff <- rand_eff * gamma 
+    rand_eff[framework$dist_obs_dom] <- rand_eff[framework$dist_obs_dom] * gamma 
     if (model_par$sigmah2est>0) {
       rand_eff_h <- rand_eff_h * gamma_sub      
     }
