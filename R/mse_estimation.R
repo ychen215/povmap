@@ -34,7 +34,7 @@ parametric_bootstrap <- function(framework,
     cpus <- min(cpus, parallel::detectCores())
     parallelMap::parallelStart(
       mode = parallel_mode,
-      cpus = cpus, show.info = TRUE, logging = TRUE
+      cpus = cpus, show.info = F, logging = F
     )
 
     if (parallel_mode == "socket") {
