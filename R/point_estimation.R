@@ -322,7 +322,7 @@ gen_model <- function(fixed,
   
 
   
-    if (framework$nlme_shrink_re==TRUE) {
+    if (framework$nlme_update_re==TRUE) {
 
       # Try wrong way, with weighted mean and improperly adjusted gamma, to see if you can replicate random.effects from nlme package  
       mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=weight_smp)
