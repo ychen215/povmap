@@ -307,12 +307,14 @@ gen_model <- function(fixed,
   weight_sum <- rep(0, framework$N_dom_smp)
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
   delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum
-  ones<-rep(1,length(weight_smp))
-  wrong_sums <- aggregate(data.frame(ones,ones), by=list(framework$smp_domains_vec),FUN=sum)
-  wrong_delta2 <- wrong_sums[,3] / wrong_sums[,2]^2
+  #when using wrong_gamma, random effects do not change, showing that nlme by default ignores weights when calculating gamma 
+  #ones<-rep(1,length(weight_smp))
+  #wrong_sums <- aggregate(data.frame(ones,ones), by=list(framework$smp_domains_vec),FUN=sum)
+  #wrong_delta2 <- wrong_sums[,3] / wrong_sums[,2]^2
+  #wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
-  wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
+  
   if (model_par$sigmah2est>0) {
     sums_sub <- aggregate(data.frame(weight_smp, weight_smp^2)[framework$smp_subdomains_vec,], by = list(framework$smp_subdomains_vec), FUN = sum)
     sums_sub <- sums_sub[framework$dist_obs_smp_subdom,]
@@ -326,8 +328,8 @@ gen_model <- function(fixed,
 
       # Try wrong way, with weighted mean and improperly adjusted gamma, to see if you can replicate random.effects from nlme package  
       mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=weight_smp)
-      rand_eff[framework$dist_obs_dom] <- wrong_gamma*mean_e0[,2] 
-      
+      #rand_eff[framework$dist_obs_dom] <- wrong_gamma*mean_e0[,2] this does not change the random effects
+      rand_eff[framework$dist_obs_dom] <- gamma*mean_e0[,2]
       
     #mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=weight_smp)
     #rand_eff[framework$dist_obs_dom] <- gamma*mean_e0[,2] 
