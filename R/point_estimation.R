@@ -307,7 +307,7 @@ gen_model <- function(fixed,
   weight_sum <- rep(0, framework$N_dom_smp)
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
   delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum
-  ones<-rep(1,framework$N_dom_smp)
+  ones<-rep(1,length(weight_smp))
   wrong_sums <- aggregate(data.frame(ones,ones), by=list(framework$smp_domains_vec),FUN=sum)
   wrong_delta2 <- sums[,3] / sums[,2]^2
   
