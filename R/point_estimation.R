@@ -320,12 +320,12 @@ gen_model <- function(fixed,
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
   
-# shrink in-sample random effects provided by random.effects() function towards zero
+
   
     if (framework$nlme_shrink_re==TRUE) {
 
-      # Try wrong way, with unweighted mean and unweighted gamma, to see if you can replicate random.effects from nlme package  
-      mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=ones)
+      # Try wrong way, with weighted mean and improperly adjusted gamma, to see if you can replicate random.effects from nlme package  
+      mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=weight_smp)
       rand_eff[framework$dist_obs_dom] <- wrong_gamma*mean_e0[,2] 
       
       
