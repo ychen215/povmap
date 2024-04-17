@@ -42,7 +42,6 @@ parametric_bootstrap <- function(framework,
     }
 
     parallelMap::parallelLibrary("nlme")
-    parallelMap::parallelLibrary("BBmisc")
     mses <- simplify2array(parallelMap::parallelLapply(
       xs              = seq_len(B),
       fun             = mse_estim_wrapper,
