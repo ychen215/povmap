@@ -306,8 +306,13 @@ gen_model <- function(fixed,
     
   weight_sum <- rep(0, framework$N_dom_smp)
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
-  delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum 
+  delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum
+  ones<-rep(1,framework$N_dom_smp)
+  wrong_sums <- aggregate(data.frame(ones,ones), by=list(framework$smp_domains_vec),FUN=sum)
+  wrong_delta2 <- sums[,3] / sums[,2]^2
+  
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
+  wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   if (model_par$sigmah2est>0) {
     sums_sub <- aggregate(data.frame(weight_smp, weight_smp^2)[framework$smp_subdomains_vec,], by = list(framework$smp_subdomains_vec), FUN = sum)
     sums_sub <- sums_sub[framework$dist_obs_smp_subdom,]
@@ -318,8 +323,14 @@ gen_model <- function(fixed,
 # shrink in-sample random effects provided by random.effects() function towards zero
   
     if (framework$nlme_shrink_re==TRUE) {
-    mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=weight_smp)
-    rand_eff[framework$dist_obs_dom] <- gamma*mean_e0[,2] 
+
+      # Try wrong way, with unweighted mean and unweighted gamma, to see if you can replicate random.effects from nlme package  
+      mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=ones)
+      rand_eff[framework$dist_obs_dom] <- wrong_gamma*mean_e0[,2] 
+      
+      
+    #mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=weight_smp)
+    #rand_eff[framework$dist_obs_dom] <- gamma*mean_e0[,2] 
       
     if (model_par$sigmah2est>0) {
       mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
