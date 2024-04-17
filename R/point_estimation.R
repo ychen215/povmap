@@ -309,7 +309,7 @@ gen_model <- function(fixed,
   delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum
   ones<-rep(1,length(weight_smp))
   wrong_sums <- aggregate(data.frame(ones,ones), by=list(framework$smp_domains_vec),FUN=sum)
-  wrong_delta2 <- sums[,3] / sums[,2]^2
+  wrong_delta2 <- wrong_sums[,3] / wrong_sums[,2]^2
   
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
   wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
