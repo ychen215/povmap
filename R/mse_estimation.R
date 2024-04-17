@@ -34,14 +34,24 @@ parametric_bootstrap <- function(framework,
     cpus <- min(cpus, parallel::detectCores())
     parallelMap::parallelStart(
       mode = parallel_mode,
-      cpus = cpus, show.info = FALSE
+      cpus = cpus, show.info = TRUE, logging = TRUE
     )
 
     if (parallel_mode == "socket") {
       parallel::clusterSetRNGStream()
     }
-
+    
+    # check to see if current library matches slave library locations 
+    # if not there will be a bug unless we alter the slave library locations 
+    slavelibs <- parallel::clusterEvalQ(, .libPaths())
+    if (!.libPaths() %in% slavelibs[[1]]) {
+      libname <- .libPaths()
+      parallelMap:::parallelExport("libname")
+      parallel:::clusterEvalQ(, .libPaths(libname))
+    }
+    
     parallelMap::parallelLibrary("nlme")
+    
     mses <- simplify2array(parallelMap::parallelLapply(
       xs              = seq_len(B),
       fun             = mse_estim_wrapper,
