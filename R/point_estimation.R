@@ -129,8 +129,11 @@ point_estim <- function(framework,
   else {
     gen_par <- NULL 
   }
-  
+  #update random effects and beta coefficients, in the cases that they are altered by gen_model
   est_par$rand_eff <- gen_par$rand_eff 
+  if (!is.null(gen_par$betas)) {
+    est_par$betas <- gen_par$betas
+  }
     
   # Monte-Carlo approximation --------------------------------------------------
   if (inherits(framework$threshold, "function")) {
@@ -449,7 +452,7 @@ gen_model <- function(fixed,
     rand_eff_h_pop <- rep(rand_eff_h,framework$n_pop_subdom)
     mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop 
   }
-    return(list(sigmav2est = sigmav2est, sigmai2est = sigmai2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
+    return(list(betas=betas,sigmav2est = sigmav2est, sigmai2est = sigmai2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
 } # End gen_model
 
 
