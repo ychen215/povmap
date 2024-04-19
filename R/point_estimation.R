@@ -131,9 +131,8 @@ point_estim <- function(framework,
   }
   #update random effects and beta coefficients, in the cases that they are altered by gen_model
   est_par$rand_eff <- gen_par$rand_eff 
-  if (!is.null(gen_par$betas)) {
-    est_par$betas <- gen_par$betas
-  }
+  est_par$betas <- gen_par$betas
+  
     
   # Monte-Carlo approximation --------------------------------------------------
   if (inherits(framework$threshold, "function")) {
@@ -299,7 +298,7 @@ gen_model <- function(fixed,
     weight_smp <- framework$smp_data[[as.character(framework$weights)]]
   }
     
- 
+  betas <- model_par$betas
   
   
   # calculate gamma 
@@ -356,7 +355,6 @@ gen_model <- function(fixed,
   } 
   else {
       # Calculations needed for pseudo EB for Guadarrama option 
-    betas <- model_par$betas
       weight_sum <- rep(0, framework$N_dom_smp)
       mean_dep <- rep(0, framework$N_dom_smp)
       mean_indep <- matrix(0, nrow = framework$N_dom_smp, ncol = length(betas))
@@ -437,7 +435,7 @@ gen_model <- function(fixed,
   X_pop <- model.matrix(fixed, framework$pop_data)
   
   # Constant part of predicted y
-  mu_fixed <- X_pop %*% model_par$betas
+  mu_fixed <- X_pop %*% betas
   sigmav2est <- model_par$sigmau2est * (1 - gamma)
   rand_eff_pop <- rep(rand_eff, framework$n_pop)
   
