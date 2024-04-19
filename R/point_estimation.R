@@ -314,7 +314,7 @@ gen_model <- function(fixed,
   #wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
-  
+  #gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   if (model_par$sigmah2est>0) {
     sums_sub <- aggregate(data.frame(weight_smp, weight_smp^2)[framework$smp_subdomains_vec,], by = list(framework$smp_subdomains_vec), FUN = sum)
     sums_sub <- sums_sub[framework$dist_obs_smp_subdom,]
@@ -322,23 +322,34 @@ gen_model <- function(fixed,
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
   
-
-  
     if (framework$nlme_update_re==TRUE) {
 
-      # Try wrong way, with weighted mean and improperly adjusted gamma, to see if you can replicate random.effects from nlme package  
-      mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=weight_smp)
-      #rand_eff[framework$dist_obs_dom] <- wrong_gamma*mean_e0[,2] this does not change the random effects
-      rand_eff[framework$dist_obs_dom] <- gamma*mean_e0[,2]
+      #This code implements Guadarrama et al 
+      indep_smp <- model.matrix(fixed, framework$smp_data)
+      mean_indep <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
+      # weighted mean of the dependent variable
+      mean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
+      dep_var_ast <- dep_var -  rep(gamma * mean_dep,framework$n_smp)
+      #weighted independent variable     
+      indep_weight <- indep_smp * weight_smp
+      # shrink weighted independent variable 
+      shrunk_mean_indep <- gamma*mean_indep 
+      # expand to cover full sample 
+      shrunk_mean_indep_smp <- shrunk_mean_indep[rep(row.names(shrunk_mean_indep), times = framework$n_smp), ]
+      indep_var_ast <- as.matrix(indep_smp - shrunk_mean_indep_smp)  
       
-    #mean_e0 <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_domains_vec),w=weight_smp)
-    #rand_eff[framework$dist_obs_dom] <- gamma*mean_e0[,2] 
-      
+      num <- t(indep_weight) %*% dep_var_ast
+      den <- t(indep_weight) %*% indep_var_ast
+      betas <- solve(den) %*% num
+      # Now update random effects 
+      rand_eff[framework$dist_obs_dom] <- gamma * (mean_dep -
+                                                     mean_indep %*% betas)
+
     if (model_par$sigmah2est>0) {
       mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
       rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
     }
-    }
+    } # close nlme_update_re
   } 
   else {
       # Calculations needed for pseudo EB for Guadarrama option 
@@ -354,15 +365,9 @@ gen_model <- function(fixed,
       for (d in 1:framework$N_dom_smp) {
         #cat(d)
         domain <- names(table(framework$smp_domains_vec)[d])
-        dep_smp <- dep_var[
-            framework$smp_domains_vec == domain
-          ]
+
         # Domain means of of the dependent variable
         dep_smp <- dep_var[framework$smp_domains_vec == domain]
-        
-        
-        
-        
         weight_smp <- framework$smp_data[[
           as.character(framework$weights)]][framework$smp_domains_vec == domain]
         weight_sum[d] <- sum(weight_smp)
@@ -387,6 +392,16 @@ gen_model <- function(fixed,
         weight_smp_diag <- diag(x=weight_smp,nrow=length(weight_smp), ncol=length(weight_smp))
         dep_var_ast <- dep_smp - gamma[d] * mean_dep[d]
         indep_weight <- t(indep_smp) %*% weight_smp_diag
+        
+        a <- matrix(rep(
+          gamma[d] *
+            mean_indep[d, ],
+          framework$n_smp[d]
+        ),
+        nrow = framework$n_smp[d],
+        byrow = TRUE
+        )
+        
         indep_var_ast <- indep_smp - matrix(rep(
           gamma[d] *
             mean_indep[d, ],
