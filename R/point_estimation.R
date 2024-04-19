@@ -343,7 +343,7 @@ gen_model <- function(fixed,
       betas <- solve(den) %*% num
       # Now update random effects 
       rand_eff[framework$dist_obs_dom] <- gamma * (mean_dep -
-                                                     mean_indep %*% betas)
+                                                     as.matrix(mean_indep) %*% betas)
 
     if (model_par$sigmah2est>0) {
       mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
