@@ -193,7 +193,7 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   if (!is.null(weights) && weights_type == "Guadarrama" &&
       (!is.null(smp_subdomains) && (!is.null(pop_subdomains)))) {
     stop(strwrap(prefix = " ", initial = "",
-                 "Two-fold nested error model may only only be used with nlme weights"))
+                 "Two-fold nested error model may only only be used with nlme or hybrid weights"))
   }
   
   
@@ -203,18 +203,17 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   #               ''parametric'' bootstrap."))
   #}
 
-  if (is.null(weights) &&
-      (weights_type == "nlme" || weights_type == "nlme_lambda")) {
+  if (is.null(weights) {
     stop(strwrap(prefix = " ", initial = "",
                   paste0("If you want to use the survey weights with weighting
                          type ", weights_type, " please provide the name of a
                          numeric variable indicating weights in the sample data
                          to the argument weights.")))
   }
-  if (!weights_type %in% c("nlme", "Guadarrama", "nlme_lambda")) {
+  if (!weights_type %in% c("nlme", "Guadarrama", "nlme_lambda","hybrid")) {
     stop(strwrap(prefix = " ", initial = "",
                  "The three options for types of survey weights are
-                 ''Guadarrama'', ''nlme'', and ''nlme_lambda''"))
+                 ''Guadarrama'', ''nlme'', ''nlme_lambda'', and ''hybrid''))
   }
   if (transformation %in% c("no", "log", "ordernorm") &&
       weights_type == "nlme_lambda") {
