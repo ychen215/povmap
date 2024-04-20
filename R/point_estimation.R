@@ -302,7 +302,7 @@ gen_model <- function(fixed,
   
   
   # calculate gamma 
-  if (any(framework$weights_type %in% c("nlme", "nlme_lambda")) | is.null(framework$weights)) {
+  if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid")) | is.null(framework$weights)) {
     rand_eff <- model_par$rand_eff
     rand_eff_h <- model_par$rand_eff_h 
     
@@ -324,19 +324,19 @@ gen_model <- function(fixed,
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
   
-    if (framework$nlme_update_re==TRUE) {
+    if (framework$weights_type=="hybrid") {
 
-      #This code implements Guadarrama et al 
+      #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
       indep_smp <- model.matrix(fixed, framework$smp_data)
       mean_indep <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
       # weighted mean of the dependent variable
       mean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
       dep_var_ast <- dep_var -  rep(gamma * mean_dep,framework$n_smp)
-      #weighted independent variable     
+      #weighted independent variables     
       indep_weight <- indep_smp * weight_smp
-      # shrink weighted independent variable 
+      # shrink weighted independent variables 
       shrunk_mean_indep <- gamma*mean_indep 
-      # expand to cover full sample 
+      # expand from one observation per domain to one observation per sample household 
       shrunk_mean_indep_smp <- shrunk_mean_indep[rep(row.names(shrunk_mean_indep), times = framework$n_smp), ]
       indep_var_ast <- as.matrix(indep_smp - shrunk_mean_indep_smp)  
       
@@ -347,6 +347,7 @@ gen_model <- function(fixed,
       rand_eff[framework$dist_obs_dom] <- gamma * (mean_dep -
                                                      as.matrix(mean_indep) %*% betas)
 
+      # also update random effects for sub-area models 
     if (model_par$sigmah2est>0) {
       mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
       rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
