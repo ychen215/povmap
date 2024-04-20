@@ -125,7 +125,7 @@
 #' weights also to determine the optimal transformation parameter lambda
 #' ("nlme_lambda"); (iv) Hybrid weights that incorporate heteroscedasticity weights in the
 #' likelihood function and fully account for weights when estimating fixed effect coefficients 
-#' and random effects ("hybrid"). Defaults to \code{"hybrid"}.
+#' and random effects ("hybrid"). Defaults to \code{"Guadarrama"}.
 #' @param benchmark The input depends on the type of benchmarking to be 
 #' performed.
 #' (i) Benchmarking with a fixed value:
@@ -347,7 +347,7 @@ ebp <- function(fixed,
                 pop_weights = NULL,
                 MSE_pop_weights = NULL, 
                 aggregate_to = NULL,
-                weights_type = "hybrid",
+                weights_type = "Guadarrama",
                 nlme_update_re = FALSE, 
                 benchmark = NULL,
                 benchmark_type = "ratio",
