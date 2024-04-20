@@ -57,7 +57,7 @@ point_estim <- function(framework,
   # lme function is included in the nlme package which is imported.
   weights_arg <- NULL 
   if(!is.null(framework$weights) &&
-     any(framework$weights_type %in% c("nlme", "nlme_lambda"))) {
+     any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid"))) {
     #transformation_par$transformed_data$weights_scaled <-
     #  framework$smp_data[,framework$weights] /
     #    mean(framework$smp_data[,framework$weights], na.rm = TRUE)
