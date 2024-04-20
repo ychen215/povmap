@@ -203,7 +203,7 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   #               ''parametric'' bootstrap."))
   #}
 
-  if (is.null(weights) {
+  if (is.null(weights)) {
     stop(strwrap(prefix = " ", initial = "",
                   paste0("If you want to use the survey weights with weighting
                          type ", weights_type, " please provide the name of a
@@ -212,8 +212,8 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   }
   if (!weights_type %in% c("nlme", "Guadarrama", "nlme_lambda","hybrid")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "The three options for types of survey weights are
-                 ''Guadarrama'', ''nlme'', ''nlme_lambda'', and ''hybrid''))
+                 "The four options for types of survey weights are
+                 ''Guadarrama'', ''nlme'', ''nlme_lambda'', and ''hybrid''"))
   }
   if (transformation %in% c("no", "log", "ordernorm") &&
       weights_type == "nlme_lambda") {
