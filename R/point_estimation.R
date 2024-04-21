@@ -348,7 +348,7 @@ gen_model <- function(fixed,
         mean_indep_sub <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
         shrunk_mean_indep_sub <- gamma_sub*mean_indep_sub 
         shrunk_mean_indep_sub_smp <- shrunk_mean_indep_sub[rep(row.names(shrunk_mean_indep_sub), times = framework$n_smp_subdom), ]
-        indep_var_ast <- indep_var_ast-shrunk_mean_indep_sub_smp
+        indep_var_ast <- as.matrix(indep_var_ast-shrunk_mean_indep_sub_smp)
       }
       
       num <- t(indep_weight) %*% dep_var_ast
