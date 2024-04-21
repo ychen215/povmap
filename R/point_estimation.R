@@ -340,6 +340,16 @@ gen_model <- function(fixed,
       shrunk_mean_indep_smp <- shrunk_mean_indep[rep(row.names(shrunk_mean_indep), times = framework$n_smp), ]
       indep_var_ast <- as.matrix(indep_smp - shrunk_mean_indep_smp)  
       
+      # If two fold model, subtract subarea gamma from indep_var_ast and dep_va
+      if (model_par$sigmah2est>0) {
+        # something like this, needs checking. 
+        submean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
+        dep_var_ast <- dep_var_ast - rep(gamma_sub * submean_dep,framework$n_subdom_smp)
+        mean_indep_sub <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
+        shrunk_mean_indep_smp <- shrunk_mean_indep_smp - rep(gamma_sub*mean_indep_sub,framework$n_subdom_smp)
+      }
+      
+      
       num <- t(indep_weight) %*% dep_var_ast
       den <- t(indep_weight) %*% indep_var_ast
       betas <- solve(den) %*% num
