@@ -210,10 +210,10 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                          numeric variable indicating weights in the sample data
                          to the argument weights.")))
   }
-  if (!weights_type %in% c("nlme", "Guadarrama", "nlme_lambda","hybrid")) {
+  if (!weights_type %in% c("nlme", "Guadarrama", "nlme_lambda","hybrid","Guadarrama_plus")) {
     stop(strwrap(prefix = " ", initial = "",
-                 "The four options for types of survey weights are
-                 ''Guadarrama'', ''nlme'', ''nlme_lambda'', and ''hybrid''"))
+                 "The five options for types of survey weights are
+                 ''Guadarrama'', ''Guadarrama_plus'', ''nlme'', ''nlme_lambda'', and ''hybrid''"))
   }
   if (transformation %in% c("no", "log", "ordernorm") &&
       weights_type == "nlme_lambda") {
