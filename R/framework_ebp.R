@@ -39,9 +39,8 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   }
   if (min(smp_vars %in% colnames(smp_data))==0) {
     stop(strwrap(prefix = " ", initial = "",
-                 paste0(smp_vars[smp_vars %in% colnames(smp_data)==F]),
-                 "are not in the sample dataset"))
-  }
+                paste0(smp_vars[smp_vars %in% colnames(smp_data)==F]))," are not in the sample dataset")
+                  }
   smp_data <- smp_data[, smp_vars]
   weights <- weights
   pop_weights <- pop_weights
