@@ -390,7 +390,7 @@ gen_model <- function(fixed,
      
      
     } # close hybrid 
-
+} # close nlme family 
   else if (framework$weights_type=="Guadarrama_plus") {
     #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
     rand_eff <- model_par$rand_eff
@@ -452,10 +452,6 @@ gen_model <- function(fixed,
     sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1]) 
     } # close Gauadarrama_plus
     
-    
-    
-    
-  }
   
   else {
       # Calculations needed for pseudo EB for Guadarrama option 
