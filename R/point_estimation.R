@@ -404,18 +404,10 @@ gen_model <- function(fixed,
                                  msTol=framework$nlme_mstol,
                                  returnObject = framework$nlme_returnobject 
       ))
-      
-#      transformed_par$ones <- 1
-      
       revised_var <- do.call(nlme:::lme,args)
-      
        VarCorr(revised_var)
       sigmae2est <- revised_var$sigma^2
       sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1]) 
-      
-      
-     
-     
     } # close hybrid 
 } # close nlme family 
   else if (framework$weights_type=="Guadarrama_plus") {
@@ -464,18 +456,23 @@ gen_model <- function(fixed,
       rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
     }
     # now update variance components 
-    e0 <- dep_var - indep_smp %*% betas 
-    smp$we0 <- e0*weight_smp^0.5
-    
+    e0 <- dep_var - indep_smp %*% betas
+    transformed_par <- data.frame(e0,weight_smp,framework$smp_data[,framework$smp_domains])
+    colnames(transformed_par) <- c("e0","weight_smp",framework$smp_domains)
     random_arg <- NULL 
     random_arg[framework$smp_domains] <- list(as.formula(~1))
-    
-    
-    
-    args <- list(fixed=as.formula(we0 ~ 1),
-                 data = smp,
+    args <- list(fixed=e0~1,
+                 data = transformed_par,
                  random = random_arg,
-                 method = framework$nlme_method)
+                 method = framework$nlme_method,weights=~1/weight_smp,
+                 control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
+                                            tolerance = framework$nlme_tolerance,
+                                            opt = framework$nlme_opt,
+                                            optimMethod = framework$nlme_optimmethod, 
+                                            msMaxIter=framework$nlme_msmaxiter,
+                                            msTol=framework$nlme_mstol,
+                                            returnObject = framework$nlme_returnobject 
+                 ))
     revised_var <- do.call(nlme:::lme,args)
     VarCorr(revised_var)
     sigmae2est <- revised_var$sigma^2
