@@ -129,9 +129,12 @@ point_estim <- function(framework,
   else {
     gen_par <- NULL 
   }
-  #update random effects and beta coefficients, in the cases that they are altered by gen_model
+  #update random effects, beta coefficients, and variance components in the cases that they are altered by gen_model
   est_par$rand_eff <- gen_par$rand_eff 
   est_par$betas <- gen_par$betas
+  est_par$sigmau2est <- gen_par$sigmau2est
+  est_par$sigmae2est <- gen_par$sigmae2est
+  
   
     
   # Monte-Carlo approximation --------------------------------------------------
@@ -299,7 +302,8 @@ gen_model <- function(fixed,
   }
     
   betas <- model_par$betas
-  
+  sigmae2est <- model_par$sigmae2est 
+  sigmau2est <- model_par$sigmau2est 
   
   # calculate gamma 
   if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid")) | is.null(framework$weights)) {
@@ -310,10 +314,10 @@ gen_model <- function(fixed,
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
   delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum
   #when using wrong_gamma, random effects do not change, showing that nlme by default ignores weights when calculating gamma 
-  #ones<-rep(1,length(weight_smp))
-  #wrong_sums <- aggregate(data.frame(ones,ones), by=list(framework$smp_domains_vec),FUN=sum)
-  #wrong_delta2 <- wrong_sums[,3] / wrong_sums[,2]^2
-  #wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
+  ones<-rep(1,length(weight_smp))
+  wrong_sums <- aggregate(data.frame(ones,ones), by=list(framework$smp_domains_vec),FUN=sum)
+  wrong_delta2 <- wrong_sums[,3] / wrong_sums[,2]^2
+  wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
   #gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
@@ -326,6 +330,7 @@ gen_model <- function(fixed,
   
     if (framework$weights_type=="hybrid") {
 
+      #First update betas 
       #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
       indep_smp <- model.matrix(fixed, framework$smp_data)
       mean_indep <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
@@ -354,19 +359,47 @@ gen_model <- function(fixed,
       num <- t(indep_weight) %*% dep_var_ast
       den <- t(indep_weight) %*% indep_var_ast
       betas <- solve(den) %*% num
+      
+      
       # Now update random effects 
       rand_eff[framework$dist_obs_dom] <- gamma * (mean_dep -
                                                      as.matrix(mean_indep) %*% betas)
-
+      
       # also update random effects for sub-area models 
-    if (model_par$sigmah2est>0) {
-      mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
-      rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
-    }
+      if (model_par$sigmah2est>0) {
+        mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
+        rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
+      }
+  
+      # now update variance components 
+      e0 <- dep_var - indep_smp %*% betas 
+      smp$we0 <- e0*weight_smp^0.5
+      
+      random_arg <- NULL 
+      random_arg[framework$smp_domains] <- list(as.formula(~1))
+      args <- list(fixed=as.formula(we0 ~ 1),
+                   data = smp,
+                   random = random_arg,
+                   method = framework$nlme_method)
+      revised_var <- do.call(nlme:::lme,args)
+      VarCorr(revised_var)
+      sigmae2est <- revised_var$sigma^2
+      sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1]) 
+      
+      
+     
+     
     } # close hybrid 
 
   else if (framework$weights_type=="Guadarrama_plus") {
     #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
+    rand_eff <- model_par$rand_eff
+    sums <- aggregate(data.frame(weight_smp, weight_smp^2), 
+                      by = list(framework$smp_domains_vec), FUN = sum)
+    delta2 <- sums[, 3]/sums[, 2]^2
+    gamma <- model_par$sigmau2est/(model_par$sigmau2est + 
+                                     ((model_par$sigmae2est + model_par$sigmah2est) * 
+                                        delta2))
     indep_smp <- model.matrix(fixed, framework$smp_data)
     mean_indep <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
     # weighted mean of the dependent variable
@@ -403,7 +436,21 @@ gen_model <- function(fixed,
       mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
       rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
     }
-  } # close Gauadarrama_plus
+    # now update variance components 
+    e0 <- dep_var - indep_smp %*% betas 
+    smp$we0 <- e0*weight_smp^0.5
+    
+    random_arg <- NULL 
+    random_arg[framework$smp_domains] <- list(as.formula(~1))
+    args <- list(fixed=as.formula(we0 ~ 1),
+                 data = smp,
+                 random = random_arg,
+                 method = framework$nlme_method)
+    revised_var <- do.call(nlme:::lme,args)
+    VarCorr(revised_var)
+    sigmae2est <- revised_var$sigma^2
+    sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1]) 
+    } # close Gauadarrama_plus
     
     
     
@@ -507,7 +554,7 @@ gen_model <- function(fixed,
     rand_eff_h_pop <- rep(rand_eff_h,framework$n_pop_subdom)
     mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop 
   }
-    return(list(betas=betas,sigmav2est = sigmav2est, sigmai2est = sigmai2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
+    return(list(betas=betas,sigmau2est=sigmau2est,sigmae2est=sigmae2est,sigmav2est = sigmav2est, sigmai2est = sigmai2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff))
 } # End gen_model
 
 
