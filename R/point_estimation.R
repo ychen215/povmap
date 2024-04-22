@@ -123,7 +123,7 @@ point_estim <- function(framework,
     model_par = est_par,
     fixed = fixed,
     framework = framework,
-    dep_var = dep_var 
+    dep_var = dep_var
   )
   } 
   else {
@@ -372,12 +372,19 @@ gen_model <- function(fixed,
       }
   
       # now update variance components 
-      e0 <- dep_var - indep_smp %*% betas 
-      smp$we0 <- e0*weight_smp^0.5
-      
+      smp$e0 <- dep_var - indep_smp %*% betas 
+      smp$we0 <- smp$e0*weight_smp^0.5
+      smp$xvar <- weight_smp^0.5*(1-(dep_var-e0))
+      smp$weights_tmp <- framework$smp_data[,framework$weights]
       random_arg <- NULL 
       random_arg[framework$smp_domains] <- list(as.formula(~1))
-      args <- list(fixed=as.formula(we0 ~ 1),
+      args <- list(fixed=as.formula(e0 ~ 1),
+                   data = smp,
+                   random = random_arg,
+                   method = framework$nlme_method,weights=~1/weights_tmp)
+      
+      
+      args <- list(fixed=as.formula(we0 ~ xvar -1),
                    data = smp,
                    random = random_arg,
                    method = framework$nlme_method)
