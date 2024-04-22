@@ -363,8 +363,53 @@ gen_model <- function(fixed,
       mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
       rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
     }
-    } # close nlme_update_re
+    } # close hybrid 
   } 
+  else if framework$weights_type=="Guadarrama_plus" {
+    #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
+    indep_smp <- model.matrix(fixed, framework$smp_data)
+    mean_indep <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
+    # weighted mean of the dependent variable
+    mean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
+    dep_var_ast <- dep_var -  rep(gamma * mean_dep,framework$n_smp)
+    #weighted independent variables     
+    indep_weight <- indep_smp * weight_smp
+    # shrink weighted independent variables 
+    shrunk_mean_indep <- gamma*mean_indep 
+    # expand from one observation per domain to one observation per sample household 
+    shrunk_mean_indep_smp <- shrunk_mean_indep[rep(row.names(shrunk_mean_indep), times = framework$n_smp), ]
+    indep_var_ast <- as.matrix(indep_smp - shrunk_mean_indep_smp)  
+    
+    # If two fold model, subtract subarea gamma from indep_var_ast and dep_va
+    if (model_par$sigmah2est>0) {
+      # something like this, needs checking. 
+      submean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
+      dep_var_ast <- dep_var_ast - rep(gamma_sub * submean_dep,framework$n_smp_subdom)
+      mean_indep_sub <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
+      shrunk_mean_indep_sub <- gamma_sub*mean_indep_sub 
+      shrunk_mean_indep_sub_smp <- shrunk_mean_indep_sub[rep(row.names(shrunk_mean_indep_sub), times = framework$n_smp_subdom), ]
+      indep_var_ast <- as.matrix(indep_var_ast-shrunk_mean_indep_sub_smp)
+    }
+    
+    num <- t(indep_weight) %*% dep_var_ast
+    den <- t(indep_weight) %*% indep_var_ast
+    betas <- solve(den) %*% num
+    # Now update random effects 
+    rand_eff[framework$dist_obs_dom] <- gamma * (mean_dep -
+                                                   as.matrix(mean_indep) %*% betas)
+    
+    # also update random effects for sub-area models 
+    if (model_par$sigmah2est>0) {
+      mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
+      rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
+    }
+  } # close Gauadarrama_plus
+    
+    
+    
+    
+  }
+  
   else {
       # Calculations needed for pseudo EB for Guadarrama option 
       weight_sum <- rep(0, framework$N_dom_smp)
