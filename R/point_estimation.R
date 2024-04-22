@@ -372,24 +372,44 @@ gen_model <- function(fixed,
       }
   
       # now update variance components 
-      smp$e0 <- dep_var - indep_smp %*% betas 
-      smp$we0 <- smp$e0*weight_smp^0.5
-      smp$xvar <- weight_smp^0.5*(1-(dep_var-e0))
-      smp$weights_tmp <- framework$smp_data[,framework$weights]
+      
+      e0 <- dep_var - indep_smp %*% betas
+      #rand_eff_smp <- rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
+      #e1 <- e0 - rand_eff_smp  
+      #e2 = e0 - e1
+      #w2=e2*weight_smp^0.5 
+      #w0 <- e0*weight_smp^0.5 
+      #w1 <- e1*weight_smp^0.5 
+      #mean(w0^2)
+      #mean(w2^2)+var(w2)
+      #mean(w1^2)
+      
+
+       
+       transformed_par <- data.frame(e0,weight_smp,framework$smp_data[,framework$smp_domains])
+       colnames(transformed_par) <- c("e0","weight_smp",framework$smp_domains)
+       #transformed_par <- data.frame(dep_var,weights_tmp=weight_smp,framework$smp_data)
+#transformed_par$ing_lab_pc_v2 <- transformed_par$ing_lab_pc_v2 - indep_smp %*% betas + betas[1]       
       random_arg <- NULL 
       random_arg[framework$smp_domains] <- list(as.formula(~1))
-      args <- list(fixed=as.formula(e0 ~ 1),
-                   data = smp,
+      args <- list(fixed=e0~1,
+                   data = transformed_par,
                    random = random_arg,
-                   method = framework$nlme_method,weights=~1/weights_tmp)
+                   method = framework$nlme_method,weights=~1/weight_smp,
+                  control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
+                                 tolerance = framework$nlme_tolerance,
+                                 opt = framework$nlme_opt,
+                                 optimMethod = framework$nlme_optimmethod, 
+                                 msMaxIter=framework$nlme_msmaxiter,
+                                 msTol=framework$nlme_mstol,
+                                 returnObject = framework$nlme_returnobject 
+      ))
       
+#      transformed_par$ones <- 1
       
-      args <- list(fixed=as.formula(we0 ~ xvar -1),
-                   data = smp,
-                   random = random_arg,
-                   method = framework$nlme_method)
       revised_var <- do.call(nlme:::lme,args)
-      VarCorr(revised_var)
+      
+       VarCorr(revised_var)
       sigmae2est <- revised_var$sigma^2
       sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1]) 
       
@@ -449,6 +469,9 @@ gen_model <- function(fixed,
     
     random_arg <- NULL 
     random_arg[framework$smp_domains] <- list(as.formula(~1))
+    
+    
+    
     args <- list(fixed=as.formula(we0 ~ 1),
                  data = smp,
                  random = random_arg,
