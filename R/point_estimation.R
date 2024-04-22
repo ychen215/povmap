@@ -364,8 +364,8 @@ gen_model <- function(fixed,
       rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
     }
     } # close hybrid 
-  } 
-  else if framework$weights_type=="Guadarrama_plus" {
+
+  else if (framework$weights_type=="Guadarrama_plus") {
     #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
     indep_smp <- model.matrix(fixed, framework$smp_data)
     mean_indep <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
