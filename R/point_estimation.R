@@ -374,7 +374,7 @@ gen_model <- function(fixed,
       # now update variance components 
       
       e0 <- dep_var - indep_smp %*% betas
-      #rand_eff_smp <- rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
+      rand_eff_smp <- rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
       #e1 <- e0 - rand_eff_smp  
       #e2 = e0 - e1
       #w2=e2*weight_smp^0.5 
@@ -407,7 +407,9 @@ gen_model <- function(fixed,
       revised_var <- do.call(nlme:::lme,args)
        VarCorr(revised_var)
       sigmae2est <- revised_var$sigma^2
-      sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1]) 
+      dof_adj_u <- (framework$N_dom_smp-1)/(framework$N_dom_smp-ncol(indep_smp))
+      sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])*dof_adj_u  
+      sigmau2est * dof_adj_u 
     } # close hybrid 
 } # close nlme family 
   else if (framework$weights_type=="Guadarrama_plus") {
@@ -476,7 +478,8 @@ gen_model <- function(fixed,
     revised_var <- do.call(nlme:::lme,args)
     VarCorr(revised_var)
     sigmae2est <- revised_var$sigma^2
-    sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1]) 
+    dof_adj_u <- (framework$N_dom_smp-1)/(framework$N_dom_smp-ncol(indep_smp))
+    sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])*dof_adj_u
     } # close Gauadarrama_plus
     
   
