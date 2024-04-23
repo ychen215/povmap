@@ -304,11 +304,12 @@ gen_model <- function(fixed,
   betas <- model_par$betas
   sigmae2est <- model_par$sigmae2est 
   sigmau2est <- model_par$sigmau2est 
+  rand_eff <- model_par$rand_eff
+  rand_eff_h <- model_par$rand_eff_h 
   
   # calculate gamma 
-  if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid")) | is.null(framework$weights)) {
-    rand_eff <- model_par$rand_eff
-    rand_eff_h <- model_par$rand_eff_h 
+  if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid2")) | is.null(framework$weights)) {
+
     
   weight_sum <- rep(0, framework$N_dom_smp)
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
@@ -326,160 +327,30 @@ gen_model <- function(fixed,
     sums_sub <- sums_sub[framework$dist_obs_smp_subdom,]
     delta2_sub <- sums_sub[,3] / sums_sub[,2]^2
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
+  
   }
-  
-    if (framework$weights_type=="hybrid2") {
-
+   if (framework$weights_type=="hybrid2") {
       #First update betas 
-      #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
-      indep_smp <- model.matrix(fixed, framework$smp_data)
-      mean_indep <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
-      # weighted mean of the dependent variable
-      mean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
-      dep_var_ast <- dep_var -  rep(gamma * mean_dep,framework$n_smp)
-      #weighted independent variables     
-      indep_weight <- indep_smp * weight_smp
-      # shrink weighted independent variables 
-      shrunk_mean_indep <- gamma*mean_indep 
-      # expand from one observation per domain to one observation per sample household 
-      shrunk_mean_indep_smp <- shrunk_mean_indep[rep(row.names(shrunk_mean_indep), times = framework$n_smp), ]
-      indep_var_ast <- as.matrix(indep_smp - shrunk_mean_indep_smp)  
-      
-      # If two fold model, subtract subarea gamma from indep_var_ast and dep_va
-      if (model_par$sigmah2est>0) {
-        # something like this, needs checking. 
-        submean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
-        dep_var_ast <- dep_var_ast - rep(gamma_sub * submean_dep,framework$n_smp_subdom)
-        mean_indep_sub <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
-        shrunk_mean_indep_sub <- gamma_sub*mean_indep_sub 
-        shrunk_mean_indep_sub_smp <- shrunk_mean_indep_sub[rep(row.names(shrunk_mean_indep_sub), times = framework$n_smp_subdom), ]
-        indep_var_ast <- as.matrix(indep_var_ast-shrunk_mean_indep_sub_smp)
-      }
-      
-      num <- t(indep_weight) %*% dep_var_ast
-      den <- t(indep_weight) %*% indep_var_ast
-      betas <- solve(den) %*% num
-      
-      
-      # Now update random effects 
-      rand_eff[framework$dist_obs_dom] <- gamma * (mean_dep -
-                                                     as.matrix(mean_indep) %*% betas)
-      
-      # also update random effects for sub-area models 
-      if (model_par$sigmah2est>0) {
-        mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
-        rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
-      }
-  
+      newbetas <- update_beta_re(model_par = model_par, weight_smp=weight_smp, framework=framework,dep_var=dep_var,fixed=fixed)
+      betas <- newbetas$betas
+      gamma <- newbetas$gamma
+      rand_eff <- newbetas$rand_eff
+      rand_eff_h <- newbetas$rand_eff_h 
       # now update variance components 
-      
-      e0 <- dep_var - indep_smp %*% betas
-      rand_eff_smp <- rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
-      #e1 <- e0 - rand_eff_smp  
-      #e2 = e0 - e1
-      #w2=e2*weight_smp^0.5 
-      #w0 <- e0*weight_smp^0.5 
-      #w1 <- e1*weight_smp^0.5 
-      #mean(w0^2)
-      #mean(w2^2)+var(w2)
-      #mean(w1^2)
-      
-
-       
-       transformed_par <- data.frame(e0,weight_smp,framework$smp_data[,framework$smp_domains])
-       colnames(transformed_par) <- c("e0","weight_smp",framework$smp_domains)
-       #transformed_par <- data.frame(dep_var,weights_tmp=weight_smp,framework$smp_data)
-#transformed_par$ing_lab_pc_v2 <- transformed_par$ing_lab_pc_v2 - indep_smp %*% betas + betas[1]       
-      random_arg <- NULL 
-      random_arg[framework$smp_domains] <- list(as.formula(~1))
-      args <- list(fixed=e0~1,
-                   data = transformed_par,
-                   random = random_arg,
-                   method = framework$nlme_method,weights=~1/weight_smp,
-                  control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
-                                 tolerance = framework$nlme_tolerance,
-                                 opt = framework$nlme_opt,
-                                 optimMethod = framework$nlme_optimmethod, 
-                                 msMaxIter=framework$nlme_msmaxiter,
-                                 msTol=framework$nlme_mstol,
-                                 returnObject = framework$nlme_returnobject 
-      ))
-      revised_var <- do.call(nlme:::lme,args)
-       VarCorr(revised_var)
-      sigmae2est <- revised_var$sigma^2
-      dof_adj_u <- (framework$N_dom_smp-1)/(framework$N_dom_smp-ncol(indep_smp))
-      sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])*dof_adj_u  
-      sigmau2est * dof_adj_u 
+      updated_sigma2 <- update_sigma2(dep_var=dep_var,betas=betas,weight_smp=weight_smp,framework=framework,rand_eff=rand_eff,fixed=fixed)
+      sigmau2est <- updated_sigma2$sigmau2est 
+      sigmae2est <- updated_sigma2$sigmae2est 
     } # close hybrid2 
 } # close nlme family 
   else if (framework$weights_type=="hybrid") {
-    #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
-    rand_eff <- model_par$rand_eff
-    sums <- aggregate(data.frame(weight_smp, weight_smp^2), 
-                      by = list(framework$smp_domains_vec), FUN = sum)
-    delta2 <- sums[, 3]/sums[, 2]^2
-    gamma <- model_par$sigmau2est/(model_par$sigmau2est + 
-                                     ((model_par$sigmae2est + model_par$sigmah2est) * 
-                                        delta2))
-    indep_smp <- model.matrix(fixed, framework$smp_data)
-    mean_indep <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
-    # weighted mean of the dependent variable
-    mean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
-    dep_var_ast <- dep_var -  rep(gamma * mean_dep,framework$n_smp)
-    #weighted independent variables     
-    indep_weight <- indep_smp * weight_smp
-    # shrink weighted independent variables 
-    shrunk_mean_indep <- gamma*mean_indep 
-    # expand from one observation per domain to one observation per sample household 
-    shrunk_mean_indep_smp <- shrunk_mean_indep[rep(row.names(shrunk_mean_indep), times = framework$n_smp), ]
-    indep_var_ast <- as.matrix(indep_smp - shrunk_mean_indep_smp)  
-    
-    # If two fold model, subtract subarea gamma from indep_var_ast and dep_va
-    if (model_par$sigmah2est>0) {
-      # something like this, needs checking. 
-      submean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
-      dep_var_ast <- dep_var_ast - rep(gamma_sub * submean_dep,framework$n_smp_subdom)
-      mean_indep_sub <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
-      shrunk_mean_indep_sub <- gamma_sub*mean_indep_sub 
-      shrunk_mean_indep_sub_smp <- shrunk_mean_indep_sub[rep(row.names(shrunk_mean_indep_sub), times = framework$n_smp_subdom), ]
-      indep_var_ast <- as.matrix(indep_var_ast-shrunk_mean_indep_sub_smp)
-    }
-    
-    num <- t(indep_weight) %*% dep_var_ast
-    den <- t(indep_weight) %*% indep_var_ast
-    betas <- solve(den) %*% num
-    # Now update random effects 
-    rand_eff[framework$dist_obs_dom] <- gamma * (mean_dep -
-                                                   as.matrix(mean_indep) %*% betas)
-    
-    # also update random effects for sub-area models 
-    if (model_par$sigmah2est>0) {
-      mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
-      rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
-    }
-    # now update variance components 
-    e0 <- dep_var - indep_smp %*% betas
-    transformed_par <- data.frame(e0,weight_smp,framework$smp_data[,framework$smp_domains])
-    colnames(transformed_par) <- c("e0","weight_smp",framework$smp_domains)
-    random_arg <- NULL 
-    random_arg[framework$smp_domains] <- list(as.formula(~1))
-    args <- list(fixed=e0~1,
-                 data = transformed_par,
-                 random = random_arg,
-                 method = framework$nlme_method,weights=~1/weight_smp,
-                 control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
-                                            tolerance = framework$nlme_tolerance,
-                                            opt = framework$nlme_opt,
-                                            optimMethod = framework$nlme_optimmethod, 
-                                            msMaxIter=framework$nlme_msmaxiter,
-                                            msTol=framework$nlme_mstol,
-                                            returnObject = framework$nlme_returnobject 
-                 ))
-    revised_var <- do.call(nlme:::lme,args)
-    VarCorr(revised_var)
-    sigmae2est <- revised_var$sigma^2
-    dof_adj_u <- (framework$N_dom_smp-1)/(framework$N_dom_smp-ncol(indep_smp))
-    sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])*dof_adj_u
+    newbetas <- update_beta_re(model_par = model_par, weight_smp=weight_smp, framework=framework,dep_var=dep_var,fixed=fixed)
+    betas <- newbetas$betas
+    gamma <- newbetas$gamma 
+    rand_eff <- newbetas$rand_eff
+    rand_eff_h <- newbetas$rand_eff_h 
+    updated_sigma2 <- update_sigma2(dep_var=dep_var,betas=betas,weight_smp=weight_smp,framework=framework,rand_eff=rand_eff,fixed=fixed)
+    sigmau2est <- updated_sigma2$sigmau2est 
+    sigmae2est <- updated_sigma2$sigmae2est 
     } # close hybrid
     
   
@@ -566,7 +437,7 @@ gen_model <- function(fixed,
   
   # Constant part of predicted y
   mu_fixed <- X_pop %*% betas
-  sigmav2est <- model_par$sigmau2est * (1 - gamma)
+  sigmav2est <- sigmau2est * (1 - gamma)
   rand_eff_pop <- rep(rand_eff, framework$n_pop)
   
    
@@ -598,6 +469,98 @@ aggregate_weighted_quantile  <-function(df,by,w,q) {
    aggregate_weighted_quantile <- mapply(FUN=wtd.quantile,x=split(df,by),weight=split(w,pop_domains_vec_tmp),probs=q)
 }
   
+#Function to update betas and random effects using Guadarrama et al method 
+update_beta_re <- function(model_par,weight_smp,framework,dep_var,fixed) {
+  #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
+  rand_eff <- model_par$rand_eff
+  rand_eff_h <- model_par$rand_eff_h
+  sums <- aggregate(data.frame(weight_smp, weight_smp^2), 
+                    by = list(framework$smp_domains_vec), FUN = sum)
+  delta2 <- sums[, 3]/sums[, 2]^2
+  gamma <- model_par$sigmau2est/(model_par$sigmau2est + 
+                                   ((model_par$sigmae2est + model_par$sigmah2est) * 
+                                      delta2))
+  indep_smp <- model.matrix(fixed, framework$smp_data)
+  mean_indep <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
+  # weighted mean of the dependent variable
+  mean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_domains_vec),w=weight_smp)[,-1]
+  dep_var_ast <- dep_var -  rep(gamma * mean_dep,framework$n_smp)
+  #weighted independent variables     
+  indep_weight <- indep_smp * weight_smp
+  # shrink weighted independent variables 
+  shrunk_mean_indep <- gamma*mean_indep 
+  # expand from one observation per domain to one observation per sample household 
+  shrunk_mean_indep_smp <- shrunk_mean_indep[rep(row.names(shrunk_mean_indep), times = framework$n_smp), ]
+  indep_var_ast <- as.matrix(indep_smp - shrunk_mean_indep_smp)  
+  
+  # If two fold model, subtract subarea gamma from indep_var_ast and dep_va
+  if (model_par$sigmah2est>0) {
+    submean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
+    dep_var_ast <- dep_var_ast - rep(gamma_sub * submean_dep,framework$n_smp_subdom)
+    mean_indep_sub <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
+    shrunk_mean_indep_sub <- gamma_sub*mean_indep_sub 
+    shrunk_mean_indep_sub_smp <- shrunk_mean_indep_sub[rep(row.names(shrunk_mean_indep_sub), times = framework$n_smp_subdom), ]
+    indep_var_ast <- as.matrix(indep_var_ast-shrunk_mean_indep_sub_smp)
+  }
+  
+  num <- t(indep_weight) %*% dep_var_ast
+  den <- t(indep_weight) %*% indep_var_ast
+  betas <- solve(den) %*% num
+  rand_eff[framework$dist_obs_dom] <- gamma * (mean_dep -
+                                                 as.matrix(mean_indep) %*% betas)
+   # also update random effects for sub-area models 
+   
+  if (model_par$sigmah2est>0) {
+          mean_e0_sub <- aggregate_weighted_mean(model_par$e0,by=list(framework$smp_subdomains_vec),w=weight_smp)
+          rand_eff_h[framework$dist_obs_subdom] <- gamma_sub*mean_e0_sub[,2]      
+        }
+                                               
+  return(list(betas=betas,rand_eff=rand_eff,rand_eff_h=rand_eff_h,gamma=gamma))
+}
+
+#function to update sigma2 
+update_sigma2 <- function(dep_var, betas, weight_smp, framework,rand_eff,fixed) {
+indep_smp <- model.matrix(fixed, framework$smp_data)
+e0 <- dep_var - indep_smp %*% betas
+rand_eff_smp <- rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
+#e1 <- e0 - rand_eff_smp  
+#e2 = e0 - e1
+#w2=e2*weight_smp^0.5 
+#w0 <- e0*weight_smp^0.5 
+#w1 <- e1*weight_smp^0.5 
+#mean(w0^2)
+#mean(w2^2)+var(w2)
+#mean(w1^2)
+
+
+
+transformed_par <- data.frame(e0,weight_smp,framework$smp_data[,framework$smp_domains])
+colnames(transformed_par) <- c("e0","weight_smp",framework$smp_domains)
+#transformed_par <- data.frame(dep_var,weights_tmp=weight_smp,framework$smp_data)
+#transformed_par$ing_lab_pc_v2 <- transformed_par$ing_lab_pc_v2 - indep_smp %*% betas + betas[1]       
+random_arg <- NULL 
+random_arg[framework$smp_domains] <- list(as.formula(~1))
+args <- list(fixed=e0~1,
+             data = transformed_par,
+             random = random_arg,
+             method = framework$nlme_method,weights=~1/weight_smp,
+             control = nlme::lmeControl(maxIter = framework$nlme_maxiter,
+                                        tolerance = framework$nlme_tolerance,
+                                        opt = framework$nlme_opt,
+                                        optimMethod = framework$nlme_optimmethod, 
+                                        msMaxIter=framework$nlme_msmaxiter,
+                                        msTol=framework$nlme_mstol,
+                                        returnObject = framework$nlme_returnobject 
+             ))
+revised_var <- do.call(nlme:::lme,args)
+VarCorr(revised_var)
+sigmae2est <- revised_var$sigma^2
+dof_adj_u <- (framework$N_dom_smp-1)/(framework$N_dom_smp-ncol(indep_smp))
+sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])*dof_adj_u  
+sigmau2est * dof_adj_u 
+return(list(sigmae2est=sigmae2est,sigmau2est=sigmau2est))
+}
+
 
 
 #analytic functions 
