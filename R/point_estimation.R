@@ -562,7 +562,8 @@ revised_var <- do.call(nlme:::lme,args)
 
 if (model_par$sigmah2est>0) {
   sigmau2est <- as.numeric(VarCorr(revised_var)[2,1])
-  sigmah2est <- as.numeric(VarCorr(revised_var)[4,1])
+  dof_adj_h <- (framework$N_subdom_smp-1)/(framework$N_subdom_smp-ncol(indep_smp))
+  sigmah2est <- as.numeric(VarCorr(revised_var)[4,1])*dof_adj_h
 } 
 else {
   sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])  
