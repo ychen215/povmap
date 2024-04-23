@@ -57,7 +57,7 @@ point_estim <- function(framework,
   # lme function is included in the nlme package which is imported.
   weights_arg <- NULL 
   if(!is.null(framework$weights) &&
-     any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid"))) {
+     any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid2"))) {
     #transformation_par$transformed_data$weights_scaled <-
     #  framework$smp_data[,framework$weights] /
     #    mean(framework$smp_data[,framework$weights], na.rm = TRUE)
@@ -308,7 +308,7 @@ gen_model <- function(fixed,
   rand_eff_h <- model_par$rand_eff_h 
   
   # calculate gamma 
-  if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid")) | is.null(framework$weights)) {
+  if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid2")) | is.null(framework$weights)) {
 
     
   weight_sum <- rep(0, framework$N_dom_smp)
@@ -329,7 +329,7 @@ gen_model <- function(fixed,
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   
   }
-   if (framework$weights_type=="hybrid") {
+   if (framework$weights_type=="hybrid2") {
       #First update betas 
       newbetas <- update_beta_re(model_par = model_par, weight_smp=weight_smp, framework=framework,dep_var=dep_var,fixed=fixed)
       betas <- newbetas$betas
@@ -342,7 +342,7 @@ gen_model <- function(fixed,
       sigmae2est <- updated_sigma2$sigmae2est 
     } # close hybrid 
 } # close nlme family 
-  else if (framework$weights_type=="hybrid2") {
+  else if (framework$weights_type=="hybrid") {
     newbetas <- update_beta_re(model_par = model_par, weight_smp=weight_smp, framework=framework,dep_var=dep_var,fixed=fixed)
     betas <- newbetas$betas
     gamma <- newbetas$gamma 
@@ -351,7 +351,7 @@ gen_model <- function(fixed,
     updated_sigma2 <- update_sigma2(dep_var=dep_var,betas=betas,weight_smp=weight_smp,framework=framework,rand_eff=rand_eff,fixed=fixed)
     sigmau2est <- updated_sigma2$sigmau2est 
     sigmae2est <- updated_sigma2$sigmae2est 
-    } # close hybrid2
+    } # close hybrid
     
   
   else {
