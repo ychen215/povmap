@@ -538,7 +538,7 @@ colnames(transformed_par) <- c("e0","weight_smp",framework$smp_domains)
 #transformed_par$ing_lab_pc_v2 <- transformed_par$ing_lab_pc_v2 - indep_smp %*% betas + betas[1]       
 random_arg <- NULL 
 
-if (model_par$sigmah2est>0) {
+if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
 # Do two fold model 
 random_arg <- list(as.formula(~1),as.formula(~1))
 names(random_arg) <- c(framework$smp_domains,framework$smp_subdomains)
@@ -560,7 +560,7 @@ args <- list(fixed=e0~1,
              ))
 revised_var <- do.call(nlme:::lme,args)
 
-if (model_par$sigmah2est>0) {
+if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
   sigmau2est <- as.numeric(VarCorr(revised_var)[2,1])
   dof_adj_h <- (framework$N_subdom_smp-1)/(framework$N_subdom_smp-ncol(indep_smp))
   sigmah2est <- as.numeric(VarCorr(revised_var)[4,1])*dof_adj_h
@@ -570,8 +570,10 @@ else {
   sigmah2est <- 0 
 }
 
-sigmae2est <- revised_var$sigma^2
+dof_adj_e <- (framework$N_smp-1)/(framework$N_smp-ncol(indep_smp))
+sigmae2est <- revised_var$sigma^2*dof_adj_e
 dof_adj_u <- (framework$N_dom_smp-1)/(framework$N_dom_smp-ncol(indep_smp))
+
 sigmau2est <- sigmau2est*dof_adj_u  
 return(list(sigmae2est=sigmae2est,sigmau2est=sigmau2est))
 }
