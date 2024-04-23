@@ -328,7 +328,7 @@ gen_model <- function(fixed,
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
   
-    if (framework$weights_type=="hybrid") {
+    if (framework$weights_type=="hybrid2") {
 
       #First update betas 
       #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
@@ -410,9 +410,9 @@ gen_model <- function(fixed,
       dof_adj_u <- (framework$N_dom_smp-1)/(framework$N_dom_smp-ncol(indep_smp))
       sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])*dof_adj_u  
       sigmau2est * dof_adj_u 
-    } # close hybrid 
+    } # close hybrid2 
 } # close nlme family 
-  else if (framework$weights_type=="Guadarrama_plus") {
+  else if (framework$weights_type=="hybrid") {
     #This code implements Guadarrama et al, starting with parameters from weighted nlme estimated above 
     rand_eff <- model_par$rand_eff
     sums <- aggregate(data.frame(weight_smp, weight_smp^2), 
@@ -480,7 +480,7 @@ gen_model <- function(fixed,
     sigmae2est <- revised_var$sigma^2
     dof_adj_u <- (framework$N_dom_smp-1)/(framework$N_dom_smp-ncol(indep_smp))
     sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])*dof_adj_u
-    } # close Gauadarrama_plus
+    } # close hybrid
     
   
   else {
