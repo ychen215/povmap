@@ -319,7 +319,6 @@ gen_model <- function(fixed,
   #wrong_sums <- aggregate(data.frame(ones,ones), by=list(framework$smp_domains_vec),FUN=sum)
   #wrong_delta2 <- wrong_sums[,3] / wrong_sums[,2]^2
   #wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
-  
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
   #gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   if (model_par$sigmah2est>0) {
@@ -327,7 +326,6 @@ gen_model <- function(fixed,
     sums_sub <- sums_sub[framework$dist_obs_smp_subdom,]
     delta2_sub <- sums_sub[,3] / sums_sub[,2]^2
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
-  
   }
    if (framework$weights_type=="hybrid2") {
       #First update betas 
@@ -539,7 +537,15 @@ colnames(transformed_par) <- c("e0","weight_smp",framework$smp_domains)
 #transformed_par <- data.frame(dep_var,weights_tmp=weight_smp,framework$smp_data)
 #transformed_par$ing_lab_pc_v2 <- transformed_par$ing_lab_pc_v2 - indep_smp %*% betas + betas[1]       
 random_arg <- NULL 
+
+if (model_par$sigmah2est>0) {
+# Do two fold model 
+random_arg <- list(as.formula(~1),as.formula(~1))
+names(random_arg) <- c(framework$smp_domains,framework$smp_subdomains)
+}
+else {
 random_arg[framework$smp_domains] <- list(as.formula(~1))
+}
 args <- list(fixed=e0~1,
              data = transformed_par,
              random = random_arg,
@@ -553,11 +559,19 @@ args <- list(fixed=e0~1,
                                         returnObject = framework$nlme_returnobject 
              ))
 revised_var <- do.call(nlme:::lme,args)
-VarCorr(revised_var)
+
+if (model_par$sigmah2est>0) {
+  sigmau2est <- as.numeric(VarCorr(revised_var)[2,1])
+  sigmah2est <- as.numeric(VarCorr(revised_var)[4,1])
+} 
+else {
+  sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])  
+  sigmah2est <- 0 
+}
+
 sigmae2est <- revised_var$sigma^2
 dof_adj_u <- (framework$N_dom_smp-1)/(framework$N_dom_smp-ncol(indep_smp))
-sigmau2est <- as.numeric(nlme::VarCorr(revised_var)[1, 1])*dof_adj_u  
-sigmau2est * dof_adj_u 
+sigmau2est <- sigmau2est*dof_adj_u  
 return(list(sigmae2est=sigmae2est,sigmau2est=sigmau2est))
 }
 
