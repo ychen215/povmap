@@ -118,14 +118,15 @@
 #' and random effects estimates, but not the variance component estimates, for 
 #' sample weights from \cite{Guadarrama et al. (2018)} ("Guadarrama"); 
 #' (ii) EBP that incorporates heteroscedasticity weights in the 
-#' likelihood function, but does not fully account for sample weights when 
-#' estimating random effects, using the weighting options of \code{\link{nlme}} from
+#' likelihood function, but does not fully account for sample weights when conditioning on the sample, 
+#' using the weighting options of \code{\link{nlme}} from
 #' \cite{Pinheiro and Bates (2023)} ("nlme"); (iii) considering survey
 #' weights by using the weighting options of \code{\link{nlme}} and use these
 #' weights also to determine the optimal transformation parameter lambda
-#' ("nlme_lambda"); (iv) Hybrid weights that incorporate heteroscedasticity weights in the
-#' likelihood function and fully account for weights when estimating fixed effect coefficients 
-#' and random effects ("hybrid"). Defaults to \code{"Guadarrama"}.
+#' ("nlme_lambda"); (iv) Hybrid weights that adjust all model parameters to 
+#' account for weights("hybrid"); (iv) hybrid weights that uses 
+#' starting values from a weighted rather than an unweighted mixed effects regression 
+#' ("hybrid2"). Defaults to \code{"Guadarrama"}.
 #' @param benchmark The input depends on the type of benchmarking to be 
 #' performed.
 #' (i) Benchmarking with a fixed value:
