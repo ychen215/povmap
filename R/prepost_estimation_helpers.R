@@ -345,7 +345,7 @@ ebp_reportcoef_table <- function(model,
   colnames(varname_dt) <- "Variable"
 
   coef_dt <- as.data.frame(coef(summary(model$model)))
-  if (model$call$weights_type=="Guadarrama") | (model$call$weights_type=="hybrid") {
+  if (model$call$weights_type=="Guadarrama" | model$call$weights_type=="hybrid") {
     updated_betas <- as.data.frame(model$model_par$betas)
     colnames(updated_betas) <- c("Weighted coefficient estimate")
     colnames(coef_dt)[1] <- c("Unweighted coefficient estimate")
