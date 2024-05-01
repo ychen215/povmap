@@ -69,14 +69,16 @@ summary.ebp <- function(object, ...) {
   } else if (object$transformation == "no") {
     transform_method <- NULL
   }
-
-  skewness_res <- skewness(residuals(object$model,
-    level = 0,
-    type = "pearson"
-  ))
-  kurtosis_res <- kurtosis(residuals(object$model,
-    level = 0,
-    type = "pearson"))
+  # traditionally EMDI uses this definition of residuals 
+  # but it doesn't account for weights properly when using Guadarrama weights or hybrid weights 
+  #residuals <- residuals(object$model level = 0,  type = "pearson")
+  #raneff <- 
+  residuals <- object$model_par$e0
+  
+  
+  
+  skewness_res <- skewness(residuals)
+  kurtosis_res <- kurtosis(residuals)
   variance_res <- object$model_par$sigmae2est 
   variance_ran <- object$model_par$sigmau2est 
   
@@ -99,14 +101,18 @@ summary.ebp <- function(object, ...) {
    )
   } # close two fold model 
   else {
-  skewness_ran <- skewness(ranef(object$model)$"(Intercept)")
-  kurtosis_ran <- kurtosis(ranef(object$model)$"(Intercept)")
-  if (length(residuals(object$model, level = 0, type = "pearson")) > 3 &&
-    length(residuals(object$model, level = 0, type = "pearson")) < 5000) {
+    #one fold model
+    #ranef <- ranef(object$model)$"(Intercept) # traditional defition, does not account for weights  
+    ranef <- object$model_par$rand_eff 
+    
+  skewness_ran <- skewness(ranef)
+  kurtosis_ran <- kurtosis(ranef)
+  if (length(residuals) > 3 &&
+    length(residuals) < 5000) {
     shapiro_p_res <-
-      shapiro.test(residuals(object$model, level = 0, type = "pearson"))[[2]]
+      shapiro.test(residuals)[[2]]
     shapiro_W_res <-
-      shapiro.test(residuals(object$model, level = 0, type = "pearson"))[[1]]
+      shapiro.test(residuals)[[1]]
   } else {
     warning(strwrap(prefix = " ", initial = "",
                     "Number of observations exceeds 5000 or is lower then 3 and
@@ -116,10 +122,10 @@ summary.ebp <- function(object, ...) {
     shapiro_W_res <- NA
   }
 
-  if (length(ranef(object$model)$"(Intercept)") > 3 &&
-    length(ranef(object$model)$"(Intercept)") < 5000) {
-    shapiro_p_ran <- shapiro.test(ranef(object$model)$"(Intercept)")[[2]]
-    shapiro_W_ran <- shapiro.test(ranef(object$model)$"(Intercept)")[[1]]
+  if (length(ranef) > 3 &&
+    length(ranef) < 5000) {
+    shapiro_p_ran <- shapiro.test(ranef)[[2]]
+    shapiro_W_ran <- shapiro.test(ranef)[[1]]
   } else {
     warning(strwrap(prefix = " ", initial = "",
                     "Number of domains exceeds 5000 or is lower then 3 and thus
