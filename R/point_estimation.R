@@ -443,16 +443,16 @@ gen_model <- function(fixed,
   if (model_par$sigmah2est==0) {
     mu <- mu_fixed + rand_eff_pop
     sigmai2est <- 0 
-    e0 <- dep_var - X_smp %*% betas - rep(rand_eff,framework$n_smp)
-  }
+    e0 <- dep_var - X_smp %*% betas - rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
+      }
   else {
     sigmai2est <- model_par$sigmah2est * (1-gamma_sub)
     rand_eff_h_pop <- rep(rand_eff_h,framework$n_pop_subdom)
     mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop 
-    e0 <- dep_var - X_smp %*% betas - rep(rand_eff,framework$n_smp)-rep(rand_eff_h,framework$n_smp_subdom)
+    e0 <- dep_var - X_smp %*% betas - rep(rand_eff[framework$dist_obs_dom],framework$n_smp)-rep(rand_eff_h[framework$dist_obs_subdom],framework$n_smp_subdom)
       }
 
-
+  
  
   
   
