@@ -345,8 +345,19 @@ ebp_reportcoef_table <- function(model,
   colnames(varname_dt) <- "Variable"
 
   coef_dt <- as.data.frame(coef(summary(model$model)))
+  if (model$call$weights_type=="Guadarrama") | (model$call$weights_type=="hybrid") {
+    updated_betas <- as.data.frame(model$model_par$betas)
+    colnames(updated_betas) <- c("Weighted coefficient estimate")
+    colnames(coef_dt)[1] <- c("Unweighted coefficient estimate")
+    colnames(coef_dt)[2] <- c("Unweighted Std.Error")
+    coef_dt <- cbind(updated_betas,coef_dt)
+  }
+  
+  
+  
   coef_dt <- cbind(varname_dt, coef_dt)
-
+  
+  
   coef_dt$Sig <- ifelse(coef_dt$`p-value` < 0.001, "***",
                         ifelse(coef_dt$`p-value` < 0.05 &
                                  coef_dt$`p-value` >= 0.001, "**",
