@@ -135,8 +135,11 @@ point_estim <- function(framework,
   est_par$sigmau2est <- gen_par$sigmau2est
   est_par$sigmae2est <- gen_par$sigmae2est
   est_par$e0 <- gen_par$e0
+  est_par$e1 <- gen_par$e1
+  est_par$e2 <- gen_par$e2
   
-    
+  
+  
   # Monte-Carlo approximation --------------------------------------------------
   if (inherits(framework$threshold, "function")) {
     framework$threshold <-
@@ -439,7 +442,8 @@ gen_model <- function(fixed,
   rand_eff_pop <- rep(rand_eff, framework$n_pop)
   X_smp <- model.matrix(fixed, framework$smp_data)
   e0 <- dep_var - X_smp %*% betas 
-   
+  e2 < NULL  
+  
   if (model_par$sigmah2est==0) {
     mu <- mu_fixed + rand_eff_pop
     sigmai2est <- 0 
@@ -449,14 +453,15 @@ gen_model <- function(fixed,
     sigmai2est <- model_par$sigmah2est * (1-gamma_sub)
     rand_eff_h_pop <- rep(rand_eff_h,framework$n_pop_subdom)
     mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop 
-    e1 <- e0 - rep(rand_eff[framework$dist_obs_dom],framework$n_smp)-rep(rand_eff_h[framework$dist_obs_subdom],framework$n_smp_subdom)
+    e1 <- e0 - rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
+    e2 <- e1 - rep(rand_eff_h[framework$dist_obs_subdom],framework$n_smp_subdom)
       }
 
   
  
   
   
-      return(list(betas=betas,sigmau2est=sigmau2est,sigmae2est=sigmae2est,sigmav2est = sigmav2est, sigmai2est = sigmai2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff,e0=e0))
+      return(list(betas=betas,sigmau2est=sigmau2est,sigmae2est=sigmae2est,sigmav2est = sigmav2est, sigmai2est = sigmai2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff,e0=e0,e1=e1,e2=e2))
 } # End gen_model
 
 
