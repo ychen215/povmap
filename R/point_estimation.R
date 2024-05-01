@@ -438,18 +438,18 @@ gen_model <- function(fixed,
   sigmav2est <- sigmau2est * (1 - gamma)
   rand_eff_pop <- rep(rand_eff, framework$n_pop)
   X_smp <- model.matrix(fixed, framework$smp_data)
-   
+  e0 <- dep_var - X_smp %*% betas 
    
   if (model_par$sigmah2est==0) {
     mu <- mu_fixed + rand_eff_pop
     sigmai2est <- 0 
-    e0 <- dep_var - X_smp %*% betas - rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
+    e1 <- e0 - rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
       }
   else {
     sigmai2est <- model_par$sigmah2est * (1-gamma_sub)
     rand_eff_h_pop <- rep(rand_eff_h,framework$n_pop_subdom)
     mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop 
-    e0 <- dep_var - X_smp %*% betas - rep(rand_eff[framework$dist_obs_dom],framework$n_smp)-rep(rand_eff_h[framework$dist_obs_subdom],framework$n_smp_subdom)
+    e1 <- e0 - rep(rand_eff[framework$dist_obs_dom],framework$n_smp)-rep(rand_eff_h[framework$dist_obs_subdom],framework$n_smp_subdom)
       }
 
   
