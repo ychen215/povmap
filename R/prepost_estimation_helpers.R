@@ -347,10 +347,7 @@ ebp_reportcoef_table <- function(model,
   coef_dt <- as.data.frame(coef(summary(model$model)))
   if (model$call$weights_type=="Guadarrama" | model$call$weights_type=="hybrid") {
     updated_betas <- as.data.frame(model$model_par$betas)
-    colnames(updated_betas) <- c("Weighted coefficient estimate")
-    colnames(coef_dt)[1] <- c("Unweighted coefficient estimate")
-    colnames(coef_dt)[2] <- c("Unweighted Std.Error")
-    coef_dt <- cbind(updated_betas,coef_dt)
+    coef_dt[,1] <- updated_betas
   }
   
   
@@ -372,15 +369,20 @@ ebp_reportcoef_table <- function(model,
                              signif(coef_dt$Std.Error, 2),
                              specify_decimal(coef_dt$Std.Error, decimals))
 
+  if (model$call$weights_type!="Guadarrama" & model$call$weights_type!="hybrid") {
   coef_dt$Value <- paste0(coef_dt$Value, coef_dt$Sig)
-
+}
+  
   colnames(coef_dt)[colnames(coef_dt) %in% c("Value", "StdError")] <-
     c("coeff", "std_error")
 
   rownames(coef_dt) <- seq(nrow(coef_dt))
-
-  return(coef_dt[, c("Variable", "coeff", "std_error")])
-
+  if (model$call$weights_type!="Guadarrama" & model$call$weights_type!="hybrid") {
+    return(coef_dt[, c("Variable", "coeff", "std_error")])
+  }
+  else {
+    return(coef_dt[, c("Variable", "coeff")])
+  }
 }
 
 #' Produce EBP Head Count Population/Rate by Rank
