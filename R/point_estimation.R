@@ -129,12 +129,12 @@ point_estim <- function(framework,
   else {
     gen_par <- NULL 
   }
-  #update random effects, beta coefficients, and variance components in the cases that they are altered by gen_model
+  #update random effects, beta coefficients, variance components, and residuals in the cases that they are altered by gen_model
   est_par$rand_eff <- gen_par$rand_eff 
   est_par$betas <- gen_par$betas
   est_par$sigmau2est <- gen_par$sigmau2est
   est_par$sigmae2est <- gen_par$sigmae2est
-  
+  est_par$e0 <- dep_var - gen_par$mu
   
     
   # Monte-Carlo approximation --------------------------------------------------
