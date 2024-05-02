@@ -73,7 +73,7 @@ summary.ebp <- function(object, ...) {
   # but it doesn't account for weights properly when using Guadarrama weights or hybrid weights 
   #residuals <- residuals(object$model level = 0,  type = "pearson")
   #raneff <- 
-  residuals <- object$model_par$e0
+  residuals <- object$model_par$e1
   
   
   
@@ -84,10 +84,12 @@ summary.ebp <- function(object, ...) {
   
   if (!is.null(object$framework$smp_subdomains) && !is.null(object$framework$pop_subdomains))
   { # two fold model
-   skewness_ran <- skewness(ranef(object$model)[[object$framework$smp_domains]]) 
-   kurtosis_ran <- kurtosis(ranef(object$model)[[object$framework$smp_domains]])
-   skewness_ran_sub <- skewness(ranef(object$model)[[object$framework$smp_subdomains]])
-   kurtosis_ran_sub <- kurtosis(ranef(object$model)[[object$framework$smp_subdomains]])
+  ranef <- object$model_par$rand_eff[[object$framework$smp_domains]] 
+  ranef_sub <- object$model_par$rand_eff_h[[object$framework$smp_domains]] 
+   skewness_ran <- skewness(ranef) 
+   kurtosis_ran <- kurtosis(ranef)
+   skewness_ran_sub <- skewness(ranef_sub)
+   kurtosis_ran_sub <- kurtosis(ranef_sub)
    variance_ran_sub <- object$model_par$sigmah2est 
    norm <- data.frame(
    Skewness = c(skewness_res, skewness_ran,skewness_ran_sub), 
