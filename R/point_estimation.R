@@ -442,7 +442,7 @@ gen_model <- function(fixed,
   rand_eff_pop <- rep(rand_eff, framework$n_pop)
   X_smp <- model.matrix(fixed, framework$smp_data)
   e0 <- dep_var - X_smp %*% betas 
-  e2 < NULL  
+  e2 <- NULL  
   
   if (model_par$sigmah2est==0) {
     mu <- mu_fixed + rand_eff_pop
