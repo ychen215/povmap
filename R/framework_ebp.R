@@ -81,6 +81,9 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
   if (isTRUE(rescale_weights) && !is.null(weights)) {
     smp_data[,weights] <- smp_data[,weights] / ave(smp_data[,weights], smp_data[,smp_domains])
   }
+  else if (!is.null(weights)) {
+    smp_data[,weights] <- smp_data[,weights] / mean(smp_data[weights])
+  }
   
   # Order of domains
   pop_data <- pop_data[order(pop_data[[pop_domains]]), ]
