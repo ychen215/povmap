@@ -505,6 +505,10 @@ update_beta_re <- function(model_par,weight_smp,framework,dep_var,fixed) {
   
   # If two fold model, subtract subarea gamma from indep_var_ast and dep_va
   if (model_par$sigmah2est>0) {
+    sums_sub <- aggregate(data.frame(weight_smp, weight_smp^2)[framework$smp_subdomains_vec,], by = list(framework$smp_subdomains_vec), FUN = sum)
+    sums_sub <- sums_sub[framework$dist_obs_smp_subdom,]
+    delta2_sub <- sums_sub[,3] / sums_sub[,2]^2
+    gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
     submean_dep <- aggregate_weighted_mean(dep_var,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
     dep_var_ast <- dep_var_ast - rep(gamma_sub * submean_dep,framework$n_smp_subdom)
     mean_indep_sub <- aggregate_weighted_mean(indep_smp,by=list(framework$smp_subdomains_vec),w=weight_smp)[,-1]
