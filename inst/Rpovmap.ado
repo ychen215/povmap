@@ -34,7 +34,7 @@ else {
 }
 
 if "`weights_type'"=="" {
-	local weights_type = "Guadarrama"
+	local weights_type = "NULL"
 }
 if "`pop_weights'"=="" {
 local pop_weights="NULL"
