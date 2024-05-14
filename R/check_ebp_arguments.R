@@ -203,7 +203,7 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
   #               ''parametric'' bootstrap."))
   #}
 
-  if (is.null(weights)) {
+  if (is.null(weights) &!is.null(weight_type)) {
     stop(strwrap(prefix = " ", initial = "",
                   paste0("If you want to use the survey weights with weighting
                          type ", weights_type, " please provide the name of a
