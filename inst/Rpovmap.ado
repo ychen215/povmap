@@ -36,6 +36,10 @@ else {
 if "`weights_type'"=="" {
 	local weights_type = "NULL"
 }
+else {
+	local weights_type `""`weights_type'""'
+}
+
 if "`pop_weights'"=="" {
 local pop_weights="NULL"
 }
