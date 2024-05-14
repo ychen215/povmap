@@ -216,7 +216,6 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  "The five options for types of survey weights are
                  ''hybrid'',''hybrid2'', Guadarrama'', ''nlme'', and ''nlme_lambda''"))
   }
-  }
   if (transformation %in% c("no", "log", "ordernorm") &&
       weights_type == "nlme_lambda") {
     stop(strwrap(prefix = " ", initial = "",
@@ -226,6 +225,7 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                         transformation ('box.cox', 'dual', 'log.shift') in
                         agrument transformation or use weights_type = 'nlme'
                         to use nlme weights for the estimation.")))
+  }
   }
   if (is.character(pop_weights) && length(pop_weights) != 1 ||
       !is.character(pop_weights) && !is.null(pop_weights)) {
