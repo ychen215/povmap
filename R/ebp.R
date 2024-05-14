@@ -348,7 +348,7 @@ ebp <- function(fixed,
                 pop_weights = NULL,
                 MSE_pop_weights = NULL, 
                 aggregate_to = NULL,
-                weights_type = "Guadarrama",
+                weights_type = NULL,
                 nlme_update_re = FALSE, 
                 benchmark = NULL,
                 benchmark_type = "ratio",
@@ -402,6 +402,10 @@ ebp <- function(fixed,
     }
   }
 
+  if (is.null(weights_type)) {
+    weights_type <- "Guadarrama"
+  }
+  
   if (is.null(benchmark_weights) & !is.null(weights)) {
     benchmark_weights <- weights
   }
