@@ -345,11 +345,12 @@ ebp_reportcoef_table <- function(model,
   colnames(varname_dt) <- "Variable"
 
   coef_dt <- as.data.frame(coef(summary(model$model)))
+  if (!is.null(model$call$weights_type)) {
   if (model$call$weights_type=="Guadarrama" | model$call$weights_type=="hybrid") {
     updated_betas <- as.data.frame(model$model_par$betas)
     coef_dt[,1] <- updated_betas
   }
-  
+  }
   
   
   coef_dt <- cbind(varname_dt, coef_dt)
