@@ -370,9 +370,11 @@ ebp_reportcoef_table <- function(model,
                              signif(coef_dt$Std.Error, 2),
                              specify_decimal(coef_dt$Std.Error, decimals))
 
+  if (!is.null(model$call$weights_type)) {
   if (model$call$weights_type!="Guadarrama" & model$call$weights_type!="hybrid") {
   coef_dt$Value <- paste0(coef_dt$Value, coef_dt$Sig)
-}
+  }
+  }
   
   colnames(coef_dt)[colnames(coef_dt) %in% c("Value", "StdError")] <-
     c("coeff", "std_error")
