@@ -161,7 +161,10 @@ summary.ebp <- function(object, ...) {
   icc_mixed <- icc(object)
 
   groups=tempMod$data[,object$framework$smp_domains]
-  
+  if (is.null(object$framework$weights)) {
+    object$framework$weights <- "temp_weights"
+    object$model$data$temp_weights <- 1
+  }
   y_yhat <- data.frame("Y" = tempMod$data[,1],"marginal" = tempMod$fitted[,1], "conditional"=tempMod$fitted[,2],weights=object$model$data[,object$framework$weights])
   y_yhat_bar <- aggregate_weighted_mean(y_yhat,by=list(groups),w=object$model$data[,object$framework$weights])[,-c(1,5)]
   
