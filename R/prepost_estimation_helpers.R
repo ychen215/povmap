@@ -380,8 +380,10 @@ ebp_reportcoef_table <- function(model,
     c("coeff", "std_error")
 
   rownames(coef_dt) <- seq(nrow(coef_dt))
+  if (!is.null(model$call$weights_type)) {
   if (model$call$weights_type!="Guadarrama" & model$call$weights_type!="hybrid") {
     return(coef_dt[, c("Variable", "coeff", "std_error")])
+  }
   }
   else {
     return(coef_dt[, c("Variable", "coeff")])
