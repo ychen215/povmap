@@ -402,7 +402,7 @@ ebp <- function(fixed,
     }
   }
 
-  if (is.null(weights_type)) {
+  if (is.null(weights_type) & !is.null(weights)) {
     weights_type <- "Guadarrama"
   }
   
