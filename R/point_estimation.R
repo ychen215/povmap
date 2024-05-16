@@ -330,7 +330,8 @@ gen_model <- function(fixed,
     delta2_sub <- sums_sub[,3] / sums_sub[,2]^2
     gamma_sub <- model_par$sigmah2est / (model_par$sigmah2est + model_par$sigmae2est * delta2_sub)
   }
-   if (framework$weights_type=="hybrid2") {
+   if (!is.null(framework$weights_type)) {
+    if (framework$weights_type=="hybrid2") {
       #First update betas 
       newbetas <- update_beta_re(model_par = model_par, weight_smp=weight_smp, framework=framework,dep_var=dep_var,fixed=fixed)
       betas <- newbetas$betas
@@ -342,8 +343,10 @@ gen_model <- function(fixed,
       sigmau2est <- updated_sigma2$sigmau2est 
       sigmae2est <- updated_sigma2$sigmae2est 
     } # close hybrid 
+   } # close non-null 
 } # close nlme family 
-  else if (framework$weights_type=="hybrid") {
+  else if (!is.null(framework$weights_type)) {
+  if (framework$weights_type=="hybrid") {
     newbetas <- update_beta_re(model_par = model_par, weight_smp=weight_smp, framework=framework,dep_var=dep_var,fixed=fixed)
     betas <- newbetas$betas
     gamma <- newbetas$gamma 
@@ -353,9 +356,9 @@ gen_model <- function(fixed,
     sigmau2est <- updated_sigma2$sigmau2est 
     sigmae2est <- updated_sigma2$sigmae2est 
     } # close hybrid
-    
+  } # close non-null 
   
-  else {
+  else if (!is.null(framework$weights_type)) {
       # Calculations needed for pseudo EB for Guadarrama option 
       weight_sum <- rep(0, framework$N_dom_smp)
       mean_dep <- rep(0, framework$N_dom_smp)
