@@ -555,6 +555,7 @@ ebp <- function(fixed,
         "pop_domains_vec",
         "pop_subdomains_vec",
         "weights",
+        "weights_type",
         "pop_weights"
       )],
       transformation = transformation,
