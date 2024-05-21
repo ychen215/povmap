@@ -312,8 +312,6 @@ gen_model <- function(fixed,
   
   # calculate gamma 
   if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid2")) | is.null(framework$weights)) {
-
-    
   weight_sum <- rep(0, framework$N_dom_smp)
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
   delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum
@@ -342,7 +340,7 @@ gen_model <- function(fixed,
       updated_sigma2 <- update_sigma2(dep_var=dep_var,betas=betas,weight_smp=weight_smp,framework=framework,rand_eff=rand_eff,fixed=fixed)
       sigmau2est <- updated_sigma2$sigmau2est 
       sigmae2est <- updated_sigma2$sigmae2est 
-    } # close hybrid 
+    } # close hybrid2 
    } # close non-null 
 } # close nlme family 
   else if (!is.null(framework$weights_type)) {
@@ -356,9 +354,7 @@ gen_model <- function(fixed,
     sigmau2est <- updated_sigma2$sigmau2est 
     sigmae2est <- updated_sigma2$sigmae2est 
     } # close hybrid
-  } # close non-null 
-  
-  else if (!is.null(framework$weights_type)) {
+    else if (framework$weights_type=="Guadarrama") {
       # Calculations needed for pseudo EB for Guadarrama option 
       weight_sum <- rep(0, framework$N_dom_smp)
       mean_dep <- rep(0, framework$N_dom_smp)
@@ -433,8 +429,8 @@ gen_model <- function(fixed,
       
     
     
-    
-  }
+  } # close Guadarrama   
+  } # close non-null
 
   framework$pop_data[[paste0(fixed[2])]] <- seq_len(nrow(framework$pop_data))
   X_pop <- model.matrix(fixed, framework$pop_data)
