@@ -311,7 +311,7 @@ gen_model <- function(fixed,
   rand_eff_h <- model_par$rand_eff_h 
   
   # calculate gamma 
-  if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid2")) | is.null(framework$weights)) {
+  if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid2",NULL)) | is.null(framework$weights)) {
   weight_sum <- rep(0, framework$N_dom_smp)
   sums <- aggregate(data.frame(weight_smp,weight_smp^2), by=list(framework$smp_domains_vec),FUN=sum)
   delta2 <- sums[,3] / sums[,2]^2 # sum of the squares divided by the square of the sum
