@@ -28,6 +28,7 @@ ell(
   benchmark_level = NULL,
   benchmark_weights = NULL,
   rescale_weights = FALSE,
+  random_method = NULL,
   Ydump = NULL,
   errors = "normal",
   model_parameters = "variable",
@@ -119,7 +120,7 @@ a weighted version of the ebp will be used. The variable has to be numeric.
 Defaults to \code{NULL}.}
 
 \item{pop_weights}{a character string containing the name of a variable that
-indicates population weights in the populatation data. If a character string
+indicates population weights in the population data. If a character string
 is provided weighted indicators are estimated using population weights.
 The variable has to be numeric. Defaults to \code{NULL}.}
 
@@ -164,6 +165,9 @@ If \code{FALSE} (default), the sample weights do not change. When \code{TRUE}
 , the sample weights are rescaled such that the average weight is 1
 within each domain.}
 
+\item{random_method}{selects the method used by the plm function to estimate the random effects model.
+It can take on the values "swar" (default), "amemiya", "walhus", or "nerlove"}
+
 \item{Ydump}{a string specifying the name of a .csv file to save all simulated
 values of the dependent value, model predictions, and error terms used for
 point estimation.}
@@ -187,10 +191,6 @@ weights by using the weighting options of \code{\link{nlme}} from
 weights by using the weighting options of \code{\link{nlme}} and use these
 weights also to determine the optimal transformation parameter lambda
 ("nlme_lambda"). Defaults to \code{"Guadarrama"}.}
-
-\item{nlme_maxiter}{an integer indicating the maximum number of iterations
-the \code{lme} function from package \code{\link{nlme}} will run for
-parameter convergence. Defaults to 1000.}
 }
 \value{
 An object of class "ell", "emdi" that provides estimators for

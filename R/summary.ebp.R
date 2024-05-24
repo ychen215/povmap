@@ -3,8 +3,9 @@
 #' @export
 #' @importFrom moments skewness kurtosis
 #' @importFrom MuMIn r.squaredGLMM
-#' @importFrom nlme predict 
 #' @rdname emdi_summaries
+
+# importFrom nlme predict.lme -- old code 
 
 summary.ebp <- function(object, ...) {
   throw_class_error(object, "ebp")
