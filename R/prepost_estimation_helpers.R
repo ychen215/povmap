@@ -384,11 +384,13 @@ ebp_reportcoef_table <- function(model,
   if (model$call$weights_type!="Guadarrama" & model$call$weights_type!="hybrid") {
     return(coef_dt[, c("Variable", "coeff", "std_error")])
   }
-  }
   else {
     return(coef_dt[, c("Variable", "coeff")])
   }
-}
+  } # close non-null weight type 
+  else {
+    return(coef_dt[, c("Variable", "coeff")])
+  }
 
 #' Produce EBP Head Count Population/Rate by Rank
 #'
