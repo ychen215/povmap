@@ -44,7 +44,7 @@ parametric_bootstrap <- function(framework,
     # check to see if current library matches slave library locations 
     # if not there will be a bug unless we alter the slave library locations 
     slavelibs <- parallel::clusterEvalQ(, .libPaths())
-    if (!.libPaths() %in% slavelibs[[1]]) {
+    if (!max(.libPaths() %in% slavelibs[[1]])) {
       libname <- .libPaths()
       parallelMap:::parallelExport("libname")
       parallel:::clusterEvalQ(, .libPaths(libname))
