@@ -391,6 +391,7 @@ ebp_reportcoef_table <- function(model,
   else {
     return(coef_dt[, c("Variable", "coeff")])
   }
+}
 
 #' Produce EBP Head Count Population/Rate by Rank
 #'
