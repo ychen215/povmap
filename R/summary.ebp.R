@@ -85,8 +85,10 @@ summary.ebp <- function(object, ...) {
   
   if (!is.null(object$framework$smp_subdomains) && !is.null(object$framework$pop_subdomains))
   { # two fold model
-  ranef <- object$model_par$rand_eff[[object$framework$smp_domains]] 
-  ranef_sub <- object$model_par$rand_eff_h[[object$framework$smp_domains]] 
+    dist_obs_dom <- unique(object$framework$pop_domains_vec) %in% unique(object$framework$smp_domains_vec)
+    dist_obs_subdom <- unique(object$framework$pop_subdomains_vec) %in% unique(object$framework$smp_subdomains_vec)
+  ranef <- object$model_par$rand_eff[dist_obs_dom] 
+  ranef_sub <- object$model_par$rand_eff_h[dist_obs_subdom] 
    skewness_ran <- skewness(ranef) 
    kurtosis_ran <- kurtosis(ranef)
    skewness_ran_sub <- skewness(ranef_sub)
@@ -105,8 +107,9 @@ summary.ebp <- function(object, ...) {
   } # close two fold model 
   else {
     #one fold model
-    #ranef <- ranef(object$model)$"(Intercept) # traditional defition, does not account for weights  
-    ranef <- object$model_par$rand_eff 
+    #ranef <- ranef(object$model)$"(Intercept) # traditional defition, does not account for weights 
+    dist_obs_dom <- unique(object$framework$pop_domains_vec) %in% unique(object$framework$smp_domains_vec)
+    ranef <- object$model_par$rand_eff[dist_obs_dom] 
     
   skewness_ran <- skewness(ranef)
   kurtosis_ran <- kurtosis(ranef)
