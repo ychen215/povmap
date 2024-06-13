@@ -85,6 +85,7 @@ summary.ebp <- function(object, ...) {
   
   if (!is.null(object$framework$smp_subdomains) && !is.null(object$framework$pop_subdomains))
   { # two fold model
+    residuals <- object$model_par$e2
     dist_obs_dom <- unique(object$framework$pop_domains_vec) %in% unique(object$framework$smp_domains_vec)
     dist_obs_subdom <- unique(object$framework$pop_subdomains_vec) %in% unique(object$framework$smp_subdomains_vec)
   ranef <- object$model_par$rand_eff[dist_obs_dom] 
@@ -94,15 +95,57 @@ summary.ebp <- function(object, ...) {
    skewness_ran_sub <- skewness(ranef_sub)
    kurtosis_ran_sub <- kurtosis(ranef_sub)
    variance_ran_sub <- object$model_par$sigmah2est 
+   
+   if (length(residuals) > 3 &&
+       length(residuals) < 5000) {
+     shapiro_p_res <-
+       shapiro.test(residuals)[[2]] 
+     shapiro_W_res <-
+       shapiro.test(residuals)[[1]]
+     
+   }
+   else {
+     warning(strwrap(prefix = " ", initial = "",
+                     "Number of observations exceeds 5000 or is lower then 3 and
+                    thus the Shapiro-Wilk test is not applicable for the
+                    residuals."))
+     Shapiro_W = NA
+     Shapiro_p = NA
+   }
+   if (length(ranef) > 3 &&
+       length(ranef) < 5000) {
+     shapiro_p_ran <- shapiro.test(ranef)[[2]]
+     shapiro_W_ran <- shapiro.test(ranef)[[1]]
+   } else {
+     warning(strwrap(prefix = " ", initial = "",
+                     "Number of domains exceeds 5000 or is lower then 3 and thus
+                    the Shapiro-Wilk test is not applicable for the area random
+                    effects."))
+     shapiro_p_ran <- NA
+     shapiro_W_ran <- NA
+   }
+   if (length(ranef_sub) > 3 &&
+       length(ranef_sub) < 5000) {
+     shapiro_p_ran_sub <- shapiro.test(ranef_sub)[[2]]
+     shapiro_W_ran_sub <- shapiro.test(ranef_sub)[[1]]
+   } else {
+     warning(strwrap(prefix = " ", initial = "",
+                     "Number of subdomains exceeds 5000 or is lower then 3 and thus
+                    the Shapiro-Wilk test is not applicable for the subarea random
+                    effects."))
+     shapiro_p_ran_sub <- NA
+     shapiro_W_ran_sub <- NA
+   }
+   
    norm <- data.frame(
-   Skewness = c(skewness_res, skewness_ran,skewness_ran_sub), 
-   Kurtosis = c(kurtosis_res, kurtosis_ran,kurtosis_ran_sub),
-   Shapiro_W = c(NA, NA, NA),
-   Shapiro_p = c(NA, NA, NA),
-   row.names = c("Error", paste0(object$framework$smp_domains," random effect"),paste0(object$framework$smp_subdomains," random effect"))
-   ) 
+     Skewness = c(skewness_res, skewness_ran,skewness_ran_sub), 
+     Kurtosis = c(kurtosis_res, kurtosis_ran,kurtosis_ran_sub),  
+     Shapiro_W = c(shapiro_W_res, shapiro_W_ran, shapiro_W_ran_sub),
+     Shapiro_p = c(shapiro_p_res, shapiro_p_ran, shapiro_p_ran_sub),
+     row.names = c("Error", paste0(object$framework$smp_domains," random effect"),paste0(object$framework$smp_subdomains," random effect"))
+   )
    var <- data.frame(Variance = c(variance_res,variance_ran,variance_ran_sub),
-                     row.names = c("Error", paste0(object$framework$smp_domains," random effect"),paste0(object$framework$smp_subdomains," random effect"))         
+    row.names = c("Error", paste0(object$framework$smp_domains," random effect"),paste0(object$framework$smp_subdomains," random effect"))                         
    )
   } # close two fold model 
   else {
