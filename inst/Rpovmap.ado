@@ -5,7 +5,7 @@
 
 cap program drop Rpovmap
 program define Rpovmap 
-syntax namelist, smp_data(string) pop_data(string) smp_domains(string) pop_domains(string) [pop_subdomains(string) smp_subdomains(string) weights(string) WEIGHTS_Type(string) pop_weights(string) mse_pop_weights(string) threshold(string)  l(int 50) b(int 100) mse(string) transformation(string) interval(string) na_rm(string) cpus(int 1) seed(int 123) savexls(string) saveobject(string) interval(string) benchmark(string) aggregate_to(string) weights_type(string)  benchmark_level(string) benchmark_type(string) benchmark_weights(string) rescale_weights(string) nlme_maxiter(int 1000) nlme_tolerance(real 1e-06) nlme_opt(string) boot_type(string) ydump(string) model_parameters(string) data_table(string) indicators(string)] 
+syntax namelist, smp_data(string) pop_data(string) smp_domains(string) pop_domains(string) [pop_subdomains(string) smp_subdomains(string) weights(string) WEIGHTS_Type(string) pop_weights(string) mse_pop_weights(string) threshold(string)  l(int 50) b(int 100) mse(string) transformation(string) interval(string) na_rm(string) cpus(int 1) seed(int 123) savexls(string) saveobject(string) interval(string) benchmark(string) aggregate_to(string) weights_type(string) benchmark_level(string) benchmark_type(string) benchmark_weights(string) rescale_weights(string) nlme_maxiter(int 1000) nlme_tolerance(real 1e-06) nlme_opt(string) boot_type(string) ydump(string) model_parameters(string) data_table(string) indicators(string)] 
 
 
 
@@ -36,10 +36,6 @@ else {
 if "`weights_type'"=="" {
 	local weights_type = "NULL"
 }
-else {
-	local weights_type `""`weights_type'""'
-}
-
 if "`pop_weights'"=="" {
 local pop_weights="NULL"
 }
@@ -58,6 +54,7 @@ if "`threshold'"=="" {
 local threshold="NULL"
 }
 
+
 if "`mse'"=="" {
 local mse="FALSE"
 }
@@ -67,7 +64,7 @@ local transformation "box.cox"
 if "`interval'"=="" {
 local interval "default"
 }
-if "`na_rm'"=="" {
+if "na_rm"=="" {
 	local na_rm "FALSE"
 } 
 if "`savexls'"=="" {
@@ -181,6 +178,7 @@ else {
 
 
 
+
  
 local pop_data : subinstr local pop_data "\" "/", all 
 local smp_data : subinstr local smp_data "\" "/", all 
@@ -229,7 +227,7 @@ file write Rscript "ebp_results <- ebp(fixed = model,pop_data = pop," _n
 file write Rscript `"pop_domains = "`pop_domains'", smp_data = smp, smp_domains = "`smp_domains'","' _n 
 file write Rscript `"pop_subdomains = `pop_subdomains', smp_subdomains = `smp_subdomains',"' _n 
 file write Rscript `"threshold = `threshold', L = `l', B = `b', MSE = `mse', transformation = "`transformation'", interval = "`interval'","' _n 
-file write Rscript `"boot_type="`boot_type'",na.rm = `na_rm', cpus = `cpus', seed=`seed', weights = `weights', weights_type = `weights_type', pop_weights = `pop_weights', MSE_pop_weights = `mse_pop_weights', aggregate_to = `aggregate_to',benchmark = `benchmark',"' _n          
+file write Rscript `"boot_type="`boot_type'",na.rm = `na_rm', cpus = `cpus', seed=`seed', weights = `weights', weights_type = "`weights_type'", pop_weights = `pop_weights', MSE_pop_weights = `mse_pop_weights', aggregate_to = `aggregate_to',benchmark = `benchmark',"' _n          
 file write Rscript `" benchmark_type = `benchmark_type', benchmark_level = `benchmark_level', benchmark_weights = `benchmark_weights', rescale_weights = `rescale_weights', nlme_maxiter = `nlme_maxiter',nlme_tolerance = `nlme_tolerance',nlme_opt = "`nlme_opt'",Ydump=`ydump',model_parameters=`model_parameters',data.table=`data_table',indicators=`indicators')"' _n          
 if "`saveobject'"~="" {
 file write Rscript `"save(ebp_results,file="`saveobject'")"' _n  	
