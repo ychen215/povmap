@@ -233,13 +233,13 @@ summary.ebp <- function(object, ...) {
   if (is.null(object$model_par$gamma_sub)) {
     shrinkage <- data.frame(
       gamma = t(as.matrix(summary(object$model_par$gamma))),
-      row.names = paste0(object$framework$smp_domains," shrinkage factor")
+      row.names = paste0(object$framework$smp_domains,"")
     )
   }  
   else {
     shrinkage <- data.frame(
       gamma = t(as.matrix(cbind(summary(object$model_par$gamma),summary(object$model_par$gamma_sub)))),
-      row.names = c(paste0(object$framework$smp_domains," shrinkage factor"),paste0(object$framework$smp_subdomains," shrinkage factor"))
+      row.names = c(paste0(object$framework$smp_domains,""),paste0(object$framework$smp_subdomains,""))
       )
   }
 
