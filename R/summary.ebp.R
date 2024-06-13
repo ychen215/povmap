@@ -232,14 +232,14 @@ summary.ebp <- function(object, ...) {
   
   if (is.null(object$model_par$gamma_sub)) {
     shrinkage <- data.frame(
-      Area_random_effect = summary(object$model_par$gamma),
+      Area_random_effect = t(as.matrix(summary(object$model_par$gamma))),
       row.names = paste0(object$framework$smp_domains," shrinkage factor")
     )
   }  
   else {
     shrinkage <- data.frame(
-      Area_random_effect = summary(object$model_par$gamma),
-      Subarea_random_effect = summary(object$model_par$gamma_sub),
+      Area_random_effect = t(as.matrix(summary(object$model_par$gamma))),
+      Subarea_random_effect = t(as.matrix(summary(object$model_par$gamma_sub))),
       row.names = c(paste0(object$framework$smp_domains," shrinkage factor"),paste0(object$framework$smp_subdomains," shrinkage factor"))
       )
   }
