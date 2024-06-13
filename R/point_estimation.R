@@ -321,6 +321,7 @@ gen_model <- function(fixed,
   #wrong_delta2 <- wrong_sums[,3] / wrong_sums[,2]^2
   #wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
+  gamma_sub <- NULL 
   #gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   if (model_par$sigmah2est>0) {
     sums_sub <- aggregate(data.frame(weight_smp, weight_smp^2)[framework$smp_subdomains_vec,], by = list(framework$smp_subdomains_vec), FUN = sum)
@@ -460,7 +461,8 @@ gen_model <- function(fixed,
  
   
   
-      return(list(betas=betas,sigmau2est=sigmau2est,sigmae2est=sigmae2est,sigmav2est = sigmav2est, sigmai2est = sigmai2est, mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff,e0=e0,e1=e1,e2=e2))
+      return(list(betas=betas,sigmau2est=sigmau2est,sigmae2est=sigmae2est,sigmav2est = sigmav2est, sigmai2est = sigmai2est, 
+                  mu = mu, mu_fixed = mu_fixed,rand_eff=rand_eff,gamma=gamma,gamma_sub=gamma_sub,e0=e0,e1=e1,e2=e2))
 } # End gen_model
 
 
