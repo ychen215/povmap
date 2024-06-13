@@ -109,8 +109,8 @@ summary.ebp <- function(object, ...) {
                      "Number of observations exceeds 5000 or is lower then 3 and
                     thus the Shapiro-Wilk test is not applicable for the
                     residuals."))
-     Shapiro_W_res <- NA
-     Shapiro_p_res <- NA
+     shapiro_W_res <- NA
+     shapiro_p_res <- NA
    }
    if (length(ranef) > 3 &&
        length(ranef) < 5000) {
