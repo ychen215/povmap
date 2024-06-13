@@ -137,7 +137,8 @@ point_estim <- function(framework,
   est_par$e0 <- gen_par$e0
   est_par$e1 <- gen_par$e1
   est_par$e2 <- gen_par$e2
-  
+  est_par$gamma <- gen_par$gamma 
+  est_par$gamma_sub <- gen_par$gamma_sub
   
   
   # Monte-Carlo approximation --------------------------------------------------
