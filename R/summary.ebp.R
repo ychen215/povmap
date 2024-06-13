@@ -230,6 +230,23 @@ summary.ebp <- function(object, ...) {
     row.names      = ""
   )
   
+  if (is.null(gamma_sub)) {
+    shrinkage <- data.frame(
+      Area_random_effect = summary(object$model_par$gamma),
+      row.names = paste0(object$framework$smp_domains," shrinkage factor")
+    )
+  }  
+  else {
+    shrinkage <- data.frame(
+      Area_random_effect = summary(object$model_par$gamma),
+      Subarea_random_effect = summary(object$model_par$gamma_sub),
+      row.names = c(paste0(object$framework$smp_domains," shrinkage factor"),paste0(object$framework$smp_subdomains," shrinkage factor"))
+      )
+  }
+
+    
+    
+  
   
   
 
@@ -245,6 +262,7 @@ summary.ebp <- function(object, ...) {
     transform = transform_method,
     normality = norm,
     variance = var, 
+    shrinkage = shrinkage,  
     icc = icc_mixed,
     coeff_determ = coeff_det,
     call = call_emdi
@@ -293,6 +311,9 @@ print.summary.ebp <- function(x, ...) {
   print(x$variance)
   cat("\n")
   cat("ICC: ", x$icc, "\n")
+  cat("\n")
+  cat("Shrinkage factors")
+  print(x$shrinkage)
   cat("\n")
   if (is.null(x$transform)) {
     cat("Transformation: No transformation \n")
