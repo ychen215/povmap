@@ -230,7 +230,7 @@ summary.ebp <- function(object, ...) {
     row.names      = ""
   )
   
-  if (is.null(gamma_sub)) {
+  if (is.null(object$model_par$gamma_sub)) {
     shrinkage <- data.frame(
       Area_random_effect = summary(object$model_par$gamma),
       row.names = paste0(object$framework$smp_domains," shrinkage factor")
