@@ -311,7 +311,7 @@ print.summary.ebp <- function(x, ...) {
   cat("\n")
   cat("ICC: ", x$icc, "\n")
   cat("\n")
-  cat("Shrinkage factors")
+  cat("Shrinkage factors","\n")
   print(x$shrinkage)
   cat("\n")
   if (is.null(x$transform)) {
