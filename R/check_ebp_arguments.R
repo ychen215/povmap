@@ -182,7 +182,11 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  specifying the variable name of a numeric variable indicating
                  weights in the sample data. See also help(ebp)."))
   }
-  if (!is.null(weights) && weights_type == "Guadarrama" &&
+  
+  if (is.null(weights_type)) {
+    weights_type <- "Guadarrama-Null"
+  }
+  if (!is.null(weights) && (weights_type == "Guadarrama" | weights_type == "Guadarrama-Null") &&
       !(transformation == "log" || transformation == "no" ||
         transformation == "ordernorm")) {
     stop(strwrap(prefix = " ", initial = "",
@@ -190,12 +194,16 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
                  used without transformation or the log-transformation."))
   }
   
-  if (!is.null(weights) && weights_type == "Guadarrama" &&
+    
+  if (!is.null(weights) && (weights_type == "Guadarrama" | weights_type == "Guadarrama-Null") &&
       (!is.null(smp_subdomains) && (!is.null(pop_subdomains)))) {
     stop(strwrap(prefix = " ", initial = "",
                  "Two-fold nested error model may only only be used with nlme or hybrid weights"))
   }
   
+  if (weights_type=="Guadarrama-Null") {
+    weights_type <- NULL 
+  }
   
   #if (!is.null(weights) && isTRUE(MSE) && boot_type == "wild") {
   #  stop(strwrap(prefix = " ", initial = "",
