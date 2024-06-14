@@ -302,13 +302,30 @@ add_summary_ebp <- function(object, wb, headlines_cs) {
     withFilter = FALSE,
     sheet = "summary",
     startRow = starting_row,
-    startCol = 4,
+    startCol = 2,
     rowNames = FALSE,
     headerStyle = headlines_cs,
     colNames = TRUE,
     tableStyle = "TableStyleMedium2"
   )
 
+  starting_row <- starting_row + 2 + nrow(su$coeff_determ)
+  writeDataTable(
+    x = su$shrinkage,
+    wb = wb,
+    withFilter = FALSE,
+    sheet = "summary",
+    startRow = starting_row,
+    startCol = 2,
+    rowNames = FALSE,
+    headerStyle = headlines_cs,
+    colNames = TRUE,
+    tableStyle = "TableStyleMedium2"
+  )
+  
+  
+  
+  
   setColWidths(
     wb = wb,
     sheet = "summary",
