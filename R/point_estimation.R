@@ -242,6 +242,7 @@ model_par <- function(framework,
   # Random effect: vector with zeros for all domains, filled with 0
   rand_eff <- rep(0, framework$N_dom_pop)  
   rand_eff_h <- rep(0, framework$N_subdom_pop)  
+  rand_eff_h_smp <- NULL 
   if (!is.null(framework$smp_subdomains) && !is.null(framework$pop_subdomains)) {
     sigmau2est <- as.numeric(VarCorr(mixed_model)[2,1])
     sigmah2est <- as.numeric(VarCorr(mixed_model)[4,1])
@@ -249,6 +250,7 @@ model_par <- function(framework,
     rand_eff[framework$dist_obs_dom] <- random.effects(mixed_model,level=1)$"(Intercept)"[framework$dist_obs_smp_dom]
     # Random subarea-effect 
     rand_eff_h[framework$dist_obs_subdom] <- random.effects(mixed_model,level=2)$"(Intercept)"[framework$dist_obs_smp_subdom]
+    rand_eff_h_smp <- random.effects(mixed_model,level=2)$"(Intercept)"
   } 
   else {
     sigmau2est <- as.numeric(nlme::VarCorr(mixed_model)[1, 1])  
@@ -279,6 +281,7 @@ model_par <- function(framework,
       sigmau2est = sigmau2est,
       rand_eff = rand_eff,
       rand_eff_h = rand_eff_h,
+      rand_eff_h_smp = rand_eff_h_smp, 
       varFix=varFix, 
       varErr=varErr,
       e0=e0
@@ -455,7 +458,8 @@ gen_model <- function(fixed,
     rand_eff_h_pop <- rep(rand_eff_h,framework$n_pop_subdom)
     mu <- mu_fixed + rand_eff_pop + rand_eff_h_pop 
     e1 <- e0 - rep(rand_eff[framework$dist_obs_dom],framework$n_smp)
-    e2 <- e1 - rep(rand_eff_h[framework$dist_obs_subdom],framework$n_smp_subdom)
+    #e2 <- e1 - rep(rand_eff_h[framework$dist_obs_subdom],framework$n_smp_subdom)
+    e2 <- e1 - rep(model_par$rand_eff_h_smp,framework$n_smp_subdom)
       }
 
   
