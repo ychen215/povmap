@@ -313,6 +313,7 @@ gen_model <- function(fixed,
   sigmau2est <- model_par$sigmau2est 
   rand_eff <- model_par$rand_eff
   rand_eff_h <- model_par$rand_eff_h 
+  gamma_sub <- NULL 
   
   # calculate gamma 
   if (any(framework$weights_type %in% c("nlme", "nlme_lambda","hybrid2",NULL)) | is.null(framework$weights)) {
@@ -325,7 +326,7 @@ gen_model <- function(fixed,
   #wrong_delta2 <- wrong_sums[,3] / wrong_sums[,2]^2
   #wrong_gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * delta2))
-  gamma_sub <- NULL 
+  
   #gamma <- model_par$sigmau2est / (model_par$sigmau2est + ((model_par$sigmae2est + model_par$sigmah2est) * wrong_delta2))
   if (model_par$sigmah2est>0) {
     sums_sub <- aggregate(data.frame(weight_smp, weight_smp^2)[framework$smp_subdomains_vec,], by = list(framework$smp_subdomains_vec), FUN = sum)
