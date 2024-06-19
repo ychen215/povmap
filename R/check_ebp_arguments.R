@@ -409,8 +409,8 @@ ebp_check2 <- function(threshold, transformation, interval, MSE, boot_type, B,
 
 
 # Functions called in notation
-fw_check1 <- function(pop_data, mod_vars, pop_domains, smp_data, fixed,
-                      smp_domains, aggregate_to, threshold, weights,
+fw_check1 <- function(pop_data, mod_vars, pop_domains, pop_subdomains=pop_subdomains,smp_data, fixed,
+                      smp_domains, smp_subdomains=smp_subdomains, aggregate_to, threshold, weights,
                       pop_weights, benchmark_level, benchmark_weights,
                       weights_type, rescale_weights) {
 
