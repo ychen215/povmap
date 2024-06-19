@@ -444,7 +444,7 @@ fw_check1 <- function(pop_data, mod_vars, pop_domains, pop_subdomains=pop_subdom
   }
   
   if (!is.null(smp_subdomains)) {
-   if (length(unique(smp_data[,smp_subdomains])) != length(unique(c(smp_data[,smp_subdomains],smp_data[,smp_domains])))) {
+   if (length(unique(smp_data[,smp_subdomains])) != nrow(unique(smp_data[c(smp_subdomains,smp_domains)]))) {
      stop(strwrap(prefix = " ", initial = "",
                   paste0("The subdomain identifier ", smp_subdomains, " cannot refer to multiple domains ",smp_domains," in smp_data.
                          Please provide a subdomain identifier that takes on different values for each domain. ")))
