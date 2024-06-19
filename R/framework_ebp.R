@@ -53,7 +53,10 @@ framework_ebp <- function(fixed, pop_data, pop_domains, pop_subdomains, smp_data
     rescale_weights = rescale_weights
   )
 
-
+  if (min(pop_vars %in% colnames(pop_data))==0) {
+    stop(strwrap(prefix = " ", initial = "",
+                 paste0(pop_vars[pop_vars %in% colnames(pop_data)==F]))," are not in the population dataset")
+  }
   pop_data <- pop_data[, pop_vars]
   # convert to dataframe if necessary 
   if ("tbl_df" %in% class(pop_data)) {
