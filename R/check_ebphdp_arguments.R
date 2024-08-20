@@ -1,5 +1,5 @@
 # This script contains the checks of arguments that have be done for the
-# ebp function.
+# ebphdp function.
 
 
 # Function called in ebp
