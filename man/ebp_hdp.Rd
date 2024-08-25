@@ -2,7 +2,8 @@
 % Please edit documentation in R/ebp_hdp.R
 \name{ebp_hdp}
 \alias{ebp_hdp}
-\title{Empirical Best Prediction for Disaggregated Indicators under A Nested Error Regression Model with High Dimensional Parameter}
+\title{Empirical Best Prediction for Disaggregated Indicators under A Nested Error
+Regression Model with High Dimensional Parameter}
 \usage{
 ebp_hdp(
   fixed,
@@ -176,7 +177,17 @@ list and descriptions of the components of objects of class "emdi",
 see \code{\link{emdiObject}}.
 }
 \description{
-Empirical Best Prediction for Disaggregated Indicators under A Nested Error Regression Model with High Dimensional Parameter
+Function \code{ebp_hdp} estimates indicators using the Empirical Best
+Prediction approach by \cite{Lahiri and Salvati (2023)} under
+a flexible nested error regression small area model with high dimensional
+parameter that incorporates heterogeneity in regression coefficients
+and variance components. They proposed a new robust small area specific
+estimating equations method that allows appropriate pooling of a large
+number of areas in estimating small area specific model parameters. After
+obtaining the estimated area-speicifi model parameters, point predictions
+of indicators are obtained by Monte-Carlo approximations
+proposed by \cite{Molina and Rao (2020)}. A parametric bootstrap method
+is used to estimate the mean squared errors.
 }
 \examples{
 #' \donttest{
@@ -185,12 +196,20 @@ data("eusilcA_pop")
 data("eusilcA_smp")
 
 # Example 1: With default setting but na.rm=TRUE
-emdi_model <- ebp_hdp(
+emdi_model1 <- ebp_hdp(
   fixed = eqIncome ~ gender + eqsize + cash + self_empl +
     unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
     house_allow + cap_inv + tax_adj, pop_data = eusilcA_pop,
   pop_domains = "district", smp_data = eusilcA_smp, smp_domains = "district",
   na.rm = TRUE
+)
+# Example 2:  MSE=TRUE
+emdi_model2 <- ebp_hdp(
+  fixed = eqIncome ~ gender + eqsize + cash + self_empl +
+    unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
+    house_allow + cap_inv + tax_adj, pop_data = eusilcA_pop,
+  pop_domains = "district", smp_data = eusilcA_smp, smp_domains = "district",
+  na.rm = TRUE, MSE=TRUE
 )
 }
 }
