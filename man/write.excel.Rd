@@ -123,7 +123,7 @@ write.excel(emdi_model, indicator = "all",  MSE = TRUE, CV = TRUE)
 write.excel(emdi_model, indicator = "all", MSE = TRUE, CV = TRUE,
             split = TRUE)
 
-# Example 3: Same as example 1 but for an ODS output, skipped due to lack of zip app 
+# Example 3: Same as example 1 but for an ODS output, skipped due to lack of zip app
 # write.ods(emdi_model, indicator = "all", MSE = TRUE, CV = TRUE)
 }
 
