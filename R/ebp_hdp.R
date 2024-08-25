@@ -1,4 +1,17 @@
-#' Empirical Best Prediction for Disaggregated Indicators under A Nested Error Regression Model with High Dimensional Parameter
+#' Empirical Best Prediction for Disaggregated Indicators under A Nested Error
+#' Regression Model with High Dimensional Parameter
+#'
+#' Function \code{ebp_hdp} estimates indicators using the Empirical Best
+#' Prediction approach by \cite{Lahiri and Salvati (2023)} under
+#' a flexible nested error regression small area model with high dimensional
+#' parameter that incorporates heterogeneity in regression coefficients
+#' and variance components. They proposed a new robust small area specific
+#' estimating equations method that allows appropriate pooling of a large
+#' number of areas in estimating small area specific model parameters. After
+#' obtaining the estimated area-speicifi model parameters, point predictions
+#' of indicators are obtained by Monte-Carlo approximations
+#' proposed by \cite{Molina and Rao (2020)}. A parametric bootstrap method
+#'is used to estimate the mean squared errors.
 #'
 #' @param fixed a two-sided linear formula object describing the
 #' fixed-effects part of the nested error linear regression model with the
