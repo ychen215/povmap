@@ -2,6 +2,8 @@
 % Please edit documentation in R/emdi.R
 \docType{package}
 \name{emdi}
+\alias{povmap}
+\alias{povmap-package}
 \alias{emdi}
 \title{A package for estimating and mapping disaggregated indicators}
 \description{
@@ -47,4 +49,22 @@ indicators. The Canadian Journal of Statistics, Vol. 38, No.3, 369-385.
 Guadarrama, M., Molina, I. and Rao, J.N.K. (2018). Small area estimation of
 general parameters under complex sampling designs. Computational Statistics &
 Data Analysis, Vol. 121, 20-40.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/SSA-Statistical-Team-Projects/povmap}
+}
+
+}
+\author{
+\strong{Maintainer}: Ifeanyi Edochie \email{iedochie@worldbank.org}
+
+Authors:
+\itemize{
+  \item David Newhouse \email{dnewhouse@worldbank.org}
+  \item Nora Würz \email{nora.wuerz@uni-bamberg.de}
+  \item Timo Schmid \email{timo.schmid@fu-berlin.de}
+}
+
 }
