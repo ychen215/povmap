@@ -158,12 +158,20 @@
 #' data("eusilcA_smp")
 #'
 #' # Example 1: With default setting but na.rm=TRUE
-#' emdi_model <- ebp_hdp(
+#' emdi_model1 <- ebp_hdp(
 #'   fixed = eqIncome ~ gender + eqsize + cash + self_empl +
 #'     unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
 #'     house_allow + cap_inv + tax_adj, pop_data = eusilcA_pop,
 #'   pop_domains = "district", smp_data = eusilcA_smp, smp_domains = "district",
 #'   na.rm = TRUE
+#' )
+#' # Example 2:  MSE=TRUE
+#' emdi_model2 <- ebp_hdp(
+#'   fixed = eqIncome ~ gender + eqsize + cash + self_empl +
+#'     unempl_ben + age_ben + surv_ben + sick_ben + dis_ben + rent + fam_allow +
+#'     house_allow + cap_inv + tax_adj, pop_data = eusilcA_pop,
+#'   pop_domains = "district", smp_data = eusilcA_smp, smp_domains = "district",
+#'   na.rm = TRUE, MSE=TRUE
 #' )
 #' }
 
