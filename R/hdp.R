@@ -1,4 +1,4 @@
-#' Empirical Best Prediction for Disaggregated Indicators under A Nested Error
+#' Empirical Best Prediction for Disaggregated Indicators under a Nested Error
 #' Regression Model with High Dimensional Parameter
 #'
 #' Function \code{hdp} estimates indicators using the Empirical Best
@@ -14,10 +14,9 @@
 #'is used to estimate the mean squared errors.
 #'
 #' @param fixed a two-sided linear formula object describing the
-#' fixed-effects part of the nested error linear regression model with the
+#' fixed-effects part of the flexible nested error linear regression model with the
 #' dependent variable on the left of a ~ operator and the explanatory
-#' variables on the right, separated by + operators. The argument corresponds
-#' to the argument \code{fixed} in function \code{\link[nlme]{lme}}.
+#' variables on the right, separated by + operators.
 #' @param pop_data a data frame that needs to comprise the variables
 #' named on the right of the ~ operator in \code{fixed}, i.e. the explanatory
 #' variables, and \code{pop_domains}.
@@ -73,11 +72,12 @@
 #' from the population and sample data. For the EBP procedure complete
 #' observations are required. Defaults to \code{FALSE}.
 #' @param weights a character string containing the name of a variable that
-#' indicates weights in the sample data. If a character string is provided
-#' a weighted version of the ebp will be used. The variable has to be numeric.
+#' indicates weights in the sample data. If a character string is provided,
+#' it will be used for estimating the variance components.
+#' The variable has to be numeric.
 #' Defaults to \code{NULL}.
 #' @param pop_weights a character string containing the name of a variable that
-#' indicates population weights in the populatation data. If a character string
+#' indicates population weights in the population data. If a character string
 #' is provided weighted indicators are estimated using population weights.
 #' The variable has to be numeric. Defaults to \code{NULL}.
 #' @param aggregate_to a character string containing the name of a variable from
