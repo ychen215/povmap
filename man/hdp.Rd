@@ -162,12 +162,14 @@ Two methods can be chosen (i) "LBP": linear best predictor (ii) "Naive": traditi
 
 \item{maxit}{the limit on the number of algorithm iterations.}
 
-\item{k_b}{tuning constant used for Huber influence function for the estimation of the coefficients.}
+\item{k_b}{tuning constant used for Huber influence function for
+the estimation of the regression coefficients.}
 
-\item{k_sigma_u}{tuning constant used for Huber influence function for the estimation of the sigma2u.}
+\item{k_sigma_u}{tuning constant used for Huber influence function for the
+estimation of the variance for random effects: sigma2u.}
 
 \item{k_sigma_e}{tuning constant used for Huber influence function for
-the estimation of the area-specific coefficients.}
+the estimation of the area-specific sampling variances: sigma2ei.}
 }
 \value{
 An object of class "hdp", "emdi" that provides estimators for

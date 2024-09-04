@@ -117,10 +117,12 @@
 #' Two methods can be chosen (i) "LBP": linear best predictor (ii) "Naive": traditional method.
 #' @param tol the accuracy for the stopping criterion.
 #' @param maxit the limit on the number of algorithm iterations.
-#' @param k_b tuning constant used for Huber influence function for the estimation of the coefficients.
-#' @param k_sigma_u tuning constant used for Huber influence function for the estimation of the sigma2u.
+#' @param k_b tuning constant used for Huber influence function for
+#' the estimation of the regression coefficients.
+#' @param k_sigma_u tuning constant used for Huber influence function for the
+#' estimation of the variance for random effects: sigma2u.
 #' @param k_sigma_e tuning constant used for Huber influence function for
-#' the estimation of the area-specific coefficients.
+#' the estimation of the area-specific sampling variances: sigma2ei.
 #'
 #' @return An object of class "hdp", "emdi" that provides estimators for
 #' regional disaggregated indicators and optionally corresponding MSE estimates.
