@@ -74,14 +74,25 @@ point_estim_hdp <- function(framework,
                         k_sigma_u = framework$k_sigma_u)
 
   #regression coefficients for out-of-sample area via using tau = 0.5
-  mod.out <- QRLM(y = ys,
-                  x = xs,
-                  q = 0.5,
-                  var.weights = var.weights,
-                  maxit = framework$maxit,
-                  acc = framework$tol,
-                  k = framework$k_b)
-  betas.out <- mod.out$coef
+  # mod.out <- QRLM(y = ys,
+  #                 x = xs,
+  #                 q = 0.5,
+  #                 var.weights = var.weights,
+  #                 maxit = framework$maxit,
+  #                 acc = framework$tol,
+  #                 k = framework$k_b)
+  # betas.out <- mod.out$coef
+  mod.out <- mqre_out(fixed = fixed,
+                      framework = framework,
+                      transformation_par = transformation_par,
+                      Qi = 0.5,
+                      var.weights = var.weights,
+                      maxit = framework$maxit,
+                      acc = framework$tol,
+                      k_b = framework$k_b,
+                      k_sigma_e = framework$k_sigma_e)
+  betas.out <- mod.out$coefficients
+  sigma2e.out <- mod.out$sigma2e
   # ends parameter estimation
 
   # Function model_par extracts the needed parameters
@@ -90,7 +101,8 @@ point_estim_hdp <- function(framework,
     transformation_par = transformation_par,
     framework = framework,
     fixed = fixed,
-    betas.out = betas.out
+    betas.out = betas.out,
+    sigma2e.out = sigma2e.out
   )
 
   # Function gen_model calculates the parameters in the generating model.
@@ -335,166 +347,6 @@ QRLM <-function(x,
        var.beta = qvar.matrix)
 }
 
-# Original algorithm on Lahiri & Salvati (2023)
-# mqre_g<-function(qtl,y,x,group,tol=1e-06,maxit=100,k=100,k_sigma_u=100,k_sigma_e=100)
-# {
-#   ###############functions################
-#
-#   my.psi<-function(u,q,k){
-#     sm<-median(abs(u))/0.6745
-#     w <- psi.huber(u/sm,k)
-#     ww <- 2 * (1 - q) * w
-#     ww[u> 0] <- 2 * q * w[u > 0]
-#     w <- ww
-#     w*u
-#   }
-#
-#   der.psi<-function(u,q,k){
-#     sm<-median(abs(u))/0.6745
-#     u<-u/sm
-#     der.psi <- ifelse(abs(u) <= k, 1, 0)
-#     ww <- 2 * (1 - q) * der.psi
-#     ww[u> 0] <- 2 * q * der.psi[u > 0]
-#     w <- ww
-#     w
-#   }
-#   ########################starting data###################
-#   n=length(y)
-#   ni=table(group)
-#   m=length(ni)
-#   areanumber=m
-#   p=ncol(x)
-#   gg=unique(group)
-#   z<-model.matrix(y~as.factor(group)-1)
-#
-#   #STEP 1 (Definition of the starting values)
-#   w=cbind(x,z)
-#   fit.H=lm(y~w)
-#   e.1.H=residuals(fit.H)
-#   sigma.e.hat.H=sum(e.1.H^2)/(n-(qr(w)$rank))
-#
-#   xx=x
-#   fit2.H=lm(y~xx)
-#   e.2.H=residuals(fit2.H)
-#   A.H= sum(e.2.H^2)
-#   xx=as.matrix(xx)
-#   B.H=sigma.e.hat.H*(n-qr(xx)$rank)
-#   o.H=diag(n)-(xx%*%(ginv(t(xx)%*%xx)%*%t(xx)))
-#   C.H=sum(diag(t(z)%*%o.H%*%z))
-#   sigma.v.hat.H=(A.H-B.H)/C.H
-#   sigmasq0= sigma.e.hat.H #initial values of sigma_sq_e#
-#   sigmasq0.v=sigma.v.hat.H #initial values sigma_sq_V#
-#
-#   if(dim(x)[2]==1){ls <- lm(y ~ x[,1]-1)}else{
-#     ls <- lm(y ~ x[,-1])}
-#   beta1<-c(ls$coefficients)
-#   estsigma2u<-sigmasq0.v
-#   estsigma2e<-sigmasq0
-#   sigma1G.old<-NULL
-#   sigma1E.old<-NULL
-#   sigma1E.old<-rep(sigmasq0,areanumber)
-#   sigma1G.old<-c(sigmasq0.v)
-#   sigma1G.est<-NULL
-#   sigma1E.est<-NULL
-#
-#   iter<-0
-#   ZZ<-z%*%t(z)
-#   beta.old<-matrix(beta1,areanumber,p,byrow=T)
-#   beta.est<-matrix(0,areanumber,p)
-#   var.beta<-array(rep(0,ncol(x)*ncol(x)),dim=c(ncol(x),ncol(x),length(qtl)))
-#
-#   #STEP 2: estimation of betas and sigma2
-#   while(TRUE)
-#   { residuals<-NULL
-#   for (i in 1:length(qtl))
-#   {
-#     #STEP 1 Estimation of beta
-#     xbeta <- c(x %*% beta.old[i,])
-#     R <- diag(rep(sigma1E.old[i], n),n,n)
-#     G <- diag(rep(sigma1G.old, areanumber),areanumber,areanumber)
-#     V <- R + z %*% G %*% t(z)
-#     V.inv<-chol2inv(chol(V))
-#     U <- diag(diag(V))
-#     U.inv <- chol2inv(chol(U))
-#     ystar<-c(as.numeric(sqrt(U.inv) %*% y))
-#     xstar<-matrix(as.numeric(sqrt(U.inv) %*% x),n,p)
-#     mod<-QRLM(y=ystar,x=xstar,q=qtl[i],maxit=maxit,acc=tol,k=k)
-#     beta.est[i,]<-mod$coef
-#     var.beta[,,i]<-mod$var.beta
-#     r <- c(sqrt(U.inv) %*% (y - xbeta))
-#     #mod.rlmerE<-rlmer(r~1+(1|group),rho.sigma.e = psi2propII(smoothPsi, k = k_sigma),
-#     #   rho.sigma.b = psi2propII(smoothPsi, k = k_sigma))
-#     psi.r <- my.psi(as.vector(r), k = k_sigma_e, q=qtl[i])
-#     qq <- V.inv %*% sqrt(U) %*% psi.r
-#     KK5<-sqrt(U) %*% V.inv
-#     KK0<-t(psi.r)%*% KK5
-#     A1=KK0%*%qq
-#     A2=KK0%*%ZZ%*%qq
-#     A <- matrix(c(A1[1],A2[1]), nrow = 2, ncol=1)
-#     const<- 4*k_sigma_e^2*(1-pnorm(k_sigma_e))*((1-qtl[i])^2+qtl[i]^2) - 4*k_sigma_e*dnorm(k_sigma_e)*((1-qtl[i])^2+qtl[i]^2) + 4*(1-qtl[i])^2*(pnorm(0)-(1-pnorm(k_sigma_e))) + 4*qtl[i]^2*(pnorm(k_sigma_e)-pnorm(0))
-#     K2_value<- const
-#     K2<-diag(K2_value, n)
-#     KK1<-K2%*%V.inv
-#     KK2<-KK1%*%V.inv
-#     KK3<-KK1%*%ZZ%*%V.inv
-#     t1=sum(diag(KK2))
-#     t2=sum(diag(KK2%*%ZZ))
-#     t3=sum(diag(KK3))
-#     t4=sum(diag(KK3%*%ZZ))
-#     T1<- matrix(c(t1,t3,t2,t4), nrow = 2, ncol=2)
-#     sigma=chol2inv(chol(T1))%*%A
-#     sigma1E.est[i]<-sigma[1,1]
-#     if(p==1)residuals<-c(residuals,(y[group==i]-x[group==i,1]*beta.est[i,1]))
-#     if(p==2)residuals<-c(residuals,(y[group==i]-x[group==i,2]*beta.est[i,2]))
-#     if(p>2)residuals<-c(residuals,(y[group==i]-x[group==i,-1]%*%beta.est[i,-1]))
-#   }#end beta estimation
-#
-#   #STEP 3: computation variance components sigma^2_gamma
-#   residuals<-residuals-mean(residuals)
-#   R <- diag(rep(sigma1E.old, ni),n,n)
-#   G <- diag(rep(sigma1G.old, areanumber),areanumber,areanumber)
-#   V <- R + z %*% G %*% t(z)
-#   V.inv<-chol2inv(chol(V))
-#   U <- diag(diag(V))
-#   U.inv <- chol2inv(chol(U))
-#   r <- c(sqrt(U.inv) %*% residuals)
-#   psi.r <- my.psi(as.vector(r), k = k_sigma_u, q=0.5)
-#   qq <- V.inv %*% sqrt(U) %*% psi.r
-#   KK5<-sqrt(U) %*% V.inv
-#   KK0<-t(psi.r)%*% KK5
-#   A1=KK0%*%qq
-#   A2=KK0%*%ZZ%*%qq
-#   A <- matrix(c(A1[1],A2[1]), nrow = 2, ncol=1)
-#   const<- 4*k_sigma_u^2*(1-pnorm(k_sigma_u))*((1-0.5)^2+0.5^2) - 4*k_sigma_u*dnorm(k_sigma_u)*((1-0.5)^2+0.5^2) + 4*(1-0.5)^2*(pnorm(0)-(1-pnorm(k_sigma_u))) + 4*0.5^2*(pnorm(k_sigma_u)-pnorm(0))
-#   K2_value<- const
-#   K2<-diag(K2_value, n)
-#   KK1<-K2%*%V.inv
-#   KK2<-KK1%*%V.inv
-#   KK3<-KK1%*%ZZ%*%V.inv
-#   t1=sum(diag(KK2))
-#   t2=sum(diag(KK2%*%ZZ))
-#   t3=sum(diag(KK3))
-#   t4=sum(diag(KK3%*%ZZ))
-#   T1<- matrix(c(t1,t3,t2,t4), nrow = 2, ncol=2)
-#   sigma=chol2inv(chol(T1))%*%A
-#   sigma1G.est<-sigma[2,1]
-#   if(p==1)B0<-0
-#   if(p>1)B0<-mean(beta.est[,1])
-#
-#   if(p>1)fehler <- sum((beta.old[,-1] -beta.est[,-1])^2)+ sum((sigma1G.old -sigma1G.est)^2+sum((sigma1E.old -sigma1E.est)^2))
-#   if(p==1)fehler <- sum((beta.old[,1] -beta.est[,1])^2)+ sum((sigma1G.old -sigma1G.est)^2+sum((sigma1E.old -sigma1E.est)^2))
-#   ifelse (iter < maxit, ifelse(fehler > tol, {iter=iter+1}, {break}), {break})
-#   beta.old <- beta.est
-#   sigma1G.old<-sigma1G.est
-#   sigma1E.old<-sigma1E.est
-#   } #end while, estimation procedure
-#
-#   if(sigma1G.est<0){lme_fit<-lmer(y~-1+x+(1|group))
-#   sigma1G.est<-summary(lme_fit)$varcor$group[1]}
-#   if(p>1)coefficients =cbind(rep(B0,areanumber),beta.est[,-1])
-#   if(p==1)coefficients =beta.est
-#   list(coefficients =coefficients,sigma2u=(sigma1G.est),sigma2e=(sigma1E.est),varBeta=var.beta,quantile=qtl)
-# }
 
 #Function for obtaining beta_i, sigma2e_i and sigma2u---------------------------
 mqre_g <- function(fixed, framework, transformation_par, Qi, var.weights, maxit, acc, k_b, k_sigma_e, k_sigma_u){
@@ -558,12 +410,45 @@ mqre_g <- function(fixed, framework, transformation_par, Qi, var.weights, maxit,
               sigma2e = (est.sigma2e),
               quantile = Qi))
 }
+
+mqre_out <- function(fixed, framework, transformation_par, Qi, var.weights, maxit, acc, k_b, k_sigma_e){
+  model.f <- model.frame(fixed, data = transformation_par$transformed_data)
+  ys <- as.numeric(model.response(model.f))
+  xs <- model.matrix(fixed, data=transformation_par$transformed_data)[, , drop = FALSE]
+  area.s <- framework$smp_domains_vec
+  area_id <- unique(area.s)
+  #psi-q function
+  psi.q<-function(u, q, k){
+    sm<-median(abs(u))/0.6745
+    w <- psi.huber(u/sm, k)
+    ww <- 2 * (1 - q) * w
+    ww[u> 0] <- 2 * q * w[u > 0]
+    w <- ww
+    w*u
+  }
+  # Obtain beta_i for in-sample domains
+  out1 <- QRLM(y = ys, x = xs, q = Qi, var.weights = var.weights, maxit = maxit, acc = acc, k = k_b)
+
+  # Obtain sigmae2_i for in-sample domains
+
+  e.1.H <- psi.q(out1$residuals, Qi, k = k_sigma_e)
+  mod.lmm <- summary(lme4::lmer(e.1.H ~ 1 + (1|area.s)))
+  est.sigma2e <- as.numeric(mod.lmm$sigma^2)
+
+  coefficients <- out1$coef
+  # colnames(coefficients) <- c(unique(framework$smp_domains_vec))
+
+  return(list(coefficients = coefficients,
+              sigma2e = (est.sigma2e),
+              quantile = Qi))
+}
 #Function for extracting the estimated parameters-------------------------------
 model_par_hdp <- function(framework,
                           transformation_par,
                           mixed_model,
                           fixed,
-                          betas.out){
+                          betas.out,
+                          sigma2e.out){
   #Extract response variable and covariates
   model.f <- model.frame(fixed, data = transformation_par$transformed_data)
   ys <- as.numeric(model.response(model.f))
@@ -574,6 +459,7 @@ model_par_hdp <- function(framework,
   betas.out <- c(betas[1,1], betas.out[-1,])
   # Estimated sampling variance
   sigmae2est <- mixed_model$sigma2e
+  sigma2e.out <- sigma2e.out
   # Estimated variance of random effect
   sigmau2est <- mixed_model$sigma2u
   # Random effect: vector with zeros for all domains, filled with 0
@@ -590,6 +476,7 @@ model_par_hdp <- function(framework,
     betas = betas,
     betas.out = betas.out,
     sigmae2est = sigmae2est,
+    sigma2e.out = sigma2e.out,
     sigmau2est = sigmau2est,
     rand_eff = rand_eff
   ))
@@ -631,6 +518,8 @@ errors_gen_hdp <- function(framework, model_par, gen_model){
   epsilon[framework$obs_dom] <- rnorm(sum(framework$n_pop[framework$dist_obs_dom]),
                                       0,
                                       rep(sqrt(model_par$sigmae2est), framework$n_pop[framework$dist_obs_dom]))
+  epsilon[!framework$obs_dom] <- rnorm(sum(framework$n_pop[!framework$dist_obs_dom]), 0, sqrt(model_par$sigma2e.out))
+
   vu <- vector(length = framework$N_pop)
   # new random effect for out-of-sample domains
   vu[!framework$obs_dom] <- rep(

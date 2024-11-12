@@ -172,10 +172,10 @@ estimation of the variance for random effects: sigma2u.}
 the estimation of the area-specific sampling variances: sigma2ei.}
 }
 \value{
-An object of class "hdp", "emdi" that provides estimators for
+An object of class "hdp", "povmap" that provides estimators for
 regional disaggregated indicators and optionally corresponding MSE estimates.
 Several generic functions have methods for the returned object. For a full
-list and descriptions of the components of objects of class "emdi",
+list and descriptions of the components of objects of class "povmap",
 see \code{\link{emdiObject}}.
 }
 \description{

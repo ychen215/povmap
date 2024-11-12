@@ -124,10 +124,10 @@
 #' @param k_sigma_e tuning constant used for Huber influence function for
 #' the estimation of the area-specific sampling variances: sigma2ei.
 #'
-#' @return An object of class "hdp", "emdi" that provides estimators for
+#' @return An object of class "hdp", "povmap" that provides estimators for
 #' regional disaggregated indicators and optionally corresponding MSE estimates.
 #' Several generic functions have methods for the returned object. For a full
-#' list and descriptions of the components of objects of class "emdi",
+#' list and descriptions of the components of objects of class "povmap",
 #' see \code{\link{emdiObject}}.
 #' @references
 #' Lahiri, P., & Salvati, N. (2023). A nested error regression model with
