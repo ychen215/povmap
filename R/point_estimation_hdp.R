@@ -52,7 +52,7 @@ point_estim_hdp <- function(framework,
     Popn  <- data.frame(area_id, tmp.Popn)
     tmp.dta<-data.frame(qmat[,1],area.s)
     names(tmp.dta) <- c("qij", "area.s")
-    LBP <- sae::eblupBHF(formula = qij~1, dom = area.s, meanxpop = Xmean, popnsize = Popn,
+    LBP <- eblupBHF(formula = qij~1, dom = area.s, meanxpop = Xmean, popnsize = Popn,
                     method = "REML", data=tmp.dta)
     Qi <- LBP$eblup$eblup
     Qi <- ifelse(Qi>1, 0.999, Qi)
@@ -82,10 +82,23 @@ point_estim_hdp <- function(framework,
   #                 acc = framework$tol,
   #                 k = framework$k_b)
   # betas.out <- mod.out$coef
-  mod.out <- mqre_out(fixed = fixed,
+  # ends parameter estimation
+
+  # mod.out <- mqre_out(fixed = fixed,
+  #                   framework = framework,
+  #                   transformation_par = transformation_par,
+  #                   Qi = 0.5,
+  #                   var.weights = var.weights,
+  #                   maxit = framework$maxit,
+  #                   acc = framework$tol,
+  #                   k_b = framework$k_b,
+  #                   k_sigma_e = framework$k_sigma_e)
+  # require(tidyverse)
+  mod.out <- mqre_out(qmat = qmat,
+                      fixed = fixed,
                       framework = framework,
                       transformation_par = transformation_par,
-                      Qi = 0.5,
+                      # Qi = 0.5,
                       var.weights = var.weights,
                       maxit = framework$maxit,
                       acc = framework$tol,
@@ -93,7 +106,6 @@ point_estim_hdp <- function(framework,
                       k_sigma_e = framework$k_sigma_e)
   betas.out <- mod.out$coefficients
   sigma2e.out <- mod.out$sigma2e
-  # ends parameter estimation
 
   # Function model_par extracts the needed parameters
   est_par <- model_par_hdp(
@@ -348,7 +360,7 @@ QRLM <-function(x,
 }
 
 
-#Function for obtaining beta_i, sigma2e_i and sigma2u---------------------------
+#Function for obtaining beta_i, sigma2e_i and sigma2u for in-sample areas ------
 mqre_g <- function(fixed, framework, transformation_par, Qi, var.weights, maxit, acc, k_b, k_sigma_e, k_sigma_u){
   model.f <- model.frame(fixed, data = transformation_par$transformed_data)
   ys <- as.numeric(model.response(model.f))
@@ -372,7 +384,7 @@ mqre_g <- function(fixed, framework, transformation_par, Qi, var.weights, maxit,
   for (i in 1:framework$N_dom_smp)
   {
     e.1.H <- psi.q(out1$residuals[,i], Qi[i], k = k_sigma_e)
-    mod.lmm <- summary(lme4::lmer(e.1.H ~ 1 + (1|area.s)))
+    mod.lmm <- summary(lmer(e.1.H ~ 1 + (1|area.s)))
     est.sigma2e[i] <- as.numeric(mod.lmm$sigma^2)
   }
   # Obtain common sigmau2 for all the domains
@@ -411,10 +423,68 @@ mqre_g <- function(fixed, framework, transformation_par, Qi, var.weights, maxit,
               quantile = Qi))
 }
 
-mqre_out <- function(fixed, framework, transformation_par, Qi, var.weights, maxit, acc, k_b, k_sigma_e){
+#Function for obtaining beta_i, and sigma2e_i for out-sample areas with different tau_i
+mqre_out <- function(qmat, fixed, framework, transformation_par, var.weights, maxit, acc, k_b, k_sigma_e){
+  #avarage of \hat tau_ij for in sample areass
+  Qi_hat <- tapply(qmat[,1], qmat[,2], mean)
+  Di_hat <- var(qmat[,1])/framework$n_smp
+  all_vars <- all.vars(fixed)
+  auxilary_vars <- all_vars[all_vars != as.character(fixed[2])]
+  Xpop0 <- model.matrix(reformulate(auxilary_vars), data=framework$pop_data)[, , drop = FALSE]
+  Xpop <- data.frame(Xpop0, area.p = framework$pop_data[framework$smp_domains])
+  colnames(Xpop) <- c(colnames(Xpop0), "area.p")
+  Xpopmean <- Xpop %>%
+    group_by(area.p) %>%
+    summarize(across(everything(), mean, na.rm = TRUE))
+  Xpopmean_obs = Xpopmean[framework$dist_obs_dom, ]
+  Xpopmean_unobs = Xpopmean[!framework$dist_obs_dom, ]
+
+  #back logit linking
+  logit_inv = function(x){exp(x)/(1+exp(x))}
+
+  # gradient from the estimating equation for \eta in the function for estimation tau_i
+  gradient = function(D, y, X, beta){
+    mu = logit_inv(X%*%beta)
+    -2 * t((y - mu) * mu * (1 - mu)) %*% diag(1/D) %*% X
+  }
+  # Hessian matrix from the estimating equation for \eta in the function for estimation tau_i
+  Hessian = function(D, y, X, beta){
+    mu = logit_inv(X%*%beta)
+    t(X) %*% diag(as.vector(2 * mu^2 * (1-mu)^2 / D)) %*% X - t(X) %*% diag(as.vector(2*(y - mu)*(1 - 2*mu)*mu*(1-mu)))%*% X
+  }
+
+  eta_init <- matrix(0, dim(Xpopmean_obs[, -1])[2], 1)
+  max_iter = 100
+  tol = 0.0000001
+  eta <- eta_init
+  for (iter in 1:max_iter) {
+    # Calculate gradient and Hessian
+    grad <- gradient(D = Di_hat,
+                     y = matrix(Qi_hat, dim(Xpopmean_obs[, -1])[1], 1),
+                     X = as.matrix(Xpopmean_obs[, -1]),
+                     beta = eta)
+    hess <- Hessian(D = Di_hat,
+                    y = matrix(Qi_hat, dim(Xpopmean_obs[, -1])[1], 1),
+                    X = as.matrix(Xpopmean_obs[, -1]),
+                    beta = eta)
+
+    # Update beta and K using Newton-Raphson update rule
+    update <- ginv(hess)
+    eta <- eta - update %*% t(grad)
+
+    # Check for convergence
+    if (sqrt(sum((update %*% t(grad))^2)) < tol) {
+      # cat("Converged in", iter, "iterations.\n")
+      break
+    }
+
+  }
+  Qi_out = logit_inv(as.matrix(Xpopmean_unobs[, -1]) %*% eta)
+
   model.f <- model.frame(fixed, data = transformation_par$transformed_data)
   ys <- as.numeric(model.response(model.f))
   xs <- model.matrix(fixed, data=transformation_par$transformed_data)[, , drop = FALSE]
+
   area.s <- framework$smp_domains_vec
   area_id <- unique(area.s)
   #psi-q function
@@ -427,21 +497,59 @@ mqre_out <- function(fixed, framework, transformation_par, Qi, var.weights, maxi
     w*u
   }
   # Obtain beta_i for in-sample domains
-  out1 <- QRLM(y = ys, x = xs, q = Qi, var.weights = var.weights, maxit = maxit, acc = acc, k = k_b)
+  coef.out = matrix(0, dim(Xpopmean_obs[, -1])[2], length(Qi_out))
+  est.sigma2e = NULL
+  for (k in 1:length(Qi_out)) {
 
-  # Obtain sigmae2_i for in-sample domains
+    out1 <- QRLM(y = ys, x = xs, q = Qi_out[k], var.weights = var.weights, maxit = maxit, acc = acc, k = k_b)
 
-  e.1.H <- psi.q(out1$residuals, Qi, k = k_sigma_e)
-  mod.lmm <- summary(lme4::lmer(e.1.H ~ 1 + (1|area.s)))
-  est.sigma2e <- as.numeric(mod.lmm$sigma^2)
+    # Obtain sigmae2_i for in-sample domains
 
-  coefficients <- out1$coef
-  # colnames(coefficients) <- c(unique(framework$smp_domains_vec))
+    e.1.H <- psi.q(out1$residuals, Qi_out[k], k = k_sigma_e)
+    mod.lmm <- summary(lmer(e.1.H ~ 1 + (1|area.s)))
+    est.sigma2e[k] <- as.numeric(mod.lmm$sigma^2)
 
-  return(list(coefficients = coefficients,
+    coef.out[, k] <- out1$coef
+  }
+  colnames(coef.out) <- as.matrix(Xpopmean_unobs[, 1])
+  return(list(coefficients = coef.out,
               sigma2e = (est.sigma2e),
-              quantile = Qi))
+              quantile = Qi_out,
+              eta = eta))
 }
+
+# #Function for obtaining beta_i, and sigma2e_i for out-sample areas ------
+# mqre_out <- function(fixed, framework, transformation_par, Qi, var.weights, maxit, acc, k_b, k_sigma_e){
+#   model.f <- model.frame(fixed, data = transformation_par$transformed_data)
+#   ys <- as.numeric(model.response(model.f))
+#   xs <- model.matrix(fixed, data=transformation_par$transformed_data)[, , drop = FALSE]
+#   area.s <- framework$smp_domains_vec
+#   area_id <- unique(area.s)
+#   #psi-q function
+#   psi.q<-function(u, q, k){
+#     sm<-median(abs(u))/0.6745
+#     w <- psi.huber(u/sm, k)
+#     ww <- 2 * (1 - q) * w
+#     ww[u> 0] <- 2 * q * w[u > 0]
+#     w <- ww
+#     w*u
+#   }
+#   # Obtain beta_i for in-sample domains
+#   out1 <- QRLM(y = ys, x = xs, q = Qi, var.weights = var.weights, maxit = maxit, acc = acc, k = k_b)
+#
+#   # Obtain sigmae2_i for in-sample domains
+#
+#   e.1.H <- psi.q(out1$residuals, Qi, k = k_sigma_e)
+#   mod.lmm <- summary(lmer(e.1.H ~ 1 + (1|area.s)))
+#   est.sigma2e <- as.numeric(mod.lmm$sigma^2)
+#
+#   coefficients <- out1$coef
+#   # colnames(coefficients) <- c(unique(framework$smp_domains_vec))
+#
+#   return(list(coefficients = coefficients,
+#               sigma2e = (est.sigma2e),
+#               quantile = Qi))
+# }
 #Function for extracting the estimated parameters-------------------------------
 model_par_hdp <- function(framework,
                           transformation_par,
@@ -456,7 +564,8 @@ model_par_hdp <- function(framework,
   # fixed parameters for in-sample domains
   betas <- mixed_model$coefficients
   # fixed parameters for out-sample domains
-  betas.out <- c(betas[1,1], betas.out[-1,])
+  betas.out <- rbind(rep(betas[1,1], dim(betas.out)[2]), betas.out[-1,])
+  colnames(betas.out) <- unique(framework$pop_domains_vec)[!framework$dist_obs_dom]
   # Estimated sampling variance
   sigmae2est <- mixed_model$sigma2e
   sigma2e.out <- sigma2e.out
@@ -499,11 +608,14 @@ gen_model_hdp <- function(fixed,
 
   # Constant part of predicted y
   mu_fixed <- vector(length = framework$N_pop)
+
   # synthetic part for in-sample-domains
   betas_in <- apply(model_par$betas, 1, rep, framework$n_pop[framework$dist_obs_dom])
   mu_fixed[framework$obs_dom] <- diag(X_pop[framework$obs_dom,] %*% t(betas_in))
+
   # synthetic part for out-sample-domains
-  mu_fixed[!framework$obs_dom] <- X_pop[!framework$obs_dom,] %*% model_par$betas.out
+  betas_out <- apply(model_par$betas.out, 1, rep, framework$n_pop[!framework$dist_obs_dom])
+  mu_fixed[!framework$obs_dom] <- diag(X_pop[!framework$obs_dom,] %*% t(betas_out))
 
   mu <- mu_fixed + rand_eff_pop
 
@@ -518,7 +630,11 @@ errors_gen_hdp <- function(framework, model_par, gen_model){
   epsilon[framework$obs_dom] <- rnorm(sum(framework$n_pop[framework$dist_obs_dom]),
                                       0,
                                       rep(sqrt(model_par$sigmae2est), framework$n_pop[framework$dist_obs_dom]))
-  epsilon[!framework$obs_dom] <- rnorm(sum(framework$n_pop[!framework$dist_obs_dom]), 0, sqrt(model_par$sigma2e.out))
+
+  epsilon[!framework$obs_dom] <- rnorm(sum(framework$n_pop[!framework$dist_obs_dom]),
+                                       0,
+                                       rep(sqrt(model_par$sigma2e.out), framework$n_pop[!framework$dist_obs_dom]))
+  # epsilon[!framework$obs_dom] <- rnorm(sum(framework$n_pop[!framework$dist_obs_dom]), 0, sqrt(model_par$sigma2e.out))
 
   vu <- vector(length = framework$N_pop)
   # new random effect for out-of-sample domains
