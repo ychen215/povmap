@@ -45,6 +45,7 @@ point_estim_hdp <- function(framework,
   qo <- matrix(c(gridfitinter(ys, mod$fitted.values, mod$q.values)), nrow = framework$N_smp, ncol=1)
   qmat <- matrix(c(qo, area.s), nrow = framework$N_smp, ncol = 2)
   #step 2: LBP to get the Q_i
+  require(sae)
   if(framework$method == "LBP"){
     tmp.Xmean <- rep(1,framework$N_dom_smp)
     tmp.Popn <- framework$n_pop[framework$dist_obs_dom]
@@ -52,7 +53,7 @@ point_estim_hdp <- function(framework,
     Popn  <- data.frame(area_id, tmp.Popn)
     tmp.dta<-data.frame(qmat[,1],area.s)
     names(tmp.dta) <- c("qij", "area.s")
-    LBP <- eblupBHF(formula = qij~1, dom = area.s, meanxpop = Xmean, popnsize = Popn,
+    LBP <- sae::eblupBHF(formula = qij~1, dom = area.s, meanxpop = Xmean, popnsize = Popn,
                     method = "REML", data=tmp.dta)
     Qi <- LBP$eblup$eblup
     Qi <- ifelse(Qi>1, 0.999, Qi)
@@ -384,7 +385,7 @@ mqre_g <- function(fixed, framework, transformation_par, Qi, var.weights, maxit,
   for (i in 1:framework$N_dom_smp)
   {
     e.1.H <- psi.q(out1$residuals[,i], Qi[i], k = k_sigma_e)
-    mod.lmm <- summary(lmer(e.1.H ~ 1 + (1|area.s)))
+    mod.lmm <- summary(lme4::lmer(e.1.H ~ 1 + (1|area.s)))
     est.sigma2e[i] <- as.numeric(mod.lmm$sigma^2)
   }
   # Obtain common sigmau2 for all the domains
@@ -407,7 +408,7 @@ mqre_g <- function(fixed, framework, transformation_par, Qi, var.weights, maxit,
   require(emdi)
   res.fh <- tapply(resid, area.s, mean)
   dta.fh <- data.frame(res.fh = as.numeric(res.fh), vardir.fh = as.numeric(est.sigma2e/framework$n_smp), area.fh = area_id)
-  fh_std <- fh(fixed = res.fh ~ 1, vardir = "vardir.fh", domains = "area.fh", method = "reblup", k=k_sigma_u, combined_data = dta.fh)
+  fh_std <- emdi::fh(fixed = res.fh ~ 1, vardir = "vardir.fh", domains = "area.fh", method = "reblup", k=k_sigma_u, combined_data = dta.fh)
   B0.coef <- as.numeric(fh_std$model$coefficients[1])
   est.sigma2u <- as.numeric(fh_std$model$variance)
 
@@ -427,12 +428,17 @@ mqre_g <- function(fixed, framework, transformation_par, Qi, var.weights, maxit,
 mqre_out <- function(qmat, fixed, framework, transformation_par, var.weights, maxit, acc, k_b, k_sigma_e){
   #avarage of \hat tau_ij for in sample areass
   Qi_hat <- tapply(qmat[,1], qmat[,2], mean)
-  Di_hat <- var(qmat[,1])/framework$n_smp
+
+  Qi_bar <- rep(Qi_hat, framework$n_smp)
+  D_hat <- sum((qmat[,1]-Qi_bar)^2)/(framework$N_smp - framework$N_dom_smp)
+  Di_hat <- D_hat/framework$n_smp
+
   all_vars <- all.vars(fixed)
   auxilary_vars <- all_vars[all_vars != as.character(fixed[2])]
   Xpop0 <- model.matrix(reformulate(auxilary_vars), data=framework$pop_data)[, , drop = FALSE]
   Xpop <- data.frame(Xpop0, area.p = framework$pop_data[framework$smp_domains])
   colnames(Xpop) <- c(colnames(Xpop0), "area.p")
+  require(dplyr)
   Xpopmean <- Xpop %>%
     group_by(area.p) %>%
     summarize(across(everything(), mean, na.rm = TRUE))
@@ -469,7 +475,7 @@ mqre_out <- function(qmat, fixed, framework, transformation_par, var.weights, ma
                     beta = eta)
 
     # Update beta and K using Newton-Raphson update rule
-    update <- ginv(hess)
+    update <- MASS::ginv(hess)
     eta <- eta - update %*% t(grad)
 
     # Check for convergence
@@ -506,7 +512,7 @@ mqre_out <- function(qmat, fixed, framework, transformation_par, var.weights, ma
     # Obtain sigmae2_i for in-sample domains
 
     e.1.H <- psi.q(out1$residuals, Qi_out[k], k = k_sigma_e)
-    mod.lmm <- summary(lmer(e.1.H ~ 1 + (1|area.s)))
+    mod.lmm <- summary(lme4::lmer(e.1.H ~ 1 + (1|area.s)))
     est.sigma2e[k] <- as.numeric(mod.lmm$sigma^2)
 
     coef.out[, k] <- out1$coef
