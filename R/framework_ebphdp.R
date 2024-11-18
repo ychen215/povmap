@@ -143,7 +143,7 @@ framework_hdp <- function(fixed,
         sum(pop_weights)
     },
     psev = function(y, pop_weights, threshold) {
-      sum((1 - (y[y < threshold]/threshold)^2) * pop_weights[y < threshold])/
+      sum((1 - (y[y < threshold]/threshold))^2 * pop_weights[y < threshold])/
         sum(pop_weights)
     },
     gini = function(y, pop_weights, threshold) {
