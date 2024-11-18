@@ -234,6 +234,10 @@ superpopulation_hdp <- function(framework, model_par, gen_model, lambda, shift,
                                   0,
                                   rep(sqrt(model_par$sigmae2est), framework$n_pop[framework$dist_obs_dom]))
 
+  eps[!framework$obs_dom] <- rnorm(sum(framework$n_pop[!framework$dist_obs_dom]),
+                                       0,
+                                       rep(sqrt(model_par$sigma2e.out), framework$n_pop[!framework$dist_obs_dom]))
+
   # superpopulation random effect
   vu_tmp <- rnorm(framework$N_dom_pop, 0, sqrt(model_par$sigmau2est))
   vu_pop <- rep(vu_tmp, framework$n_pop)
