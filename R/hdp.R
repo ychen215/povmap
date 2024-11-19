@@ -358,6 +358,7 @@ hdp <- function(fixed,
         "shift_par"
       )],
       model = point_estim$model,
+      model.out = point_estim$model.out,
       model_par = point_estim$model_par,
       framework = framework[c(
         "N_dom_unobs",
@@ -385,6 +386,7 @@ hdp <- function(fixed,
         "shift_par"
       )],
       model = point_estim$model,
+      model.out = point_estim$model.out,
       model_par = point_estim$model_par,
       framework = framework[c(
         "N_dom_unobs",
