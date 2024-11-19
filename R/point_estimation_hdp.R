@@ -95,6 +95,7 @@ point_estim_hdp <- function(framework,
   #                   k_b = framework$k_b,
   #                   k_sigma_e = framework$k_sigma_e)
   # require(tidyverse)
+  if(framework$N_dom_unobs > 0 ){
   mod.out <- mqre_out(qmat = qmat,
                       fixed = fixed,
                       framework = framework,
@@ -105,17 +106,19 @@ point_estim_hdp <- function(framework,
                       acc = framework$tol,
                       k_b = framework$k_b,
                       k_sigma_e = framework$k_sigma_e)
-  betas.out <- mod.out$coefficients
-  sigma2e.out <- mod.out$sigma2e
-
+  # betas.out <- mod.out$coefficients
+  # sigma2e.out <- mod.out$sigma2e
+  }
+  else{mod.out <- NULL}
   # Function model_par extracts the needed parameters
   est_par <- model_par_hdp(
     mixed_model = mixed_model,
     transformation_par = transformation_par,
     framework = framework,
     fixed = fixed,
-    betas.out = betas.out,
-    sigma2e.out = sigma2e.out
+    mod.out = mod.out
+    # betas.out = betas.out,
+    # sigma2e.out = sigma2e.out
   )
 
   # Function gen_model calculates the parameters in the generating model.
@@ -151,7 +154,8 @@ point_estim_hdp <- function(framework,
     shift_par = shift_par,
     model_par = est_par,
     gen_model = gen_par,
-    model = mixed_model
+    model = mixed_model,
+    model.out = mod.out
   ))
 }
 
@@ -442,6 +446,7 @@ mqre_out <- function(qmat, fixed, framework, transformation_par, var.weights, ma
   Xpopmean <- Xpop %>%
     group_by(area.p) %>%
     summarize(across(everything(), mean, na.rm = TRUE))
+
   Xpopmean_obs = Xpopmean[framework$dist_obs_dom, ]
   Xpopmean_unobs = Xpopmean[!framework$dist_obs_dom, ]
 
@@ -520,7 +525,8 @@ mqre_out <- function(qmat, fixed, framework, transformation_par, var.weights, ma
   colnames(coef.out) <- as.matrix(Xpopmean_unobs[, 1])
   return(list(coefficients = coef.out,
               sigma2e = (est.sigma2e),
-              quantile = Qi_out,
+              quantile.out = Qi_out,
+              Xpopmean = Xpopmean,
               eta = eta))
 }
 
@@ -561,20 +567,30 @@ model_par_hdp <- function(framework,
                           transformation_par,
                           mixed_model,
                           fixed,
-                          betas.out,
-                          sigma2e.out){
+                          mod.out
+                          # betas.out,
+                          # sigma2e.out
+                          ){
   #Extract response variable and covariates
   model.f <- model.frame(fixed, data = transformation_par$transformed_data)
   ys <- as.numeric(model.response(model.f))
   xs <- model.matrix(fixed, data=transformation_par$transformed_data)[, , drop = FALSE]
   # fixed parameters for in-sample domains
   betas <- mixed_model$coefficients
-  # fixed parameters for out-sample domains
-  betas.out <- rbind(rep(betas[1,1], dim(betas.out)[2]), betas.out[-1,])
-  colnames(betas.out) <- unique(framework$pop_domains_vec)[!framework$dist_obs_dom]
+
   # Estimated sampling variance
   sigmae2est <- mixed_model$sigma2e
-  sigma2e.out <- sigma2e.out
+  if(framework$N_dom_unobs>0){
+    # fixed parameters for out-sample domains
+    betas.out <- rbind(rep(betas[1,1], dim(mod.out$coefficients)[2]), mod.out$coefficients[-1,])
+    colnames(betas.out) <- unique(framework$pop_domains_vec)[!framework$dist_obs_dom]
+    sigma2e.out <- mod.out$sigma2e
+  }
+  else{
+    betas.out <- NULL
+    sigma2e.out <- NULL
+  }
+
   # Estimated variance of random effect
   sigmau2est <- mixed_model$sigma2u
   # Random effect: vector with zeros for all domains, filled with 0
@@ -620,8 +636,10 @@ gen_model_hdp <- function(fixed,
   mu_fixed[framework$obs_dom] <- diag(X_pop[framework$obs_dom,] %*% t(betas_in))
 
   # synthetic part for out-sample-domains
+  if(framework$N_dom_unobs>0){
   betas_out <- apply(model_par$betas.out, 1, rep, framework$n_pop[!framework$dist_obs_dom])
   mu_fixed[!framework$obs_dom] <- diag(X_pop[!framework$obs_dom,] %*% t(betas_out))
+  }
 
   mu <- mu_fixed + rand_eff_pop
 
@@ -636,10 +654,11 @@ errors_gen_hdp <- function(framework, model_par, gen_model){
   epsilon[framework$obs_dom] <- rnorm(sum(framework$n_pop[framework$dist_obs_dom]),
                                       0,
                                       rep(sqrt(model_par$sigmae2est), framework$n_pop[framework$dist_obs_dom]))
-
+  if(framework$N_dom_unobs>0){
   epsilon[!framework$obs_dom] <- rnorm(sum(framework$n_pop[!framework$dist_obs_dom]),
                                        0,
                                        rep(sqrt(model_par$sigma2e.out), framework$n_pop[!framework$dist_obs_dom]))
+  }
   # epsilon[!framework$obs_dom] <- rnorm(sum(framework$n_pop[!framework$dist_obs_dom]), 0, sqrt(model_par$sigma2e.out))
 
   vu <- vector(length = framework$N_pop)
