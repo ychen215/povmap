@@ -630,15 +630,26 @@ gen_model_hdp <- function(fixed,
 
   # Constant part of predicted y
   mu_fixed <- vector(length = framework$N_pop)
+  mu_fixed_area <- framework$pop_domains_vec
 
   # synthetic part for in-sample-domains
-  betas_in <- apply(model_par$betas, 1, rep, framework$n_pop[framework$dist_obs_dom])
-  mu_fixed[framework$obs_dom] <- diag(X_pop[framework$obs_dom,] %*% t(betas_in))
+  betas_in  <- model_par$betas
+  # betas_in <- apply(model_par$betas, 1, rep, framework$n_pop[framework$dist_obs_dom])
+  # mu_fixed[framework$obs_dom] <- diag(X_pop[framework$obs_dom,] %*% t(betas_in))
+  area_id = as.vector(sort(unique(framework$smp_domains_vec)))
+  for(i in 1:framework$N_dom_smp){
+    mu_fixed[mu_fixed_area == area_id[i]] = X_pop[mu_fixed_area == area_id[i], ] %*% as.matrix(betas_in[, i])
+  }
 
   # synthetic part for out-sample-domains
   if(framework$N_dom_unobs>0){
-  betas_out <- apply(model_par$betas.out, 1, rep, framework$n_pop[!framework$dist_obs_dom])
-  mu_fixed[!framework$obs_dom] <- diag(X_pop[!framework$obs_dom,] %*% t(betas_out))
+  betas_out <- model_par$betas.out
+  # betas_out <- apply(model_par$betas.out, 1, rep, framework$n_pop[!framework$dist_obs_dom])
+  # mu_fixed[!framework$obs_dom] <- diag(X_pop[!framework$obs_dom,] %*% t(betas_out))
+  out_area_id = as.vector(sort(unique(mu_fixed_area[!mu_fixed_area%in%framework$smp_domains_vec])))
+  for(i in 1:framework$N_dom_unobs){
+    mu_fixed[mu_fixed_area == out_area_id[i]] = X_pop[mu_fixed_area == out_area_id[i], ] %*% as.matrix(betas_out[, i])
+    }
   }
 
   mu <- mu_fixed + rand_eff_pop
