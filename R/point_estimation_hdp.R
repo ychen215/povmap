@@ -582,7 +582,8 @@ model_par_hdp <- function(framework,
   sigmae2est <- mixed_model$sigma2e
   if(framework$N_dom_unobs>0){
     # fixed parameters for out-sample domains
-    betas.out <- rbind(rep(betas[1,1], dim(mod.out$coefficients)[2]), mod.out$coefficients[-1,])
+    if(framework$N_dom_unobs==1){betas.out <- as.matrix(c(betas[1,1], mod.out$coefficients[-1,]))}
+    else {betas.out <- rbind(rep(betas[1,1], dim(mod.out$coefficients)[2]), mod.out$coefficients[-1,])}
     colnames(betas.out) <- unique(framework$pop_domains_vec)[!framework$dist_obs_dom]
     sigma2e.out <- mod.out$sigma2e
   }
